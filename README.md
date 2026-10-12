@@ -1,345 +1,386 @@
-# 🌿 EcoGate (SkyGateHub) — Hệ Thống Quản Trị & Đặt Dịch Vụ Khu Du Lịch Sinh Thái Cổng Trời Đông Giang
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" />
-  <img src="https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21" />
-  <img src="https://img.shields.io/badge/MySQL-8.0+-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
-  <img src="https://img.shields.io/badge/Thymeleaf-SSR-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white" alt="Thymeleaf" />
-  <img src="https://img.shields.io/badge/Architecture-Modular%20Monolith-blueviolet?style=for-the-badge" alt="Architecture" />
-  <img src="https://img.shields.io/badge/Status-In%20Active%20Development-success?style=for-the-badge" alt="Status" />
-</p>
+# 🌿 EcoGate (SkyGateHub) — Management & Booking System for Dong Giang Heaven Gate Ecotourism Destination
 
 ---
 
-## 📖 Giới Thiệu Tổng Quan (Overview)
+## 📖 Overview
 
-**EcoGate (SkyGateHub)** là nền tảng phần mềm web nguyên khối hiện đại (**Modular Monolithic Full-stack**) được xây dựng phục vụ công tác chuyển đổi số toàn diện cho **Khu du lịch sinh thái Cổng Trời Đông Giang** (tỉnh Quảng Nam).
+**EcoGate (SkyGateHub)** is a modern **Modular Monolithic Full-stack** web platform engineered to drive comprehensive digital transformation for the **Dong Giang Heaven Gate Ecotourism Destination** (Quang Nam Province, Vietnam).
 
-Hệ thống tích hợp trọn vẹn chuỗi cung ứng dịch vụ du lịch khép kín:
-1. **Vé tham quan & Cáp treo**: Vé cổng sinh thái, cáp treo, cầu kính và các gói Combo tích hợp.
-2. **Khách sạn & Nghỉ dưỡng**: Đặt phòng, kiểm tra phòng trống theo thời gian thực, quản lý phân phòng và sơ đồ phòng vật lý trực quan.
-3. **Ẩm thực & Nhà hàng**: Đặt suất ăn Buffet, Set menu đặc sản vùng cao Cơ Tu theo từng ca ăn, quản lý sơ đồ bàn và xếp bàn chống trùng lặp.
-4. **Thanh toán & Soát vé**: Giỏ hàng liên dịch vụ, quy trình đặt cọc 30% / thanh toán nốt linh hoạt, cơ chế soát vé & Check-in đa điểm độc lập tại hiện trường.
-5. **Báo cáo & Điều hành**: Dashboard phân tích doanh thu, tỷ lệ lấp đầy buồng phòng và công suất phục vụ nhà hàng.
+The system seamlessly consolidates a full-cycle tourism supply chain:
 
-Dự án được thiết kế theo tư duy kiến trúc **Package-by-Feature**, phân tách ranh giới module rõ ràng, phân chia nhiệm vụ cho 5 lập trình viên (M1 – M5) phát triển song song với khả năng xung đột (Git conflict) gần như bằng không.
+1. **Sightseeing & Cable Car Tickets**: General admission, cable car passes, glass bridge tickets, and bundled combo packages.
+2. **Hotel & Hospitality**: Room reservations, real-time availability lookups, physical room allocation, and interactive room status boards.
+3. **Dining & Restaurants**: Buffet vouchers, authentic Co Tu ethnic highland set menus organized by meal shifts, floor plan management, and collision-free table assignment.
+4. **Checkout & Multi-checkpoint Validation**: Cross-service shopping cart, flexible 30% deposit / balance settlement workflow, and decentralized on-site check-in stations.
+5. **Analytics & Operations Dashboard**: High-level reporting on gross revenue, room occupancy rates, and dining capacity utilization.
 
----
-
-## 📑 Mục Lục (Table of Contents)
-
-- [🌿 Giới Thiệu Tổng Quan](#-giới-thiệu-tổng-quan-overview)
-- [✨ Tính Năng Nổi Bật](#-tính-năng-nổi-bật-key-features)
-  - [1. Phía Khách Hàng (Customer Portal)](#1-phía-khách-hàng-customer-portal)
-  - [2. Phía Quản Trị & Vận Hành (Admin & Staff Portal)](#2-phía-quản-trị--vận-hành-admin--staff-portal)
-- [🏛️ Kiến Trúc Hệ Thống (Architecture & Design)](#️-kiến-trúc-hệ-thống-architecture--design)
-  - [1. Nguyên Tắc Tổ Chức Package-by-Feature](#1-nguyên-tắc-tổ-chức-package-by-feature)
-  - [2. Phân Chia Bounded Context & Chủ Sở Hữu (M1 - M5)](#2-phân-chia-bounded-context--chủ-sở-hữu-m1---m5)
-  - [3. Sơ Đồ Thực Thể Nghiệp Vụ (ERD Overview)](#3-sơ-đồ-thực-thể-nghiệp-vụ-erd-overview)
-  - [4. Các Quyết Định Nghiệp Vụ Cốt Lõi (Business Rules)](#4-các-quyết-định-nghiệp-vụ-cốt-lõi-business-rules)
-- [🛠️ Công Nghệ Sử Dụng (Tech Stack)](#️-công-nghệ-sử-dụng-tech-stack)
-- [📂 Cấu Trúc Thư Mục Dự Án (Directory Structure)](#-cấu-trúc-thư-mục-dự-án-directory-structure)
-- [🚀 Hướng Dẫn Cài Đặt & Khởi Chạy (Getting Started)](#-hướng-dẫn-cài-đặt--khởi-chạy-getting-started)
-  - [1. Yêu cầu môi trường](#1-yêu-cầu-môi-trường)
-  - [2. Clone Repository](#2-clone-repository)
-  - [3. Khởi tạo Cơ sở dữ liệu (MySQL 8.x)](#3-khởi-tạo-cơ-sở-dữ-liệu-mysql-8x)
-  - [4. Cấu hình biến môi trường & application.properties](#4-cấu-hình-biến-môi-trường--applicationproperties)
-  - [5. Biên dịch & Chạy ứng dụng](#5-biên-dịch--chạy-ứng-dụng)
-- [👥 Tài Khoản Dùng Thử & Phân Quyền (Demo Accounts)](#-tài-khoản-dùng-thử--phân-quyền-demo-accounts)
-- [🔄 Quy Trình Phát Triển & Git Workflow (Contribution)](#-quy-trình-phát-triển--git-workflow-contribution)
-- [📝 Tài Liệu Liên Quan & Giấy Phép](#-tài-liệu-liên-quan--giấy-phép)
+Architected with a **Package-by-Feature** approach, the system enforces clean module boundaries, enabling a team of 5 developers (M1 – M5) to work concurrently with near-zero Git merge conflicts.
 
 ---
 
-## ✨ Tính Năng Nổi Bật (Key Features)
+## 📑 Table of Contents
 
-### 1. Phía Khách Hàng (Customer Portal)
-- **Tham quan & Báo giá vé động**: Khám phá vé lẻ và combo du lịch; hệ thống tự động nhận diện ngày thường / thứ Bảy & lễ hội để báo giá chuẩn xác theo người lớn và trẻ em.
-- **Tìm kiếm & Báo giá phòng nghỉ theo đêm**: Tìm phòng theo khoảng thời gian `[Ngày nhận, Ngày trả)`; hiển thị bảng kê giá chi tiết từng đêm kèm tỷ lệ phụ thu cuối tuần minh bạch.
-- **Khám phá ẩm thực & Đặt suất ăn**: Xem thực đơn Buffet, Set cơm trưa/tối đặc sản; lựa chọn ca ăn (`SANG`, `TRUA`, `TOI`) đồng bộ với lịch trình lưu trú.
-- **Giỏ hàng hợp nhất (`@SessionScope`)**: Tự do thêm nhiều loại dịch vụ (Vé, Phòng, Suất ăn) vào một giỏ hàng duy nhất trước khi tiến hành thanh toán.
-- **Đặt hàng & Thanh toán đa phương thức**: Hỗ trợ cơ chế đặt cọc trước **30%** giá trị đơn hoặc thanh toán toàn bộ; tích hợp cổng thanh toán trực tuyến mô phỏng VNPAY / Chuyển khoản ngân hàng.
-- **Quản lý đơn cá nhân**: Tra cứu lịch sử đặt chỗ, trạng thái xử lý, số tiền đã thu / còn nợ và mã QR xác nhận dịch vụ.
+* [🌿 Overview](https://www.google.com/search?q=%23-overview)
+* [✨ Key Features](https://www.google.com/search?q=%23-key-features)
+* [1. Customer Portal](https://www.google.com/search?q=%231-customer-portal)
+* [2. Admin & Staff Operations Portal](https://www.google.com/search?q=%232-admin--staff-operations-portal)
 
-### 2. Phía Quản Trị & Vận Hành (Admin & Staff Portal)
-- **Quản lý Tài khoản & Phân quyền RBAC**: Quản lý 5 nhóm vai trò người dùng (`QUAN_LY`, `NHAN_VIEN_CHECK_IN`, `NHAN_VIEN_PHAN_PHONG`, `NHAN_VIEN_PHAN_BAN`, `KHACH_HANG`), bảo mật mật khẩu với thuật toán băm BCrypt.
-- **Quản trị Vé & Cấu hình Giá**: Tạo vé lẻ, cấu hình gói combo lồng ghép dịch vụ, thiết lập ma trận giá theo từng đối tượng khách và mùa lễ hội.
-- **Vận hành Khách sạn & Gán phòng vật lý**:
-  - Khóa bi quan (*Pessimistic Locking*) chống xung đột đặt phòng (overbooking) khi khách thanh toán đồng thời.
-  - Sơ đồ phòng trực quan (Room Map) hiển thị màu sắc trạng thái từng phòng theo ngày/tầng (Trống, Đã phân, Đang ở, Bảo trì, Đang dọn).
-  - Thuật toán gán phòng vật lý cho đơn đặt phòng, loại trừ 100% rủi ro trùng lịch.
-- **Quản lý Nhà hàng & Xếp bàn ăn**: Kiểm soát công suất từng bàn theo khu vực/sức chứa; điều phối bàn ăn tự động/thủ công theo ngày và ca ăn.
-- **Soát vé & Check-in đa điểm tại hiện trường**:
-  - Tra cứu nhanh đơn hàng qua Mã đơn (`MA_DON_CODE`) hoặc Số điện thoại.
-  - Thu nốt khoản tiền còn lại (`THANH_TOAN_NOT`) trước khi cho phép nhận dịch vụ.
-  - Ghi nhận lịch sử Check-in độc lập theo từng trạm soát: Cổng vé, Cáp treo, Nhận phòng, Bàn ăn.
-- **Dashboard Thống kê & Báo cáo Doanh thu**: Biểu đồ doanh thu theo chu kỳ thời gian, thống kê công suất buồng phòng và các chỉ số kinh doanh quan trọng.
+
+* [🏛️ Architecture & Design](https://www.google.com/search?q=%23%EF%B8%8F-architecture--design)
+* [1. Package-by-Feature Design Principles](https://www.google.com/search?q=%231-package-by-feature-design-principles)
+* [2. Bounded Contexts & Ownership Allocation (M1 - M5)](https://www.google.com/search?q=%232-bounded-contexts--ownership-allocation-m1---m5)
+* [3. Entity-Relationship Overview (ERD)](https://www.google.com/search?q=%233-entity-relationship-overview-erd)
+* [4. Core Business Decisions & Rules](https://www.google.com/search?q=%234-core-business-decisions--rules)
+
+
+* [🛠️ Tech Stack](https://www.google.com/search?q=%23%EF%B8%8F-tech-stack)
+* [📂 Directory Structure](https://www.google.com/search?q=%23-directory-structure)
+* [🚀 Getting Started](https://www.google.com/search?q=%23-getting-started)
+* [1. Prerequisites](https://www.google.com/search?q=%231-prerequisites)
+* [2. Clone Repository](https://www.google.com/search?q=%232-clone-repository)
+* [3. Database Initialization (MySQL 8.x)](https://www.google.com/search?q=%233-database-initialization-mysql-8x)
+* [4. Configure Environment & application.properties](https://www.google.com/search?q=%234-configure-environment--applicationproperties)
+* [5. Build & Run Application](https://www.google.com/search?q=%235-build--run-application)
+
+
+* [👥 Demo Accounts & Access Control](https://www.google.com/search?q=%23-demo-accounts--access-control)
+* [🔄 Development & Git Workflow](https://www.google.com/search?q=%23-development--git-workflow)
+* [📝 References & License](https://www.google.com/search?q=%23-references--license)
 
 ---
 
-## 🏛️ Kiến Trúc Hệ Thống (Architecture & Design)
+## ✨ Key Features
 
-### 1. Nguyên Tắc Tổ Chức Package-by-Feature
-Dự án không gom nhóm theo tầng truyền thống (toàn bộ Controller vào 1 chỗ, toàn bộ Service vào 1 chỗ) mà chia theo **Feature Module**. Mỗi module chứa đầy đủ các tầng bên trong:
+### 1. Customer Portal
+
+* **Touring & Dynamic Ticket Quotation**: Explore individual tickets and combo packages; automatic detection of regular weekdays vs. Saturdays & public holidays to calculate accurate pricing for adults and children.
+* **Nightly Room Search & Quotation**: Query rooms across an open-interval check-in window `[Check-in Date, Check-out Date)`; view an itemized nightly breakdown with transparent weekend surcharge rates.
+* **Dining Discovery & Meal Booking**: Browse buffet menus and authentic highland lunch/dinner set menus; choose designated dining shifts (`SANG`, `TRUA`, `TOI`) aligned with itinerary dates.
+* **Unified Session Cart (`@SessionScope`)**: Add multiple distinct services (Tickets, Rooms, Meals) into a single cart before final checkout.
+* **Flexible Ordering & Multi-tier Payment**: Pay a **30% deposit** upfront or settle in full; includes simulated online payments (VNPAY / direct bank wire).
+* **Personal Order Tracking**: Review booking history, processing statuses, paid deposits, outstanding balances, and QR confirmation codes.
+
+### 2. Admin & Staff Operations Portal
+
+* **User Account & RBAC Management**: Enforce 5 role tiers (`QUAN_LY`, `NHAN_VIEN_CHECK_IN`, `NHAN_VIEN_PHAN_PHONG`, `NHAN_VIEN_PHAN_BAN`, `KHACH_HANG`) secured with BCrypt password hashing.
+* **Ticket Catalog & Dynamic Pricing**: Create standard tickets, configure composite combos, and manage tiered pricing matrices across customer classes and seasonal events.
+* **Hotel Operations & Physical Room Allocation**:
+* Pessimistic locking (*Pessimistic Locking*) prevents race conditions and overbooking during concurrent checkouts.
+* Interactive room map displays real-time room statuses by date/floor (Available, Assigned, Occupied, Maintenance, Cleaning).
+* Allocation engine prevents 100% of double-booking schedule collisions.
+
+
+* **Restaurant Operations & Table Assignment**: Monitor seating capacity by dining zone; dispatch automated or manual table arrangements by date and meal shift.
+* **On-site Multi-checkpoint Ticket Validation**:
+* Instant order lookups using Order Code (`MA_DON_CODE`) or phone numbers.
+* Settle remaining unpaid balances (`THANH_TOAN_NOT`) directly at reception prior to service usage.
+* Record independent check-in timestamps across 4 checkpoints: Entrance Gate, Cable Car, Hotel Check-in, Dining.
+
+
+* **Analytics & Revenue Dashboard**: Real-time sales metrics, room occupancy rates, and critical business performance KPIs over configurable time horizons.
+
+---
+
+## 🏛️ Architecture & Design
+
+### 1. Package-by-Feature Design Principles
+
+The project abandons traditional horizontal layering (all Controllers in one package, all Services in another) in favor of **Feature Modules**. Each module encapsulates its full vertical slice:
+
 ```
 com.example.skygatehub.<feature>
-├── entity/          # JPA Entities ánh xạ cơ sở dữ liệu
-├── enums/           # Enum trạng thái, phân loại của feature
-├── repository/      # Spring Data JPA Repository
-├── dto/             # Request DTO (Bean Validation) & Response DTO
-├── service/         # Interface dịch vụ (Hợp đồng giao tiếp public)
-│   └── impl/        # Service Implementation (@Service, @Transactional)
-└── controller/      # Web Controller (Customer / Admin)
+├── entity/          # JPA entities mapped to database tables
+├── enums/           # Feature-specific status codes and classifications
+├── repository/      # Spring Data JPA repositories
+├── dto/             # Request DTOs (Bean Validation) & Response DTOs
+├── service/         # Service interfaces (Public contract boundaries)
+│   └── impl/        # Service implementation (@Service, @Transactional)
+└── controller/      # Web Controllers (Customer / Admin)
+
 ```
 
 > [!IMPORTANT]
-> **Quy tắc phụ thuộc giữa các Module:**
-> - Module khác **chỉ được phép** gọi `Service Interface` và tham chiếu `Entity` (cho quan hệ `@ManyToOne`).
-> - **Tuyệt đối cấm** việc tiêm phụ thuộc (Inject) trực tiếp `Repository`, `ServiceImpl` hoặc gọi chéo `Controller` của module khác.
+> **Inter-Module Dependency Rules:**
+> * Foreign modules **may only** consume `Service Interfaces` or reference `Entity` classes (for `@ManyToOne` associations).
+> * **Direct injection** of foreign `Repository`, foreign `ServiceImpl`, or cross-calling foreign `Controller` instances is strictly prohibited.
+> 
+> 
 
-### 2. Phân Chia Bounded Context & Chủ Sở Hữu (M1 - M5)
+### 2. Bounded Contexts & Ownership Allocation (M1 - M5)
 
-| Phân hệ (Context) | Package | Các Bảng Dữ Liệu | Thành Viên Phụ Trách |
-|---|---|---|:---:|
-| **Xác thực, Tài khoản & Vé tham quan** | `auth`, `account`, `ticket` | `NGUOI_DUNG`, `VAI_TRO`, `NGUOI_DUNG_VAI_TRO`, `SAN_PHAM_VE`, `COMBO_CHI_TIET`, `BANG_GIA_VE`, `DAT_VE` | **M1** |
-| **Đặt phòng lưu trú (Khách hàng)** | `roombooking` | `DAT_PHONG` | **M2** |
-| **Vận hành phòng lưu trú (Quản trị)** | `room` | `LOAI_PHONG`, `PHONG`, `PHAN_PHONG` | **M3** |
-| **Ẩm thực & Nhà hàng** | `dining` | `DICH_VU_AN`, `BAN_AN`, `DAT_AN` | **M4** |
-| **Đơn tổng, Thanh toán, Check-in, Dashboard** | `cart`, `order`, `payment`, `checkin`, `dashboard` | `DON_DAT`, `THANH_TOAN`, `LICHSU_CHECK_IN` (+ Giỏ hàng Session) | **M5** |
-| **Hạ tầng dùng chung** | `common` | Tiện ích (Date, Money, Code), Exception, Security Interceptor, Base Layout | **Chung [C]** |
+| Bounded Context | Package | Database Tables | Module Owner |
+| --- | --- | --- | --- |
+| **Authentication, Accounts & Ticketing** | `auth`, `account`, `ticket` | `NGUOI_DUNG`, `VAI_TRO`, `NGUOI_DUNG_VAI_TRO`, `SAN_PHAM_VE`, `COMBO_CHI_TIET`, `BANG_GIA_VE`, `DAT_VE` | **M1** |
+| **Room Reservation (Customer)** | `roombooking` | `DAT_PHONG` | **M2** |
+| **Room Operations (Admin)** | `room` | `LOAI_PHONG`, `PHONG`, `PHAN_PHONG` | **M3** |
+| **Dining & Restaurant** | `dining` | `DICH_VU_AN`, `BAN_AN`, `DAT_AN` | **M4** |
+| **Orders, Payments, Check-in & Dashboard** | `cart`, `order`, `payment`, `checkin`, `dashboard` | `DON_DAT`, `THANH_TOAN`, `LICHSU_CHECK_IN` (+ Session Cart) | **M5** |
+| **Shared Infrastructure** | `common` | Utilities (Date, Money, Code), Exception, Security Interceptor, Base Layout | **Shared [C]** |
 
-### 3. Sơ Đồ Thực Thể Nghiệp Vụ (ERD Overview)
+### 3. Entity-Relationship Overview (ERD)
 
-Cơ sở dữ liệu gồm **17 bảng quan hệ chuẩn hóa**, trong đó `DON_DAT` là gốc hội tụ liên kết 1-N tới các dịch vụ con (`DAT_VE`, `DAT_PHONG`, `DAT_AN`):
+The relational schema comprises **17 normalized tables**, anchored by `DON_DAT` as the primary root entity maintaining 1-N relationships to child service records (`DAT_VE`, `DAT_PHONG`, `DAT_AN`):
 
 ```mermaid
 erDiagram
-    NGUOI_DUNG ||--o{ NGUOI_DUNG_VAI_TRO : "sở hữu"
-    VAI_TRO ||--o{ NGUOI_DUNG_VAI_TRO : "cấp quyền"
-    NGUOI_DUNG ||--o{ DON_DAT : "đặt (khách hàng)"
+    NGUOI_DUNG ||--o{ NGUOI_DUNG_VAI_TRO : "owns"
+    VAI_TRO ||--o{ NGUOI_DUNG_VAI_TRO : "grants"
+    NGUOI_DUNG ||--o{ DON_DAT : "places (customer)"
 
-    SAN_PHAM_VE ||--o{ BANG_GIA_VE : "có giá"
-    SAN_PHAM_VE ||--o{ COMBO_CHI_TIET : "combo cha"
-    SAN_PHAM_VE ||--o{ COMBO_CHI_TIET : "thành phần con"
-    SAN_PHAM_VE ||--o{ DAT_VE : "được đặt"
+    SAN_PHAM_VE ||--o{ BANG_GIA_VE : "priced at"
+    SAN_PHAM_VE ||--o{ COMBO_CHI_TIET : "parent combo"
+    SAN_PHAM_VE ||--o{ COMBO_CHI_TIET : "child item"
+    SAN_PHAM_VE ||--o{ DAT_VE : "reserved via"
 
-    LOAI_PHONG ||--o{ PHONG : "gồm các phòng"
-    LOAI_PHONG ||--o{ DAT_PHONG : "được đặt"
-    DAT_PHONG ||--o{ PHAN_PHONG : "được phân"
-    PHONG ||--o{ PHAN_PHONG : "gán vào"
+    LOAI_PHONG ||--o{ PHONG : "consists of"
+    LOAI_PHONG ||--o{ DAT_PHONG : "reserved via"
+    DAT_PHONG ||--o{ PHAN_PHONG : "assigned to"
+    PHONG ||--o{ PHAN_PHONG : "assigned into"
 
-    DICH_VU_AN ||--o{ DAT_AN : "được đặt"
-    BAN_AN |o--o{ DAT_AN : "xếp bàn"
+    DICH_VU_AN ||--o{ DAT_AN : "reserved via"
+    BAN_AN |o--o{ DAT_AN : "assigned to"
 
-    DON_DAT ||--o{ DAT_VE : "chứa vé"
-    DON_DAT ||--o{ DAT_PHONG : "chứa phòng"
-    DON_DAT ||--o{ DAT_AN : "chứa suất ăn"
-    DON_DAT ||--o{ THANH_TOAN : "giao dịch thu tiền"
-    DON_DAT ||--o{ LICHSU_CHECK_IN : "nhật ký check-in"
-    NGUOI_DUNG |o--o{ THANH_TOAN : "nhân viên thu tiền"
-    NGUOI_DUNG ||--o{ LICHSU_CHECK_IN : "nhân viên soát vé"
-    NGUOI_DUNG |o--o{ PHAN_PHONG : "nhân viên lễ tân"
+    DON_DAT ||--o{ DAT_VE : "contains tickets"
+    DON_DAT ||--o{ DAT_PHONG : "contains rooms"
+    DON_DAT ||--o{ DAT_AN : "contains meals"
+    DON_DAT ||--o{ THANH_TOAN : "payment records"
+    DON_DAT ||--o{ LICHSU_CHECK_IN : "check-in logs"
+    NGUOI_DUNG |o--o{ THANH_TOAN : "processed by cashier"
+    NGUOI_DUNG ||--o{ LICHSU_CHECK_IN : "inspected by staff"
+    NGUOI_DUNG |o--o{ PHAN_PHONG : "handled by receptionist"
+
 ```
 
-### 4. Các Quyết Định Nghiệp Vụ Cốt Lõi (Business Rules)
+### 4. Core Business Decisions & Rules
 
-- **D1 — Phụ thu buồng phòng**: Áp dụng **+20%** cho các đêm bắt đầu vào **thứ Bảy** và **các đêm ngày Lễ**. Đêm thứ Sáu và Chủ Nhật tính theo giá ngày thường.
-- **D2 — Cấu hình ngày Lễ**: Danh sách ngày lễ được quản trị trong cấu hình lặp lại hàng năm (`01-01`, `04-30`, `05-01`, `02-09`) qua `DayTypeResolver`, không hard-code mã nguồn.
-- **D3 — Đặt cọc & Điều kiện hủy đơn**:
-  - Khách hàng đặt cọc tối thiểu **30%** tổng giá trị đơn để kích hoạt trạng thái `DA_COC`.
-  - Khách chỉ được hủy đơn khi **chưa phát sinh bất kỳ lượt Check-in nào**.
-- **D4 — Chính sách vé trẻ em**: Trẻ em cao dưới 1,4m được áp dụng chính sách **miễn phí vé (0 VNĐ)**. Khách từ 1,4m trở lên áp dụng vé người lớn.
-- **D5 — Ràng buộc bàn ăn**: Mỗi lượt đặt suất ăn (`DAT_AN`) được liên kết với **đúng 1 bàn ăn** phù hợp với sức chứa của bàn.
-- **D6 — Soát vé đa điểm độc lập**: Check-in được ghi nhận độc lập theo 4 loại điểm soát: `VE_CONG`, `CAP_TREO`, `NHAN_PHONG`, `AN_UONG`. Hệ thống tự động ngăn chặn check-in trùng lặp cùng điểm soát trong một ngày.
+* **D1 — Room Surcharges**: A **+20% surcharge** applies to room nights falling on **Saturdays** and **Public Holidays**. Friday and Sunday nights follow standard weekday rates.
+* **D2 — Holiday Registry**: Recurring holidays (`01-01`, `04-30`, `05-01`, `02-09`) are externalized via `DayTypeResolver` rather than hardcoded in business logic.
+* **D3 — Deposit & Cancellation Policy**:
+* Customers must place a minimum deposit of **30%** of total order value to secure the booking in state `DA_COC`.
+* Orders can only be cancelled if **zero check-in actions** have taken place.
 
----
 
-## 🛠️ Công Nghệ Sử Dụng (Tech Stack)
-
-| Lĩnh Vực | Công Nghệ / Thư Viện | Phiên Bản | Ghi Chú |
-|---|---|---|---|
-| **Ngôn ngữ** | Java | OpenJDK 21 | Sử dụng Record, Pattern Matching, Virtual Threads |
-| **Framework nền tảng** | Spring Boot | 4.1.1 (hỗ trợ 3.x+) | Web MVC, Data JPA, Validation, DevTools |
-| **Giao diện (Frontend)** | Thymeleaf | 3.x | Server-Side Rendering (SSR) với layout fragments |
-| **Styling & Hiệu ứng** | Vanilla CSS3, JavaScript | ES6+ | Glassmorphism, Dark/Light palettes, Fetch API |
-| **Cơ sở dữ liệu** | MySQL Server | 8.0+ | Engine InnoDB, mã hóa UTF-8 mb4, cột GENERATED |
-| **Truy cập dữ liệu** | Hibernate / JPA | 6.x / 7.x | `ddl-auto=validate`, quy ước đặt tên StandardImpl |
-| **Bảo mật** | Spring Security Crypto | - | Mã hóa mật khẩu BCrypt, AuthInterceptor + `@RequireRole` |
-| **Công cụ hỗ trợ** | Project Lombok | - | Tự động sinh Getter, Setter, Builder |
-| **Công cụ đóng gói** | Apache Maven | 3.9+ | Đi kèm sẵn Maven Wrapper (`mvnw`) |
+* **D4 — Child Ticket Policy**: Children under 1.4m receive **free entry (0 VND)**. Visitors 1.4m and taller require adult admission tickets.
+* **D5 — Dining Allocation Constraints**: Each dining reservation item (`DAT_AN`) maps to **exactly 1 table** matching seating capacity limits.
+* **D6 — Autonomous Multi-checkpoint Validation**: Check-in events are audited independently across 4 station classes: `VE_CONG`, `CAP_TREO`, `NHAN_PHONG`, `AN_UONG`. Duplicate validations at the same station on the same day are automatically blocked.
 
 ---
 
-## 📂 Cấu Trúc Thư Mục Dự Án (Directory Structure)
+## 🛠️ Tech Stack
+
+| Domain | Technology / Library | Version | Notes |
+| --- | --- | --- | --- |
+| **Language** | Java | OpenJDK 21 | Records, Pattern Matching, Virtual Threads |
+| **Framework** | Spring Boot | 4.1.1 (supports 3.x+) | Web MVC, Data JPA, Validation, DevTools |
+| **Presentation (Frontend)** | Thymeleaf | 3.x | Server-Side Rendering (SSR) with layout fragments |
+| **Styling & Scripting** | Vanilla CSS3, JavaScript | ES6+ | Glassmorphism UI, Dark/Light modes, Fetch API |
+| **Database** | MySQL Server | 8.0+ | InnoDB Engine, UTF-8 mb4 encoding, GENERATED columns |
+| **Data Persistence** | Hibernate / JPA | 6.x / 7.x | `ddl-auto=validate`, StandardImpl naming convention |
+| **Security** | Spring Security Crypto | - | BCrypt password hashing, AuthInterceptor + `@RequireRole` |
+| **Code Generation** | Project Lombok | - | Boilerplate reduction for Getters, Setters, Builders |
+| **Build & Dependency Management** | Apache Maven | 3.9+ | Includes bundled Maven Wrapper (`mvnw`) |
+
+---
+
+## 📂 Directory Structure
 
 ```
 SkyGateHub/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/example/skygatehub/
-│   │   │   ├── SkyGateHubApplication.java       # Main entry point Spring Boot
-│   │   │   ├── common/                          # [C] Thành phần dùng chung (Chung [C])
-│   │   │   │   ├── config/                      # Cấu hình MVC, Properties
-│   │   │   │   ├── constant/                    # Hằng số, Session keys
-│   │   │   │   ├── enums/                       # RoleName, LoaiKhach, LoaiNgay
-│   │   │   │   ├── exception/                   # Mã lỗi & Global Exception Handler
+│   │   │   ├── SkyGateHubApplication.java       # Spring Boot main entry point
+│   │   │   ├── common/                          # [C] Shared infrastructure components
+│   │   │   │   ├── config/                      # Web MVC configurations & application properties
+│   │   │   │   ├── constant/                    # Shared constants & session keys
+│   │   │   │   ├── enums/                       # Global enums (RoleName, LoaiKhach, LoaiNgay)
+│   │   │   │   ├── exception/                   # Global exception handling & error codes
 │   │   │   │   ├── security/                    # AuthInterceptor, CurrentUser, PasswordHasher
 │   │   │   │   ├── util/                        # DayTypeResolver, DateRangeUtils, MoneyUtils
 │   │   │   │   └── web/                         # HomeController, GlobalModelAdvice
-│   │   │   ├── auth/                            # [M1] Đăng nhập, đăng ký, phiên làm việc
-│   │   │   ├── account/                         # [M1] Quản trị người dùng & phân quyền
-│   │   │   ├── ticket/                          # [M1] Sản phẩm vé, combo & bảng giá
-│   │   │   ├── roombooking/                     # [M2] Khách hàng tìm kiếm & đặt phòng
-│   │   │   ├── room/                            # [M3] Quản lý buồng phòng, sơ đồ & phân phòng
-│   │   │   ├── dining/                          # [M4] Thực đơn món ăn, suất ăn & xếp bàn
-│   │   │   ├── cart/                            # [M5] Giỏ hàng đa dịch vụ trong Session
-│   │   │   ├── order/                           # [M5] Đơn hàng tổng & máy trạng thái đơn
-│   │   │   ├── payment/                         # [M5] Giao dịch thanh toán & cổng mô phỏng
-│   │   │   ├── checkin/                         # [M5] Tra cứu & soát vé Check-in tại quầy
-│   │   │   └── dashboard/                       # [M5] Báo cáo doanh thu & công suất
+│   │   │   ├── auth/                            # [M1] Authentication, registration, session management
+│   │   │   ├── account/                         # [M1] User account management & RBAC controls
+│   │   │   ├── ticket/                          # [M1] Tickets, combos & pricing catalog
+│   │   │   ├── roombooking/                     # [M2] Customer room search & booking flow
+│   │   │   ├── room/                            # [M3] Room management, floor maps & allocation
+│   │   │   ├── dining/                          # [M4] Dining services, meal booking & table dispatch
+│   │   │   ├── cart/                            # [M5] Multi-service session-scoped shopping cart
+│   │   │   ├── order/                           # [M5] Composite orders & order state machine
+│   │   │   ├── payment/                         # [M5] Payment transactions & mock payment gateway
+│   │   │   ├── checkin/                         # [M5] On-site ticket validation & checkpoint check-in
+│   │   │   └── dashboard/                       # [M5] Revenue reporting & occupancy metrics
 │   │   └── resources/
-│   │       ├── application.properties           # Cấu hình ứng dụng, DataSource, tham số
-│   │       ├── application-dev.properties       # Cấu hình môi trường dev (Show SQL, tắt cache)
-│   │       ├── messages.properties              # Thông điệp i18n / thông báo lỗi tiếng Việt
+│   │       ├── application.properties           # Primary application & datasource configurations
+│   │       ├── application-dev.properties       # Development profile (SQL logging, cache disabled)
+│   │       ├── messages.properties              # i18n localization & validation feedback messages
 │   │       ├── db/mysql/
-│   │       │   ├── 01_schema.sql                # Script tạo 17 bảng dữ liệu chuẩn
-│   │       │   └── 02_seed_data.sql             # Dữ liệu khởi tạo kiểm thử
-│   │       ├── static/                          # CSS, JavaScript, Hình ảnh module
-│   │       └── templates/                       # Giao diện Thymeleaf khách hàng & quản trị
-│   └── test/java/com/example/skygatehub/        # Bộ kiểm thử Unit Test cho 5 module
-├── pom.xml                                      # Quản lý thư viện và plugin Maven
-├── mvnw / mvnw.cmd                              # Maven Wrapper cho Linux / Windows
-├── scaffold.ps1                                 # Script PowerShell sinh khung xương dự án
-├── ARCHITECTURE.md                              # Đặc tả kiến trúc kỹ thuật & thiết kế chi tiết
-└── QL_CONG_TROI_DONG_GIANG_MYSQL.sql            # Script CSDL MySQL đầy đủ kèm dữ liệu mẫu
+│   │       │   ├── 01_schema.sql                # DDL script creating all 17 normalized tables
+│   │       │   └── 02_seed_data.sql             # Pre-seeded test data
+│   │       ├── static/                          # Static assets (CSS, JS, images)
+│   │       └── templates/                       # Thymeleaf templates for customer & admin portals
+│   └── test/java/com/example/skygatehub/        # Unit & integration test suites for modules M1–M5
+├── pom.xml                                      # Maven project configuration and dependencies
+├── mvnw / mvnw.cmd                              # Maven Wrapper for Linux / Windows
+├── scaffold.ps1                                 # PowerShell scaffolding automation script
+├── ARCHITECTURE.md                              # Detailed technical architecture specification
+└── QL_CONG_TROI_DONG_GIANG_MYSQL.sql            # Complete MySQL dump with schema & seed dataset
+
 ```
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy (Getting Started)
+## 🚀 Getting Started
 
-### 1. Yêu cầu môi trường
-Trước khi cài đặt, hãy đảm bảo máy tính đã cài đặt các công cụ sau:
-- **Java Development Kit (JDK)**: Phiên bản **21** trở lên ([Tải JDK 21](https://adoptium.net/temurin/releases/?version=21)).
-- **MySQL Server**: Phiên bản **8.0** trở lên ([Tải MySQL Community Server](https://dev.mysql.com/downloads/mysql/)).
-- **Git**: Công cụ quản lý mã nguồn ([Tải Git](https://git-scm.com/)).
-- **IDE**: IntelliJ IDEA (khuyến nghị), Eclipse hoặc VS Code (đã cài Java Extension Pack).
+### 1. Prerequisites
+
+Ensure the following tools are installed on your workstation:
+
+* **Java Development Kit (JDK)**: Version **21** or later ([Download JDK 21](https://adoptium.net/temurin/releases/?version=21)).
+* **MySQL Server**: Version **8.0** or later ([Download MySQL Community Server](https://dev.mysql.com/downloads/mysql/)).
+* **Git**: Source control management ([Download Git](https://git-scm.com/)).
+* **IDE**: IntelliJ IDEA (recommended), Eclipse, or VS Code (with Java Extension Pack).
 
 ### 2. Clone Repository
-Mở Terminal / PowerShell và thực hiện lệnh:
+
+Open Terminal or PowerShell and execute:
+
 ```bash
 git clone https://github.com/YuluWusu/SkyGateHub.git
 cd SkyGateHub
+
 ```
 
-### 3. Khởi tạo Cơ sở dữ liệu (MySQL 8.x)
-1. Khởi động dịch vụ MySQL trên máy tính của bạn.
-2. Mở MySQL Workbench hoặc chạy lệnh CLI sau để tạo cơ sở dữ liệu `QL_CONG_TROI_DONG_GIANG` và nạp toàn bộ cấu trúc bảng cùng dữ liệu mẫu:
+### 3. Database Initialization (MySQL 8.x)
+
+1. Start your local MySQL service.
+2. Open MySQL Workbench or execute the following CLI command to create the database schema `QL_CONG_TROI_DONG_GIANG` and populate seed data:
+
 ```bash
 mysql -u root -p < QL_CONG_TROI_DONG_GIANG_MYSQL.sql
+
 ```
-*(Nhập mật khẩu MySQL root của bạn khi được yêu cầu)*.
+
+*(Enter your MySQL root password when prompted)*.
 
 > [!NOTE]
-> Database script đã thiết lập sẵn bảng mã `utf8mb4` và collation `utf8mb4_unicode_ci` hỗ trợ đầy đủ tiếng Việt có dấu.
+> The database script initializes with `utf8mb4` character encoding and `utf8mb4_unicode_ci` collation, ensuring complete support for accented characters and special symbols.
 
-### 4. Cấu hình biến môi trường & application.properties
-Mở file `src/main/resources/application.properties`, kiểm tra cấu hình kết nối database:
+### 4. Configure Environment & application.properties
+
+Inspect `src/main/resources/application.properties` to ensure database connection parameters align with your environment:
+
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/QL_CONG_TROI_DONG_GIANG?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useSSL=false
 spring.datasource.username=${DB_USERNAME:root}
 spring.datasource.password=${DB_PASSWORD:123123}
+
 ```
 
 > [!TIP]
-> **Khuyến nghị:** Không nên sửa trực tiếp mật khẩu vào file `application.properties` để tránh commit nhầm lên Git. Hãy truyền qua biến môi trường của hệ thống hoặc đặt trong cấu hình Run của IDE:
-> - `DB_USERNAME`: Tên người dùng MySQL của bạn (mặc định: `root`)
-> - `DB_PASSWORD`: Mật khẩu MySQL của bạn
+> **Recommendation:** Avoid committing plain-text database credentials to source control. Supply these values via system environment variables or through IDE Run/Debug configurations:
+> * `DB_USERNAME`: Your MySQL username (defaults to `root`)
+> * `DB_PASSWORD`: Your MySQL root password
+> 
+> 
 
-### 5. Biên dịch & Chạy ứng dụng
+### 5. Build & Run Application
 
-#### Trên Windows (PowerShell / CMD):
+#### On Windows (PowerShell / CMD):
+
 ```powershell
 .\mvnw.cmd spring-boot:run
+
 ```
 
-#### Trên Linux / macOS:
+#### On Linux / macOS:
+
 ```bash
 chmod +x mvnw
 ./mvnw spring-boot:run
+
 ```
 
-Sau khi ứng dụng khởi động thành công với thông báo:
+Once the application finishes booting, verify the console log:
+
 ```
 Tomcat started on port 8080 (http) with context path '/'
 Started SkyGateHubApplication in ... seconds
+
 ```
 
-Mở trình duyệt web và truy cập địa chỉ:
+Launch your web browser and navigate to:
 👉 **`http://localhost:8080`**
 
 ---
 
-## 👥 Tài Khoản Dùng Thử & Phân Quyền (Demo Accounts)
+## 👥 Demo Accounts & Access Control
 
-Hệ thống đã chuẩn bị sẵn các tài khoản mẫu tương ứng với từng vai trò người dùng trong hệ thống (Tất cả tài khoản đều có mật khẩu chung là **`123456`**):
+Pre-seeded demo accounts are available for testing each role boundary (All accounts share the default password **`123456`**):
 
-| Tên Đăng Nhập | Mật Khẩu | Vai Trò | Phạm Vi Chức Năng / URL Cho Phép |
-|---|:---:|---|---|
-| **`admin`** | `123456` | `QUAN_LY` | Toàn quyền quản trị hệ thống: Báo cáo `/admin/dashboard`, Quản lý tài khoản, Quản trị vé, Bảng giá, Loại phòng, Dịch vụ ăn uống, Đơn hàng |
-| **`nv_checkin`** | `123456` | `NHAN_VIEN_CHECK_IN` | Quầy soát vé & đón tiếp: Tra cứu đơn, thu tiền nốt `/admin/checkin`, xác nhận check-in các điểm soát |
-| **`nv_phong`** | `123456` | `NHAN_VIEN_PHAN_PHONG` | Bộ phận Lễ tân buồng phòng: Xem sơ đồ phòng `/admin/room-map`, tiếp nhận và gán phòng vật lý `/admin/room-assignments` |
-| **`nv_ban`** | `123456` | `NHAN_VIEN_PHAN_BAN` | Bộ phận Nhà hàng ẩm thực: Quản lý danh mục bàn `/admin/tables`, điều phối và xếp bàn ăn `/admin/table-assignments` |
-| **`khachhang1`** | `123456` | `KHACH_HANG` | Khách du lịch: Xem và đặt vé, tìm đặt phòng, đặt món ăn, quản lý giỏ hàng, thanh toán và xem lịch sử đơn đặt cá nhân |
+| Username | Password | Role | Permitted Scope & Entry Points |
+| --- | --- | --- | --- |
+| **`admin`** | `123456` | `QUAN_LY` | Full system governance: Executive dashboard `/admin/dashboard`, account management, tickets, pricing matrices, room categories, dining catalogs, composite orders |
+| **`nv_checkin`** | `123456` | `NHAN_VIEN_CHECK_IN` | Check-in counter operations: Order search, remaining balance settlement `/admin/checkin`, ticket validation across physical checkpoints |
+| **`nv_phong`** | `123456` | `NHAN_VIEN_PHAN_PHONG` | Front desk & housekeeping: Visual room board `/admin/room-map`, reservation queue & physical room dispatch `/admin/room-assignments` |
+| **`nv_ban`** | `123456` | `NHAN_VIEN_PHAN_BAN` | Dining room management: Dining table catalog `/admin/tables`, shift-based seating coordination `/admin/table-assignments` |
+| **`khachhang1`** | `123456` | `KHACH_HANG` | End customer: Browse & book tickets, reserve rooms, order dining plans, manage cart, complete payments, view booking confirmations |
 
 ---
 
-## 🔄 Quy Trình Phát Triển & Git Workflow (Contribution)
+## 🔄 Development & Git Workflow
 
-Để đảm bảo tiến độ dự án nhóm diễn ra nhịp nhàng và không phát sinh xung đột mã nguồn:
+Follow these collaborative Git conventions to ensure smooth integration:
 
-### 1. Phân Nhánh (Branching Strategy)
-- **`main`**: Nhánh chính thức, chỉ chứa phiên bản ổn định đã được kiểm thử kỹ lưỡng.
-- **`develop`**: Nhánh tích hợp chính hằng ngày của toàn bộ nhóm.
-- **`feature/m<X>-<tên-chức-năng>`**: Nhánh làm việc riêng biệt của từng thành viên:
-  - `feature/m1-ticket`: Thành viên M1 (Auth & Ticket)
-  - `feature/m2-roombooking`: Thành viên M2 (Room Booking khách hàng)
-  - `feature/m3-room`: Thành viên M3 (Vận hành phòng quản trị)
-  - `feature/m4-dining`: Thành viên M4 (Ẩm thực & Xếp bàn)
-  - `feature/m5-order`: Thành viên M5 (Giỏ hàng, Đơn, Thanh toán, Checkin)
+### 1. Branching Strategy
 
-### 2. Quy Chuẩn Commit Message
-Áp dụng định dạng chuẩn:
+* **`main`**: Production-ready branch containing thoroughly validated code.
+* **`develop`**: Primary staging and daily integration branch.
+* **`feature/m<X>-<feature-name>`**: Dedicated feature branches per team member:
+* `feature/m1-ticket`: Member M1 (Auth & Tickets)
+* `feature/m2-roombooking`: Member M2 (Customer Room Booking)
+* `feature/m3-room`: Member M3 (Admin Room Operations)
+* `feature/m4-dining`: Member M4 (Dining & Table Dispatch)
+* `feature/m5-order`: Member M5 (Cart, Orders, Payment, Check-in)
+
+
+
+### 2. Commit Message Conventions
+
+Adopt standard conventional commit formats:
+
 ```
-[M<Số>] <loại>(<phạm vi>): <mô tả ngắn gọn>
+[M<Number>] <type>(<scope>): <short description>
 
-Ví dụ:
-[M2] feat(roombooking): hoàn thiện tính toán phụ thu phòng đêm thứ Bảy
-[M5] fix(payment): bổ sung khóa bi quan chống sai số dư khi thanh toán
-[M3] feat(room): dựng sơ đồ phòng theo tầng và ngày lưu trú
+Examples:
+[M2] feat(roombooking): implement Saturday night room surcharge calculation
+[M5] fix(payment): add pessimistic locking to prevent balance concurrency anomalies
+[M3] feat(room): render floor-based room status board by stay date
+
 ```
 
-### 3. Quy Tắc Code Chung
-1. **Thực thể JPA (Entity)**:
-   - Tên bảng và cột ghi tường minh chữ **IN HOA KHÔNG DẤU** khớp với database.
-   - Luôn sử dụng `@Getter @Setter @NoArgsConstructor`. **Tuyệt đối không dùng `@Data`** trên Entity để tránh lỗi lazy loading và đệ quy vô hạn.
-   - Tiền tệ bắt buộc dùng `BigDecimal`. Cấm dùng `double` hoặc `float`.
-2. **Controller & Giao Diện**:
-   - Sử dụng **DTO** cho Request / Response; Controller không nhận hoặc trả trực tiếp Entity ra View.
-   - Thao tác ghi dữ liệu bắt buộc nằm trong `@Transactional` tại tầng `ServiceImpl`.
+### 3. Engineering Guidelines
+
+1. **JPA Entities**:
+* Table and column annotations must explicitly use **UPPERCASE** characters matching the SQL schema.
+* Always annotate with `@Getter @Setter @NoArgsConstructor`. **Never use `@Data**` on JPA Entities to prevent infinite recursion and lazy-loading hazards.
+* All financial amounts must strictly use `BigDecimal`. Never use `double` or `float`.
+
+
+2. **Controllers & Views**:
+* Encapsulate data exchange via **DTOs** for Request / Response mappings; Controllers must not pass Entity instances directly into Views.
+* Any database mutation must execute inside an active `@Transactional` boundary in the `ServiceImpl` layer.
+
+
 
 ---
 
-## 📝 Tài Liệu Liên Quan & Giấy Phép
+## 📝 References & License
 
-- 📘 **Tài liệu Đặc Tả Kiến Trúc Chi Tiết**: Xem file [`ARCHITECTURE.md`](ARCHITECTURE.md) (Quy chuẩn kiến trúc, chi tiết từng bảng, công thức tính giá, file inventory, checklist DOD).
-- 🗄️ **Kịch Bản Cơ Sở Dữ Liệu**:
-  - MySQL: [`QL_CONG_TROI_DONG_GIANG_MYSQL.sql`](QL_CONG_TROI_DONG_GIANG_MYSQL.sql)
-  - SQL Server (Tham chiếu): [`QL_CONG_TROI_DONG_GIANG_SQLSERVER.sql`](QL_CONG_TROI_DONG_GIANG_SQLSERVER.sql)
+* 📘 **Technical Architecture Specification**: Refer to [`ARCHITECTURE.md`](https://www.google.com/search?q=ARCHITECTURE.md) (Architectural standards, schema specifications, pricing models, file inventory, DOD checklists).
+* 🗄️ **Database Initialization Scripts**:
+* MySQL: [`QL_CONG_TROI_DONG_GIANG_MYSQL.sql`](https://www.google.com/search?q=QL_CONG_TROI_DONG_GIANG_MYSQL.sql)
+* SQL Server (Reference): [`QL_CONG_TROI_DONG_GIANG_SQLSERVER.sql`](https://www.google.com/search?q=QL_CONG_TROI_DONG_GIANG_SQLSERVER.sql)
+
+
 
 ---
-
-<p align="center">
-  Được phát triển với niềm tự hào dành cho <b>Khu Du Lịch Sinh Thái Cổng Trời Đông Giang</b> 🏔️🌲<br>
-  <i>Dự án phục vụ học tập, nghiên cứu và phát triển phần mềm doanh nghiệp chất lượng cao.</i>
-</p>
