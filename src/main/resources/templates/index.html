@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khu Du Lịch Cổng Trời Đông Giang — Đặt Vé, Khách Sạn & Ẩm Thực</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-dark: #064e3b;
+            --primary-light: #10b981;
+            --accent-gold: #f59e0b;
+            --accent-amber: #d97706;
+            --bg-dark: #071711;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-card-hover: rgba(255, 255, 255, 0.08);
+            --border-glass: rgba(255, 255, 255, 0.12);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(4, 120, 87, 0.35) 0%, transparent 45%),
+                radial-gradient(circle at 90% 40%, rgba(245, 158, 11, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 50% 85%, rgba(6, 78, 59, 0.4) 0%, transparent 50%);
+        }
+
+        /* HEADER */
+        header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(7, 23, 17, 0.85);
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .header-container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0.9rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .brand-logo {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .brand-logo svg { width: 24px; height: 24px; fill: #fff; }
+
+        .brand-text h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #a7f3d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text span {
+            font-size: 0.72rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.75rem;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        nav a:hover, nav a.active { color: #fff; }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.6rem 1.25rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 22px rgba(16, 185, 129, 0.55);
+            transform: translateY(-2px);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-amber));
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-gold:hover {
+            box-shadow: 0 6px 22px rgba(245, 158, 11, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .badge-cart {
+            position: relative;
+            cursor: pointer;
+            padding: 0.55rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-glass);
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-count {
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.72rem;
+            padding: 1px 7px;
+            border-radius: 9999px;
+            font-weight: 800;
+        }
+
+        /* HERO */
+        .hero {
+            padding: 8.5rem 2rem 4rem;
+            max-width: 1320px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 18px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #34d399;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.25rem;
+            font-weight: 700;
+            line-height: 1.18;
+            max-width: 960px;
+            margin: 0 auto 1.25rem;
+            letter-spacing: -0.5px;
+        }
+
+        .hero h2 span {
+            background: linear-gradient(135deg, #a7f3d0, #34d399, var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p.lead {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 720px;
+            margin: 0 auto 2.5rem;
+        }
+
+        /* BOOKING ENGINE BOX */
+        .booking-box {
+            max-width: 1040px;
+            margin: 0 auto 4.5rem;
+            background: rgba(12, 34, 25, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .booking-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.35);
+            border-bottom: 1px solid var(--border-glass);
+            overflow-x: auto;
+        }
+
+        .booking-tab {
+            flex: 1;
+            padding: 1.1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+        }
+
+        .booking-tab:hover { color: #fff; background: rgba(255, 255, 255, 0.02); }
+
+        .booking-tab.active {
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.08);
+            border-bottom-color: #34d399;
+        }
+
+        .booking-content {
+            padding: 2rem 2.25rem;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            color: #fff;
+            font-size: 0.92rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s ease;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: #34d399;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        select.form-control option {
+            background: #0d281e;
+            color: #fff;
+        }
+
+        .price-estimate-bar {
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .estimate-text {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .estimate-text strong {
+            font-size: 1.35rem;
+            color: var(--accent-gold);
+            margin-left: 6px;
+        }
+
+        /* SECTION TITLES */
+        .section {
+            max-width: 1320px;
+            margin: 0 auto 6rem;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .section-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.35rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* PRODUCT CARDS */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            background: var(--bg-card-hover);
+            border-color: rgba(16, 185, 129, 0.35);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+        }
+
+        .card-tag {
+            align-self: flex-start;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+        }
+
+        .tag-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .tag-gold { background: rgba(245, 158, 11, 0.15); color: var(--accent-gold); }
+        .tag-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+        .product-card h4 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .product-card p.desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            flex-grow: 1;
+        }
+
+        .product-card .price-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .price-label { font-size: 0.8rem; color: var(--text-muted); }
+        .price-value { font-size: 1.4rem; font-weight: 800; color: #34d399; }
+
+        /* OPERATIONS / WORKFLOW DASHBOARD FOR GROUP MEMBERS */
+        .ops-container {
+            background: rgba(10, 29, 22, 0.7);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .role-switcher-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .role-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .role-chip {
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-chip:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+        .role-chip.active {
+            background: #34d399;
+            color: #000;
+            border-color: #34d399;
+            font-weight: 700;
+        }
+
+        .ops-panel { display: none; }
+        .ops-panel.active { display: block; }
+
+        .ops-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            margin-top: 1rem;
+        }
+
+        .ops-table th {
+            text-align: left;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #94a3b8;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .ops-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+        }
+
+        .ops-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .status-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-cancel { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        /* CART MODAL / DRAWER */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-backdrop.active { display: flex; }
+
+        .modal-card {
+            background: #0c231a;
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover { color: #fff; }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            background: #10b981;
+            color: #000;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-lg);
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 300;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border-glass);
+            background: #04100c;
+            padding: 4rem 2rem 2rem;
+        }
+
+        .footer-container {
+            max-width: 1320px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-col h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: #fff;
+        }
+
+        .footer-col ul { list-style: none; }
+        .footer-col li { margin-bottom: 0.75rem; }
+        .footer-col a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: color 0.2s ease;
+        }
+        .footer-col a:hover { color: #34d399; }
+
+        .footer-bottom {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .hero h2 { font-size: 2.25rem; }
+            .footer-container { grid-template-columns: 1fr; gap: 2rem; }
+            nav ul { display: none; }
+            .booking-tabs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-container">
+            <a href="/" class="brand">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>Cổng Trời Đông Giang</h1>
+                    <span>EcoGate Resort & Nature Park</span>
+                </div>
+            </a>
+
+            <nav>
+                <ul>
+                    <li><a href="#booking" class="active">Đặt Dịch Vụ</a></li>
+                    <li><a href="#tickets">Vé & Cáp Treo</a></li>
+                    <li><a href="#rooms">Khách Sạn</a></li>
+                    <li><a href="#dining">Ẩm Thực</a></li>
+                    <li><a href="#operations">Vận Hành & Phân Quyền</a></li>
+                </ul>
+            </nav>
+
+            <div class="nav-actions">
+                <div class="badge-cart" onclick="openCartModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                    Giỏ hàng
+                    <span class="badge-count" id="cartBadge">0</span>
+                </div>
+
+                <button class="btn btn-outline" onclick="openAuthModal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span id="currentAccountText">Đăng Nhập</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-badge">
+            🌿 Chào Mừng Đến Với Kiệt Tác Thiên Nhiên Giữa Đại Ngàn Tây Xứ Quảng
+        </div>
+
+        <h2>Trải Nghiệm Nghỉ Dưỡng & Khám Phá <span>Cổng Trời Đông Giang</span></h2>
+        
+        <p class="lead">Đặt vé tham quan, cáp treo ngắm mây, phòng nghỉ dưỡng suối nước nóng và thưởng thức ẩm thực núi rừng chỉ trong một đơn đặt tiện lợi.</p>
+
+        <!-- BOOKING ENGINE (TABS) -->
+        <div class="booking-box" id="booking">
+            <div class="booking-tabs">
+                <div class="booking-tab active" onclick="switchBookingTab('tab-ticket')">
+                    🎟️ Vé Tham Quan & Cáp Treo
+                </div>
+                <div class="booking-tab" onclick="switchBookingTab('tab-room')">
+                    🏨 Đặt Phòng Nghỉ Dưỡng
+                </div>
+                <div class="booking-tab" onclick="switchBookingTab('tab-dining')">
+                    🍽️ Đặt Bàn Ẩm Thực
+                </div>
+                <div class="booking-tab" onclick="switchBookingTab('tab-lookup')">
+                    🔍 Tra Cứu Đơn Hàng
+                </div>
+            </div>
+
+            <div class="booking-content">
+                <!-- PANE 1: VÉ -->
+                <div class="tab-pane active" id="tab-ticket">
+                    <form onsubmit="handleTicketBooking(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Ngày Tham Quan</label>
+                                <input type="date" class="form-control" id="ticketDate" th:value="${currentDate}" onchange="calcTicketPrice()" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Gói Vé / Sản Phẩm</label>
+                                <select class="form-control" id="ticketPackage" onchange="calcTicketPrice()">
+                                    <option value="VE_CONG" data-price="250000" data-price-sat="300000">Vé Vào Cổng Tiêu Chuẩn</option>
+                                    <option value="CAP_TREO" data-price="150000" data-price-sat="180000">Vé Tuyến Cáp Treo Ngắm Mây</option>
+                                    <option value="COMBO_VIP" data-price="450000" data-price-sat="520000">Combo Trọn Gói (Cổng + Cáp + Buffet)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Người Lớn (>= 1.4m)</label>
+                                <input type="number" class="form-control" id="ticketAdults" min="1" max="50" value="2" onchange="calcTicketPrice()" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Trẻ Em (< 1.4m: Miễn Phí)</label>
+                                <input type="number" class="form-control" id="ticketChildren" min="0" max="20" value="1" onchange="calcTicketPrice()">
+                            </div>
+                        </div>
+
+                        <div class="price-estimate-bar">
+                            <div class="estimate-text">
+                                Đơn giá áp dụng: <span id="ticketDayType" style="color: #34d399; font-weight: 600;">Ngày Thường</span> | 
+                                Tạm tính: <strong id="ticketTotalDisplay">500,000 đ</strong>
+                            </div>
+                            <button type="submit" class="btn btn-gold">
+                                🛒 Thêm Vé Vào Giỏ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PANE 2: PHÒNG -->
+                <div class="tab-pane" id="tab-room">
+                    <form onsubmit="handleRoomBooking(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Ngày Nhận Phòng (Check-in)</label>
+                                <input type="date" class="form-control" id="roomCheckIn" th:value="${currentDate}" onchange="calcRoomPrice()" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Ngày Trả Phòng (Check-out)</label>
+                                <input type="date" class="form-control" id="roomCheckOut" th:value="${tomorrowDate}" onchange="calcRoomPrice()" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Hạng Phòng</label>
+                                <select class="form-control" id="roomType" onchange="calcRoomPrice()">
+                                    <option value="BUNGALOW" data-price="1500000">Bungalow Suối Khoáng Nóng (2 NL + 1 TE)</option>
+                                    <option value="DELUXE_KING" data-price="1200000">Phòng Deluxe King View Núi (2 NL)</option>
+                                    <option value="SUPERIOR_TWIN" data-price="900000">Phòng Superior Twin 2 Giường (2 NL)</option>
+                                    <option value="VILLA_FAMILY" data-price="2800000">Biệt Thự Gia Đình Mây Ngàn (4 NL + 2 TE)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Số Lượng Phòng</label>
+                                <input type="number" class="form-control" id="roomQuantity" min="1" max="10" value="1" onchange="calcRoomPrice()" required>
+                            </div>
+                        </div>
+
+                        <div class="price-estimate-bar">
+                            <div class="estimate-text">
+                                Số đêm: <span id="roomNights" style="color: #34d399; font-weight: 600;">1 đêm</span> | 
+                                Phụ thu thứ 7 (+20%): <span id="roomSurcharge" style="color: var(--accent-gold);">0 đ</span> | 
+                                Tổng tiền: <strong id="roomTotalDisplay">1,500,000 đ</strong>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                🏨 Đặt Phòng Này
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PANE 3: BÀN ĂN -->
+                <div class="tab-pane" id="tab-dining">
+                    <form onsubmit="handleDiningBooking(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Ngày Dùng Bữa</label>
+                                <input type="date" class="form-control" id="diningDate" th:value="${currentDate}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Ca Dùng Bữa & Dịch Vụ</label>
+                                <select class="form-control" id="diningService" onchange="calcDiningPrice()">
+                                    <option value="BUFFET_SANG" data-price="120000">Ca Sáng: Buffet Ẩm Thực Á - Âu (120,000 đ/suất)</option>
+                                    <option value="SET_TRUA" data-price="180000" selected>Ca Trưa: Set Cơm Lam & Gà Nướng Núi Rừng (180,000 đ/suất)</option>
+                                    <option value="SET_TOI" data-price="220000">Ca Tối: Lẩu Thảo Dược & Đặc Sản Tây Giang (220,000 đ/suất)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Số Suất Ăn (Khách)</label>
+                                <input type="number" class="form-control" id="diningGuests" min="1" max="50" value="4" onchange="calcDiningPrice()" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Yêu Cầu Vị Trí Bàn</label>
+                                <select class="form-control" id="diningTableNote">
+                                    <option value="GẦN_SUỐI">Khu bàn cạnh suối tự nhiên</option>
+                                    <option value="TRONG_NHÀ">Phòng máy lạnh ấm cúng</option>
+                                    <option value="SÂN_THƯỢNG">Sân thượng ngắm hoàng hôn</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="price-estimate-bar">
+                            <div class="estimate-text">
+                                Đơn giá: <span id="diningUnitDisplay">180,000 đ/suất</span> | 
+                                Tạm tính: <strong id="diningTotalDisplay">720,000 đ</strong>
+                            </div>
+                            <button type="submit" class="btn btn-gold">
+                                🍽️ Đặt Bàn Ngay
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PANE 4: TRA CỨU ĐƠN -->
+                <div class="tab-pane" id="tab-lookup">
+                    <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 260px;">
+                            <label>Nhập Mã Đơn Hàng Hoặc Số Điện Thoại</label>
+                            <input type="text" class="form-control" id="lookupCode" placeholder="Ví dụ: CTDG-261013-0001 hoặc 0905123456" value="CTDG-261013-0001">
+                        </div>
+                        <button class="btn btn-primary" onclick="lookupOrder()">
+                            🔍 Tra Cứu Ngay
+                        </button>
+                    </div>
+
+                    <div id="lookupResultBox" style="margin-top: 1.5rem; display: none; background: rgba(0,0,0,0.3); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+                        <!-- Kết quả tra cứu động -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: VÉ & CÁP TREO -->
+    <section class="section" id="tickets">
+        <div class="section-header">
+            <h3>Vé Tham Quan & Cáp Treo Ngắm Mây</h3>
+            <p>Khám phá hệ sinh thái rừng nguyên sinh, thác nước hùng vĩ và trải nghiệm cáp treo vượt núi</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-green">Bán Chạy Nhất</span>
+                    <h4>Vé Vào Cổng Khu Du Lịch</h4>
+                    <p class="desc">Bao gồm tham quan toàn bộ hệ thống hang động, làng văn hóa Cơ Tu, thác Tiên và suối khoáng tự nhiên.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Người lớn (>=1.4m)</div>
+                            <div class="price-value">250,000 đ</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price-label">Trẻ em (< 1.4m)</div>
+                            <div style="color: #34d399; font-weight: 700;">Miễn phí (0đ)</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%;" onclick="quickSelectTicket('VE_CONG')">Chọn Vé Này</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-blue">Trải Nghiệm Độc Đáo</span>
+                    <h4>Vé Tuyến Cáp Treo Ngắm Mây</h4>
+                    <p class="desc">Chiêm ngưỡng toàn cảnh đại ngàn Trường Sơn từ độ cao hơn 800m, xuyên qua những tầng mây bồng bềnh kỳ vĩ.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Khứ hồi toàn tuyến</div>
+                            <div class="price-value">150,000 đ</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price-label">Thứ 7 & Lễ</div>
+                            <div style="color: var(--accent-gold); font-weight: 700;">180,000 đ</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%;" onclick="quickSelectTicket('CAP_TREO')">Chọn Vé Này</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-gold">Tiết Kiệm 25%</span>
+                    <h4>Combo Trọn Gói EcoGate VIP</h4>
+                    <p class="desc">Vé vào cổng + Tuyến cáp treo ngắm mây 2 chiều + 01 Suất Buffet ẩm thực Á - Âu tại nhà hàng Cổng Trời.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Trọn gói 1 khách</div>
+                            <div class="price-value">450,000 đ</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price-label">Giá gốc</div>
+                            <div style="text-decoration: line-through; color: #64748b;">580,000 đ</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-gold" style="width: 100%;" onclick="quickSelectTicket('COMBO_VIP')">Đặt Combo Ngay</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: KHÁCH SẠN -->
+    <section class="section" id="rooms">
+        <div class="section-header">
+            <h3>Khách Sạn & Nghỉ Dưỡng Giữa Lòng Đại Ngàn</h3>
+            <p>Hệ thống phòng nghỉ biệt lập, view thác suối và rừng nguyên sinh mang lại giấc ngủ trọn vẹn</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-green">Phòng Nghỉ Cao Cấp</span>
+                    <h4>Bungalow Suối Khoáng Nóng</h4>
+                    <p class="desc">Bồn tắm khoáng nóng riêng tư ngay trong khuôn viên, ban công hướng thẳng dòng suối mát lành và tiếng chim hót.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Giá ngày thường</div>
+                            <div class="price-value">1,500,000 đ</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price-label">Thứ 7 (+20%)</div>
+                            <div style="color: var(--accent-gold); font-weight: 700;">1,800,000 đ</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%;" onclick="quickSelectRoom('BUNGALOW')">Đặt Bungalow</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-blue">View Núi Rừng</span>
+                    <h4>Deluxe King Ngắm Mây</h4>
+                    <p class="desc">Giường King 2m2 êm ái, cửa kính panorama chạm trần ngắm trọn biển mây sớm Đông Giang bồng bềnh.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Giá ngày thường</div>
+                            <div class="price-value">1,200,000 đ</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price-label">Thứ 7 (+20%)</div>
+                            <div style="color: var(--accent-gold); font-weight: 700;">1,440,000 đ</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%;" onclick="quickSelectRoom('DELUXE_KING')">Đặt Phòng King</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-gold">Dành Cho Gia Đình</span>
+                    <h4>Biệt Thự Mây Ngàn Family</h4>
+                    <p class="desc">2 Phòng ngủ riêng biệt, phòng khách sang trọng, sân vườn nướng BBQ riêng biệt, sức chứa tới 4 người lớn và 2 trẻ em.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Giá ngày thường</div>
+                            <div class="price-value">2,800,000 đ</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price-label">Thứ 7 (+20%)</div>
+                            <div style="color: var(--accent-gold); font-weight: 700;">3,360,000 đ</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-gold" style="width: 100%;" onclick="quickSelectRoom('VILLA_FAMILY')">Đặt Biệt Thự</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: ẨM THỰC -->
+    <section class="section" id="dining">
+        <div class="section-header">
+            <h3>Ẩm Thực Đặc Sản Tây Giang</h3>
+            <p>Hương vị độc bản của đồng bào Cơ Tu kết hợp ẩm thực đương đại tươi ngon</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-green">Ca Sáng (06:30 - 09:30)</span>
+                    <h4>Buffet Sáng Năng Lượng Rừng Xanh</h4>
+                    <p class="desc">Hơn 30 món ăn đặc sản kết hợp phở bò truyền thống, bánh mì thơm nóng và cà phê hương vị vùng cao nồng nàn.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Đơn giá suất ăn</div>
+                            <div class="price-value">120,000 đ</div>
+                        </div>
+                        <div style="color: #34d399; font-weight: 600;">Ăn thỏa thích</div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%;" onclick="quickSelectDining('BUFFET_SANG')">Đặt Bàn Ca Sáng</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-gold">Ca Trưa (11:00 - 14:00)</span>
+                    <h4>Set Cơm Lam & Gà Nướng Núi Rừng</h4>
+                    <p class="desc">Gà thả đồi ướp hạt sẻ nướng than hoa thơm lừng, cơm lam nếp nương bùi dẻo, rau dớn xào tỏi và canh măng rừng.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Đơn giá suất ăn</div>
+                            <div class="price-value">180,000 đ</div>
+                        </div>
+                        <div style="color: var(--accent-gold); font-weight: 600;">Món truyền thống</div>
+                    </div>
+                    <button class="btn btn-gold" style="width: 100%;" onclick="quickSelectDining('SET_TRUA')">Đặt Bàn Ca Trưa</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div>
+                    <span class="card-tag tag-blue">Ca Tối (17:30 - 21:00)</span>
+                    <h4>Lẩu Thảo Dược & Thịt Heo Bản Đặc Sản</h4>
+                    <p class="desc">Nước dùng hầm từ sâm và thảo dược đại ngàn, thịt heo cỏ thả rông ngọt chắc, rau rừng tươi xanh giòn ngọt.</p>
+                </div>
+                <div>
+                    <div class="price-row">
+                        <div>
+                            <div class="price-label">Đơn giá suất ăn</div>
+                            <div class="price-value">220,000 đ</div>
+                        </div>
+                        <div style="color: #60a5fa; font-weight: 600;">Ấm cúng se lạnh</div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%;" onclick="quickSelectDining('SET_TOI')">Đặt Bàn Ca Tối</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: OPERATIONS & ROLE WORKFLOW (DÀNH CHO CÁC THÀNH VIÊN NHÓM TEST VÀ DỌN DẸP MODULE) -->
+    <section class="section" id="operations">
+        <div class="section-header">
+            <h3>Hệ Thống Phân Quyền & Vận Hành Vực Nghiệp Vụ</h3>
+            <p>Mô phỏng quy trình phối hợp giữa các thành viên: Khách hàng đặt đơn $\rightarrow$ Nhân viên phân phòng $\rightarrow$ Nhân viên xếp bàn $\rightarrow$ Soát vé Check-in</p>
+        </div>
+
+        <div class="ops-container">
+            <div class="role-switcher-bar">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #a7f3d0; text-transform: uppercase;">
+                        Đang thử nghiệm vai trò:
+                    </span>
+                    <strong id="currentRoleTitle" style="color: #34d399; font-size: 1.1rem;">
+                        Nhân Viên Phân Phòng (M3)
+                    </strong>
+                </div>
+
+                <div class="role-chips">
+                    <div class="role-chip" onclick="switchOpsRole('role-customer', 'Khách Hàng (M1, M5)')">
+                        👤 Khách Hàng
+                    </div>
+                    <div class="role-chip active" onclick="switchOpsRole('role-room', 'Nhân Viên Phân Phòng (M3)')">
+                        🏨 Lễ Tân Phân Phòng
+                    </div>
+                    <div class="role-chip" onclick="switchOpsRole('role-dining', 'Nhân Viên Phân Bàn (M4)')">
+                        🍽️ Nhà Hàng Xếp Bàn
+                    </div>
+                    <div class="role-chip" onclick="switchOpsRole('role-checkin', 'Nhân Viên Soát Vé & Check-in (M5)')">
+                        🎫 Soát Vé Check-in
+                    </div>
+                    <div class="role-chip" onclick="switchOpsRole('role-manager', 'Quản Lý Khu Du Lịch (Admin)')">
+                        👑 Quản Lý (Admin)
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPS PANEL 1: KHÁCH HÀNG -->
+            <div class="ops-panel" id="role-customer">
+                <h4 style="margin-bottom: 0.5rem; color: #fff;">Đơn Hàng Của Khách Hàng</h4>
+                <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Khách hàng kiểm tra các dịch vụ đã chọn, số tiền cọc 30% và trạng thái phê duyệt của khu du lịch.
+                </p>
+
+                <table class="ops-table">
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Khách Hàng</th>
+                            <th>Dịch Vụ Đã Đặt</th>
+                            <th>Tổng Tiền</th>
+                            <th>Đã Cọc (30%)</th>
+                            <th>Còn Lại (70%)</th>
+                            <th>Trạng Thái Đơn</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerOrdersTable">
+                        <tr>
+                            <td><strong>CTDG-261013-0001</strong></td>
+                            <td>Nguyễn Văn An (0905123456)</td>
+                            <td>2 Vé Cổng, 1 Bungalow (1 đêm), 4 Suất Ca Trưa</td>
+                            <td>2,720,000 đ</td>
+                            <td><span style="color: #34d399; font-weight: 700;">816,000 đ</span></td>
+                            <td>1,904,000 đ</td>
+                            <td><span class="status-badge status-pending">ĐÃ CỌC 30%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- OPS PANEL 2: NHÂN VIÊN PHÂN PHÒNG (M3) -->
+            <div class="ops-panel active" id="role-room">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h4 style="color: #fff; margin-bottom: 4px;">Danh Sách Đặt Phòng Chờ Phân Số Phòng Vật Lý</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">
+                            Khách đã đặt phòng $\rightarrow$ Nhân viên lễ tân kiểm tra phòng trống theo tầng và gán số phòng cụ thể.
+                        </p>
+                    </div>
+                    <span class="badge-pill" style="margin: 0;">Quy tắc: Chống gán trùng ngày chồng lấn</span>
+                </div>
+
+                <table class="ops-table">
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Khách Hàng</th>
+                            <th>Hạng Phòng</th>
+                            <th>Thời Gian Lưu Trú</th>
+                            <th>Số Lượng</th>
+                            <th>Phòng Đã Gán</th>
+                            <th>Thao Tác Phân Phòng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roomAssignTable">
+                        <tr>
+                            <td><strong>CTDG-261013-0001</strong></td>
+                            <td>Nguyễn Văn An</td>
+                            <td>Bungalow Suối Khoáng Nóng</td>
+                            <td>13/10/2026 $\rightarrow$ 14/10/2026</td>
+                            <td>1 phòng</td>
+                            <td id="assignedRoomDisplay"><span class="status-badge status-pending">CHỜ PHÂN PHÒNG</span></td>
+                            <td>
+                                <select class="form-control" id="roomSelectBox" style="display: inline-block; width: 140px; padding: 4px 8px; font-size: 0.82rem;">
+                                    <option value="BG-101">Bungalow 101 (Tầng 1)</option>
+                                    <option value="BG-102">Bungalow 102 (Tầng 1)</option>
+                                    <option value="BG-201">Bungalow 201 (Tầng 2)</option>
+                                </select>
+                                <button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem; margin-left: 6px;" onclick="confirmAssignRoom()">
+                                    Gán Phòng
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- OPS PANEL 3: NHÂN VIÊN PHÂN BÀN (M4) -->
+            <div class="ops-panel" id="role-dining">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h4 style="color: #fff; margin-bottom: 4px;">Danh Sách Đặt Ẩm Thực Chờ Xếp Bàn Ăn</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">
+                            Khách đã đặt ăn $\rightarrow$ Nhân viên nhà hàng xếp 1 lượt đặt ăn gắn với 1 bàn ăn cụ thể theo ca (không tách nhiều bàn).
+                        </p>
+                    </div>
+                    <span class="badge-pill" style="margin: 0;">Sức chứa bàn >= Số suất ăn</span>
+                </div>
+
+                <table class="ops-table">
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Khách Hàng</th>
+                            <th>Ca Ăn & Dịch Vụ</th>
+                            <th>Ngày Dùng Bữa</th>
+                            <th>Số Suất</th>
+                            <th>Bàn Đã Xếp</th>
+                            <th>Thao Tác Xếp Bàn</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableAssignTable">
+                        <tr>
+                            <td><strong>CTDG-261013-0001</strong></td>
+                            <td>Nguyễn Văn An</td>
+                            <td>Set Cơm Lam Gà Nướng Núi Rừng</td>
+                            <td>13/10/2026 (Ca Trưa)</td>
+                            <td>4 suất</td>
+                            <td id="assignedTableDisplay"><span class="status-badge status-pending">CHỜ XẾP BÀN</span></td>
+                            <td>
+                                <select class="form-control" id="tableSelectBox" style="display: inline-block; width: 150px; padding: 4px 8px; font-size: 0.82rem;">
+                                    <option value="BÀN-06 (6 chỗ)">Bàn 06 (Sức chứa 6)</option>
+                                    <option value="BÀN-08 (8 chỗ)">Bàn 08 (Sức chứa 8)</option>
+                                    <option value="BÀN-12 (12 chỗ)">Bàn 12 (Sức chứa 12)</option>
+                                </select>
+                                <button class="btn btn-gold" style="padding: 4px 10px; font-size: 0.8rem; margin-left: 6px;" onclick="confirmAssignTable()">
+                                    Xếp Bàn Này
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- OPS PANEL 4: NHÂN VIÊN SOÁT VÉ CHECK-IN (M5) -->
+            <div class="ops-panel" id="role-checkin">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h4 style="color: #fff; margin-bottom: 4px;">Trạm Soát Vé & Xác Nhận Check-in 4 Điểm Độc Lập</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">
+                            Ghi nhận độc lập theo từng điểm: <strong>VE_CONG</strong>, <strong>CAP_TREO</strong>, <strong>NHAN_PHONG</strong>, <strong>AN_UONG</strong> vào lịch sử.
+                        </p>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--accent-gold);">
+                        Đơn đang kiểm tra: <strong>CTDG-261013-0001</strong>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
+                        <h5 style="color: #fff; margin-bottom: 8px;">1. Vé Cổng</h5>
+                        <div id="checkinGateStatus" style="margin-bottom: 12px;"><span class="status-badge status-pending">CHƯA SOÁT</span></div>
+                        <button class="btn btn-primary" style="padding: 5px 14px; font-size: 0.82rem; width: 100%;" onclick="performCheckIn('VE_CONG')">
+                            ✓ Soát Vé Cổng
+                        </button>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
+                        <h5 style="color: #fff; margin-bottom: 8px;">2. Cáp Treo</h5>
+                        <div id="checkinCableStatus" style="margin-bottom: 12px;"><span class="status-badge status-pending">CHƯA SOÁT</span></div>
+                        <button class="btn btn-primary" style="padding: 5px 14px; font-size: 0.82rem; width: 100%;" onclick="performCheckIn('CAP_TREO')">
+                            ✓ Soát Cáp Treo
+                        </button>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
+                        <h5 style="color: #fff; margin-bottom: 8px;">3. Nhận Phòng</h5>
+                        <div id="checkinRoomStatus" style="margin-bottom: 12px;"><span class="status-badge status-pending">CHƯA NHẬN</span></div>
+                        <button class="btn btn-primary" style="padding: 5px 14px; font-size: 0.82rem; width: 100%;" onclick="performCheckIn('NHAN_PHONG')">
+                            ✓ Trao Chìa Khóa
+                        </button>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
+                        <h5 style="color: #fff; margin-bottom: 8px;">4. Ăn Uống</h5>
+                        <div id="checkinDiningStatus" style="margin-bottom: 12px;"><span class="status-badge status-pending">CHƯA ĂN</span></div>
+                        <button class="btn btn-primary" style="padding: 5px 14px; font-size: 0.82rem; width: 100%;" onclick="performCheckIn('AN_UONG')">
+                            ✓ Xác Nhận Ăn
+                        </button>
+                    </div>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem;">
+                    <h5 style="font-size: 0.85rem; color: #a7f3d0; margin-bottom: 6px;">Nhật Ký Check-in (LICHSU_CHECK_IN):</h5>
+                    <div id="checkInLogList" style="font-size: 0.82rem; color: #cbd5e1; font-family: monospace;">
+                        Chưa có lượt soát vé nào được ghi nhận.
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPS PANEL 5: QUẢN LÝ (ADMIN) -->
+            <div class="ops-panel" id="role-manager">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+                    <div style="background: rgba(0,0,0,0.3); padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid #34d399;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Tổng Doanh Thu Đã Thu</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #34d399; margin: 4px 0;">816,000 đ</div>
+                        <div style="font-size: 0.75rem; color: #cbd5e1;">(Cọc 30% / Tổng 2,720,000 đ)</div>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.3); padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid var(--accent-gold);">
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Công Suất Phòng Hôm Nay</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-gold); margin: 4px 0;">75%</div>
+                        <div style="font-size: 0.75rem; color: #cbd5e1;">9 / 12 Phòng Đang Phục Vụ</div>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.3); padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid #60a5fa;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Vé Tham Quan Trong Ngày</div>
+                        <div style="font-size: 1.6rem; font-weight: 800; color: #60a5fa; margin: 4px 0;">128 vé</div>
+                        <div style="font-size: 0.75rem; color: #cbd5e1;">Top: Combo Trọn Gói EcoGate</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                    Bảng điều khiển dành cho Quản lý (M5 Dashboard). Các module thành viên sẽ tiếp tục gắn API và Repository tương ứng.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL: GIỎ HÀNG SESSION & ĐẶT CỌC 30% -->
+    <div class="modal-backdrop" id="cartModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="font-size: 1.35rem; color: #fff;">🛒 Giỏ Hàng Của Bạn (Session Cart)</h3>
+                <button class="modal-close" onclick="closeCartModal()">&times;</button>
+            </div>
+
+            <div id="cartItemList" style="margin-bottom: 1.5rem; max-height: 280px; overflow-y: auto;">
+                <p style="color: var(--text-muted); text-align: center; padding: 2rem 0;">Giỏ hàng hiện đang trống.</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.35); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass); margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: var(--text-muted);">Tổng Tiền Dịch Vụ:</span>
+                    <strong style="color: #fff; font-size: 1.1rem;" id="cartTotalSum">0 đ</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: var(--accent-gold); font-weight: 600;">Tiền Đặt Cọc Bắt Buộc (30%):</span>
+                    <strong style="color: var(--accent-gold); font-size: 1.25rem;" id="cartDepositSum">0 đ</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+                    <span>Số Tiền Còn Lại (Thanh toán tại quầy):</span>
+                    <span id="cartRemainSum">0 đ</span>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label>Họ Tên Khách Hàng</label>
+                <input type="text" class="form-control" id="customerName" value="Nguyễn Văn An" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Số Điện Thoại Nhận Mã Đơn</label>
+                <input type="tel" class="form-control" id="customerPhone" value="0905123456" required>
+            </div>
+
+            <button class="btn btn-gold" style="width: 100%; font-size: 1rem; padding: 0.85rem;" onclick="submitCheckout()">
+                Xác Nhận Đặt Đơn & Tạo Mã CTDG
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: ĐĂNG NHẬP / CHUYỂN TÀI KHOẢN -->
+    <div class="modal-backdrop" id="authModal">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.3rem; color: #fff;">🔐 Đăng Nhập Hệ Thống</h3>
+                <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+            </div>
+
+            <form onsubmit="handleAuthLogin(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Tên Đăng Nhập</label>
+                    <input type="text" class="form-control" id="loginUsername" value="nhanvien_phong" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Mật Khẩu</label>
+                    <input type="password" class="form-control" id="loginPassword" value="123456" required>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass); margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.78rem; color: #a7f3d0; margin-bottom: 8px; font-weight: 700;">CHỌN TÀI KHOẢN MẪU ĐỂ TEST PHÂN QUYỀN:</div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="setDemoAccount('khach_hang', 'Khách Hàng')">Khách Hàng</button>
+                        <button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="setDemoAccount('nhanvien_phong', 'Lễ Tân Phòng')">Lễ Tân Phòng</button>
+                        <button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="setDemoAccount('nhanvien_ban', 'Phục Vụ Bàn')">Phục Vụ Bàn</button>
+                        <button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="setDemoAccount('nhanvien_soatve', 'Soát Vé Check-in')">Soát Vé</button>
+                        <button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="setDemoAccount('admin', 'Quản Lý')">Quản Lý</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Đăng Nhập Ngay
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toastMessage">Thông báo!</div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-container">
+            <div>
+                <a href="/" class="brand" style="margin-bottom: 1rem;">
+                    <div class="brand-logo">
+                        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Cổng Trời Đông Giang</h1>
+                        <span>EcoGate Resort & Nature Park</span>
+                    </div>
+                </a>
+                <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 360px;">
+                    Khu du lịch sinh thái Cổng Trời Đông Giang, xã Mà Cooih, huyện Đông Giang, tỉnh Quảng Nam. Điểm đến nghỉ dưỡng kết hợp văn hóa đồng bào Cơ Tu trác tuyệt.
+                </p>
+            </div>
+
+            <div class="footer-col">
+                <h5>Dịch Vụ</h5>
+                <ul>
+                    <li><a href="#tickets">Vé Vào Cổng & Cáp Treo</a></li>
+                    <li><a href="#rooms">Khách Sạn & Bungalow Suối</a></li>
+                    <li><a href="#dining">Buffet & Ẩm Thực Núi Rừng</a></li>
+                    <li><a href="#booking">Tra Cứu Mã Đơn Hàng</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h5>Quy Định Đặt Dịch Vụ</h5>
+                <ul>
+                    <li><a href="#">Đặt cọc 30% tổng đơn hàng</a></li>
+                    <li><a href="#">Trẻ em dưới 1,4m miễn phí vé</a></li>
+                    <li><a href="#">Phụ thu 20% thứ 7 & ngày lễ</a></li>
+                    <li><a href="#">Chính sách hủy đơn trước check-in</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h5>Hệ Thống Phân Quyền</h5>
+                <ul>
+                    <li><a href="#operations">Lễ Tân Phân Phòng (M3)</a></li>
+                    <li><a href="#operations">Nhà Hàng Xếp Bàn (M4)</a></li>
+                    <li><a href="#operations">Trạm Soát Vé 4 Điểm (M5)</a></li>
+                    <li><a href="#operations">Dashboard Báo Cáo Doanh Thu</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2026 Cổng Trời Đông Giang (EcoGate) — Dự án SkyGateHub.</div>
+            <div style="color: #34d399;">Hệ Thống Đặt Dịch Vụ & Vận Hành Trọn Gói</div>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE JAVASCRIPT LOGIC -->
+    <script>
+        // State giỏ hàng session mô phỏng
+        let cartItems = [
+            { id: 1, type: 'VÉ', name: 'Vé Vào Cổng Tiêu Chuẩn (2 Người lớn, 1 Trẻ em)', price: 500000 },
+            { id: 2, type: 'PHÒNG', name: 'Bungalow Suối Khoáng Nóng (1 đêm)', price: 1500000 },
+            { id: 3, type: 'ẨM THỰC', name: 'Set Cơm Lam Gà Nướng Ca Trưa (4 suất)', price: 720000 }
+        ];
+
+        // Format tiền tệ VNĐ
+        function formatMoney(num) {
+            return new Intl.NumberFormat('vi-VN').format(num) + ' đ';
+        }
+
+        // Hiện toast
+        function showToast(msg) {
+            const toast = document.getElementById('toastMessage');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // Chuyển tab booking engine
+        function switchBookingTab(tabId) {
+            document.querySelectorAll('.booking-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Tính giá vé tự động
+        function calcTicketPrice() {
+            const dateStr = document.getElementById('ticketDate').value;
+            const pkgSelect = document.getElementById('ticketPackage');
+            const selectedOpt = pkgSelect.options[pkgSelect.selectedIndex];
+            const adults = parseInt(document.getElementById('ticketAdults').value) || 0;
+            
+            let isSaturday = false;
+            if (dateStr) {
+                const day = new Date(dateStr).getDay();
+                if (day === 6) isSaturday = true; // Thứ 7
+            }
+
+            const unitPrice = isSaturday ? parseInt(selectedOpt.dataset.priceSat) : parseInt(selectedOpt.dataset.price);
+            const total = adults * unitPrice;
+
+            document.getElementById('ticketDayType').textContent = isSaturday ? 'Thứ Bảy / Lễ (+giá lễ)' : 'Ngày Thường';
+            document.getElementById('ticketTotalDisplay').textContent = formatMoney(total);
+        }
+
+        // Tính giá phòng tự động kèm phụ thu 20%
+        function calcRoomPrice() {
+            const inStr = document.getElementById('roomCheckIn').value;
+            const outStr = document.getElementById('roomCheckOut').value;
+            const roomSelect = document.getElementById('roomType');
+            const basePrice = parseInt(roomSelect.options[roomSelect.selectedIndex].dataset.price);
+            const qty = parseInt(document.getElementById('roomQuantity').value) || 1;
+
+            if (!inStr || !outStr) return;
+            const dIn = new Date(inStr);
+            const dOut = new Date(outStr);
+            const diffTime = dOut - dIn;
+            const nights = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+
+            let saturdayCount = 0;
+            let cur = new Date(dIn);
+            for (let i = 0; i < nights; i++) {
+                if (cur.getDay() === 6) saturdayCount++;
+                cur.setDate(cur.getDate() + 1);
+            }
+
+            const surchargePerNight = Math.round(basePrice * 0.20);
+            const totalSurcharge = saturdayCount * surchargePerNight * qty;
+            const total = (nights * basePrice * qty) + totalSurcharge;
+
+            document.getElementById('roomNights').textContent = nights + ' đêm';
+            document.getElementById('roomSurcharge').textContent = formatMoney(totalSurcharge);
+            document.getElementById('roomTotalDisplay').textContent = formatMoney(total);
+        }
+
+        // Tính giá ẩm thực
+        function calcDiningPrice() {
+            const diningSelect = document.getElementById('diningService');
+            const unitPrice = parseInt(diningSelect.options[diningSelect.selectedIndex].dataset.price);
+            const guests = parseInt(document.getElementById('diningGuests').value) || 1;
+            const total = unitPrice * guests;
+
+            document.getElementById('diningUnitDisplay').textContent = formatMoney(unitPrice) + '/suất';
+            document.getElementById('diningTotalDisplay').textContent = formatMoney(total);
+        }
+
+        // Chọn nhanh vé từ card
+        function quickSelectTicket(code) {
+            document.getElementById('ticketPackage').value = code;
+            switchBookingTab('tab-ticket');
+            document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+            calcTicketPrice();
+        }
+
+        // Chọn nhanh phòng từ card
+        function quickSelectRoom(code) {
+            document.getElementById('roomType').value = code;
+            switchBookingTab('tab-room');
+            document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+            calcRoomPrice();
+        }
+
+        // Chọn nhanh ẩm thực từ card
+        function quickSelectDining(code) {
+            document.getElementById('diningService').value = code;
+            switchBookingTab('tab-dining');
+            document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+            calcDiningPrice();
+        }
+
+        // Thêm vé vào giỏ
+        function handleTicketBooking(e) {
+            e.preventDefault();
+            const pkg = document.getElementById('ticketPackage').selectedOptions[0].text;
+            const adults = document.getElementById('ticketAdults').value;
+            const total = parseInt(document.getElementById('ticketTotalDisplay').textContent.replace(/[^\d]/g, ''));
+
+            cartItems.push({
+                id: Date.now(),
+                type: 'VÉ',
+                name: `${pkg} (${adults} Người lớn)`,
+                price: total
+            });
+            updateCartBadge();
+            showToast('✓ Đã thêm vé vào giỏ hàng thành công!');
+        }
+
+        // Đặt phòng
+        function handleRoomBooking(e) {
+            e.preventDefault();
+            const roomName = document.getElementById('roomType').selectedOptions[0].text;
+            const nights = document.getElementById('roomNights').textContent;
+            const total = parseInt(document.getElementById('roomTotalDisplay').textContent.replace(/[^\d]/g, ''));
+
+            cartItems.push({
+                id: Date.now(),
+                type: 'PHÒNG',
+                name: `${roomName} (${nights})`,
+                price: total
+            });
+            updateCartBadge();
+            showToast('✓ Đã thêm đặt phòng vào giỏ hàng thành công!');
+        }
+
+        // Đặt bàn
+        function handleDiningBooking(e) {
+            e.preventDefault();
+            const sName = document.getElementById('diningService').selectedOptions[0].text;
+            const guests = document.getElementById('diningGuests').value;
+            const total = parseInt(document.getElementById('diningTotalDisplay').textContent.replace(/[^\d]/g, ''));
+
+            cartItems.push({
+                id: Date.now(),
+                type: 'ẨM THỰC',
+                name: `${sName} (${guests} suất)`,
+                price: total
+            });
+            updateCartBadge();
+            showToast('✓ Đã thêm đặt bàn vào giỏ hàng thành công!');
+        }
+
+        // Cập nhật giỏ hàng
+        function updateCartBadge() {
+            document.getElementById('cartBadge').textContent = cartItems.length;
+        }
+
+        function openCartModal() {
+            const listEl = document.getElementById('cartItemList');
+            if (cartItems.length === 0) {
+                listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 2rem 0;">Giỏ hàng hiện đang trống.</p>';
+            } else {
+                let html = '';
+                let total = 0;
+                cartItems.forEach((item, idx) => {
+                    total += item.price;
+                    html += `
+                        <div class="cart-item">
+                            <div>
+                                <span class="card-tag tag-green" style="font-size: 0.65rem; padding: 2px 8px; margin-bottom: 4px;">${item.type}</span>
+                                <div style="font-weight: 600; color: #fff; font-size: 0.9rem;">${item.name}</div>
+                                <div style="color: #34d399; font-weight: 700; font-size: 0.95rem;">${formatMoney(item.price)}</div>
+                            </div>
+                            <button class="btn btn-outline" style="padding: 4px 8px; color: #f87171;" onclick="removeCartItem(${idx})">Xóa</button>
+                        </div>
+                    `;
+                });
+                listEl.innerHTML = html;
+
+                const deposit = Math.round(total * 0.30);
+                document.getElementById('cartTotalSum').textContent = formatMoney(total);
+                document.getElementById('cartDepositSum').textContent = formatMoney(deposit);
+                document.getElementById('cartRemainSum').textContent = formatMoney(total - deposit);
+            }
+            document.getElementById('cartModal').classList.add('active');
+        }
+
+        function removeCartItem(idx) {
+            cartItems.splice(idx, 1);
+            updateCartBadge();
+            openCartModal();
+        }
+
+        function closeCartModal() {
+            document.getElementById('cartModal').classList.remove('active');
+        }
+
+        // Xác nhận đặt đơn
+        function submitCheckout() {
+            if (cartItems.length === 0) {
+                alert('Giỏ hàng của bạn đang trống!');
+                return;
+            }
+            const name = document.getElementById('customerName').value;
+            const phone = document.getElementById('customerPhone').value;
+            const orderCode = 'CTDG-261013-0001';
+
+            closeCartModal();
+            showToast(`✓ Đặt đơn thành công! Mã đơn của bạn là: ${orderCode}. Số tiền cọc 30% đã được ghi nhận.`);
+            document.getElementById('lookupCode').value = orderCode;
+            switchBookingTab('tab-lookup');
+            document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+            lookupOrder();
+        }
+
+        // Tra cứu đơn hàng
+        function lookupOrder() {
+            const code = document.getElementById('lookupCode').value.trim();
+            const resBox = document.getElementById('lookupResultBox');
+            resBox.style.display = 'block';
+
+            resBox.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.75rem;">
+                    <div>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">MÃ ĐƠN HÀNG:</span>
+                        <strong style="color: #34d399; font-size: 1.15rem; margin-left: 6px;">${code || 'CTDG-261013-0001'}</strong>
+                    </div>
+                    <span class="status-badge status-pending">ĐÃ ĐẶT CỌC 30%</span>
+                </div>
+                <div style="font-size: 0.88rem; line-height: 1.8;">
+                    <div>👤 <strong>Khách hàng:</strong> Nguyễn Văn An (SĐT: 0905123456)</div>
+                    <div>🎟️ <strong>Vé tham quan:</strong> 2 Vé Cổng Tiêu Chuẩn (Đã check-in: <span id="resGate">Chưa</span>)</div>
+                    <div>🏨 <strong>Khách sạn:</strong> Bungalow Suối Khoáng Nóng - Phòng: <span id="resRoomAssigned">Bungalow 101</span> (Đã nhận phòng: <span id="resRoomCheckin">Chưa</span>)</div>
+                    <div>🍽️ <strong>Ẩm thực:</strong> Set Cơm Lam Gà Nướng Ca Trưa - Bàn: <span id="resTableAssigned">Bàn 06</span> (Đã ăn: <span id="resDiningCheckin">Chưa</span>)</div>
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-glass); display: flex; justify-content: space-between;">
+                        <span>Tổng tiền: <strong>2,720,000 đ</strong> (Đã cọc: <strong>816,000 đ</strong>)</span>
+                        <span style="color: var(--accent-gold);">Cần thanh toán tại quầy: <strong>1,904,000 đ</strong></span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Chuyển vai trò ở phần Vận Hành
+        function switchOpsRole(panelId, title) {
+            document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.ops-panel').forEach(p => p.classList.remove('active'));
+
+            event.currentTarget.classList.add('active');
+            document.getElementById(panelId).classList.add('active');
+            document.getElementById('currentRoleTitle').textContent = title;
+        }
+
+        // Lễ tân phân phòng
+        function confirmAssignRoom() {
+            const selectedRoom = document.getElementById('roomSelectBox').value;
+            document.getElementById('assignedRoomDisplay').innerHTML = `
+                <span class="status-badge status-success">✓ ĐÃ PHÂN: ${selectedRoom}</span>
+            `;
+            showToast(`✓ Đã phân ${selectedRoom} cho đơn CTDG-261013-0001!`);
+        }
+
+        // Nhà hàng xếp bàn
+        function confirmAssignTable() {
+            const selectedTable = document.getElementById('tableSelectBox').value;
+            document.getElementById('assignedTableDisplay').innerHTML = `
+                <span class="status-badge status-success">✓ ĐÃ XẾP: ${selectedTable}</span>
+            `;
+            showToast(`✓ Đã xếp ${selectedTable} cho đơn CTDG-261013-0001!`);
+        }
+
+        // Soát vé check-in 4 điểm
+        function performCheckIn(type) {
+            const now = new Date().toLocaleTimeString('vi-VN');
+            const logBox = document.getElementById('checkInLogList');
+            let typeName = '';
+
+            if (type === 'VE_CONG') {
+                typeName = 'VÉ CỔNG';
+                document.getElementById('checkinGateStatus').innerHTML = '<span class="status-badge status-success">✓ ĐÃ QUA CỔNG</span>';
+            } else if (type === 'CAP_TREO') {
+                typeName = 'CÁP TREO';
+                document.getElementById('checkinCableStatus').innerHTML = '<span class="status-badge status-success">✓ ĐÃ LÊN CÁP</span>';
+            } else if (type === 'NHAN_PHONG') {
+                typeName = 'NHẬN PHÒNG';
+                document.getElementById('checkinRoomStatus').innerHTML = '<span class="status-badge status-success">✓ ĐÃ NHẬN PHÒNG</span>';
+            } else if (type === 'AN_UONG') {
+                typeName = 'ĂN UỐNG';
+                document.getElementById('checkinDiningStatus').innerHTML = '<span class="status-badge status-success">✓ ĐÃ DÙNG BỮA</span>';
+            }
+
+            const newLog = `<div>[${now}] Soát vé thành công: <strong>${typeName}</strong> - Nhân viên xác nhận: <strong>nhanvien_soatve</strong></div>`;
+            if (logBox.innerHTML.includes('Chưa có lượt')) {
+                logBox.innerHTML = newLog;
+            } else {
+                logBox.innerHTML = newLog + logBox.innerHTML;
+            }
+            showToast(`✓ Check-in thành công điểm ${typeName}!`);
+        }
+
+        // Modal Auth
+        function openAuthModal() { document.getElementById('authModal').classList.add('active'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.remove('active'); }
+
+        function setDemoAccount(username, displayRole) {
+            document.getElementById('loginUsername').value = username;
+            document.getElementById('loginPassword').value = '123456';
+            document.getElementById('currentAccountText').textContent = displayRole;
+            showToast(`Đã chọn tài khoản mẫu: ${displayRole}`);
+        }
+
+        function handleAuthLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value;
+            document.getElementById('currentAccountText').textContent = u;
+            closeAuthModal();
+            showToast(`✓ Đăng nhập thành công với tài khoản: ${u}`);
+        }
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            updateCartBadge();
+            calcTicketPrice();
+            calcRoomPrice();
+            calcDiningPrice();
+        });
+    </script>
+</body>
+</html>
