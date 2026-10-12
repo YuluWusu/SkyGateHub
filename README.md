@@ -16,39 +16,6 @@ The system seamlessly consolidates a full-cycle tourism supply chain:
 
 Architected with a **Package-by-Feature** approach, the system enforces clean module boundaries, enabling a team of 5 developers (M1 – M5) to work concurrently with near-zero Git merge conflicts.
 
----
-
-## 📑 Table of Contents
-
-* [🌿 Overview](https://www.google.com/search?q=%23-overview)
-* [✨ Key Features](https://www.google.com/search?q=%23-key-features)
-* [1. Customer Portal](https://www.google.com/search?q=%231-customer-portal)
-* [2. Admin & Staff Operations Portal](https://www.google.com/search?q=%232-admin--staff-operations-portal)
-
-
-* [🏛️ Architecture & Design](https://www.google.com/search?q=%23%EF%B8%8F-architecture--design)
-* [1. Package-by-Feature Design Principles](https://www.google.com/search?q=%231-package-by-feature-design-principles)
-* [2. Bounded Contexts & Ownership Allocation (M1 - M5)](https://www.google.com/search?q=%232-bounded-contexts--ownership-allocation-m1---m5)
-* [3. Entity-Relationship Overview (ERD)](https://www.google.com/search?q=%233-entity-relationship-overview-erd)
-* [4. Core Business Decisions & Rules](https://www.google.com/search?q=%234-core-business-decisions--rules)
-
-
-* [🛠️ Tech Stack](https://www.google.com/search?q=%23%EF%B8%8F-tech-stack)
-* [📂 Directory Structure](https://www.google.com/search?q=%23-directory-structure)
-* [🚀 Getting Started](https://www.google.com/search?q=%23-getting-started)
-* [1. Prerequisites](https://www.google.com/search?q=%231-prerequisites)
-* [2. Clone Repository](https://www.google.com/search?q=%232-clone-repository)
-* [3. Database Initialization (MySQL 8.x)](https://www.google.com/search?q=%233-database-initialization-mysql-8x)
-* [4. Configure Environment & application.properties](https://www.google.com/search?q=%234-configure-environment--applicationproperties)
-* [5. Build & Run Application](https://www.google.com/search?q=%235-build--run-application)
-
-
-* [👥 Demo Accounts & Access Control](https://www.google.com/search?q=%23-demo-accounts--access-control)
-* [🔄 Development & Git Workflow](https://www.google.com/search?q=%23-development--git-workflow)
-* [📝 References & License](https://www.google.com/search?q=%23-references--license)
-
----
-
 ## ✨ Key Features
 
 ### 1. Customer Portal
