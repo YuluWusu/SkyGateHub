@@ -1,4 +1,4 @@
-# 🌿 EcoGate (SkyGateHub) — Management & Booking System for Dong Giang Heaven Gate Ecotourism Destination
+# 🌿 SkyGateHub — Management & Booking System for Dong Giang Heaven Gate Ecotourism Destination
 
 ---
 
