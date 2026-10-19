@@ -1,58 +1,16 @@
-/* ============================================================================
-   SKYGATEHUB - CONG TROI DONG GIANG
-   FULL SETUP SCRIPT - CORRECTED V2: MySQL 8.0.16+
-
-   MUC DICH
-   - Tao database moi `sky_gate_hub_v2` va toan bo schema muc tieu cho MySQL.
-   - Tao cac bang, khoa ngoai, UNIQUE, CHECK, view tong hop va du lieu danh muc
-     toi thieu da xac nhan.
-   - Thiet ke cho Spring Boot + Spring Data JPA; khoa chinh vat ly la BIGINT
-     AUTO_INCREMENT, ma nghiep vu la VARCHAR UNIQUE.
-   - Khach dat dich vu khong can tai khoan; tai khoan chi danh cho nhan vien.
-   - 1 don = 1 QR; tung ve / tung khu check-in duoc ghi nhan rieng.
-   - CHI_TIET_DON la nguon gia tien; DAT_BAN co the dung quyen loi combo de
-     khong ghi tien buffet them lan nua.
-
-   CACH CHAY
-   1. Mo MySQL Workbench, ket noi dung MySQL 8.0.16 tro len.
-   2. Mo file nay, chon toan bo (Ctrl+A), bam Execute (tia set).
-   3. Database moi duoc tao la `sky_gate_hub_v2`.
-   4. Cap nhat datasource cua Spring Boot theo database nay.
-
-   LUU Y QUAN TRONG
-   - DAY LA MYSQL, KHONG CHAY TRONG SQL SERVER MANAGEMENT STUDIO (SSMS).
-   - Script khong DROP database/bang va khong xoa du lieu dang co.
-   - V2: dung ON UPDATE RESTRICT cho cac FK; khong CASCADE doi ma nghiep vu,
-     tranh xung dot MySQL 3823 khi cot FK cung duoc kiem tra bang CHECK.
-   - Neu da chay ban cu va dung tai CHI_TIET_DON, co the chay lai file V2 nay: cac
-     bang da tao duoc giu nguyen; cac bang chua tao se duoc tao tiep.
-   - Dung ten database moi de tach khoi database SQL Server cu.
-   - Gia, ty le coc, gio ca an, so phong/ban va thanh phan combo chua xac nhan
-     khong bi tu y dien. Danh muc chua duoc cau hinh se chua ban duoc cho den khi
-     nhan vien/quan tri nhap gia va bat TRANG_THAI.
-   - Khong tao tai khoan quan tri voi mat khau mac dinh/plain text. Tao tai khoan
-     nhan vien qua luong bootstrap an toan cua ung dung va luu BCrypt hash.
-   - Kiem tra ton phong, tien thu vuot don, tong tien hoan va cap nhat TONG_TIEN
-     phai duoc thuc hien trong Java @Service/@Transactional. View ben duoi de doi
-     soat; no khong thay the viec cap nhat don trong cung transaction.
-   - Chính sách hủy được seed đúng hai mốc đã xác nhận: >=14 ngày và đúng 7 ngày.
-     Những khoảng khác phải đưa CAN_XAC_NHAN, không tự suy diễn.
-   ============================================================================ */
-
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 1;
 
-CREATE DATABASE IF NOT EXISTS `sky_gate_hub_v2`
+CREATE DATABASE IF NOT EXISTS `QL_Cong_Troi_Dong_Giang`
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_0900_ai_ci;
-USE `sky_gate_hub_v2`;
+USE `QL_Cong_Troi_Dong_Giang`;
 
-/* ================================ NHAN VIEN ================================ */
 CREATE TABLE IF NOT EXISTS `NGUOI_DUNG` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_NGUOI_DUNG` VARCHAR(20) NOT NULL,
   `TEN_DANG_NHAP` VARCHAR(80) NOT NULL,
-  `MAT_KHAU_HASH` VARCHAR(255) NOT NULL COMMENT 'BCrypt hash, khong luu mat khau thuan',
+  `MAT_KHAU_HASH` VARCHAR(255) NOT NULL,
   `HO_TEN` VARCHAR(120) NOT NULL,
   `EMAIL` VARCHAR(150) NULL,
   `SO_DIEN_THOAI` VARCHAR(20) NULL,
@@ -89,15 +47,14 @@ CREATE TABLE IF NOT EXISTS `NGUOI_DUNG_VAI_TRO` (
     REFERENCES `VAI_TRO` (`MA_VAI_TRO`) ON UPDATE RESTRICT ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* =========================== DANH MUC VE/COMBO ============================ */
 CREATE TABLE IF NOT EXISTS `LOAI_VE` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_LOAI_VE` VARCHAR(20) NOT NULL,
   `TEN_LOAI_VE` VARCHAR(150) NOT NULL,
-  `LOAI_VE` VARCHAR(20) NOT NULL COMMENT 'NGUOI_LON, TRE_EM, TRON_GOI hoac KHAC',
+  `LOAI_VE` VARCHAR(20) NOT NULL,
   `MO_TA` VARCHAR(500) NULL,
-  `GIA_VE` DECIMAL(18,2) NULL COMMENT 'Gia tham chieu; gia ban can duoc cau hinh ro rang',
-  `TRANG_THAI` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Mac dinh chua kinh doanh khi chua xac nhan gia',
+  `GIA_VE` DECIMAL(18,2) NULL,
+  `TRANG_THAI` TINYINT(1) NOT NULL DEFAULT 0,
   `NGAY_TAO` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `UQ_LOAI_VE_MA` (`MA_LOAI_VE`),
@@ -107,14 +64,12 @@ CREATE TABLE IF NOT EXISTS `LOAI_VE` (
   CONSTRAINT `CK_LOAI_VE_LOAI` CHECK (`LOAI_VE` IN ('NGUOI_LON','TRE_EM','TRON_GOI','KHAC'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* Bang kho ve duoc giu de tuong thich mo hinh cu, nhung khong seed/ep han muc.
-   Chi su dung khi don vi xac nhan gioi han khach theo ngay. */
 CREATE TABLE IF NOT EXISTS `KHO_VE` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_KHO_VE` VARCHAR(20) NOT NULL,
   `MA_LOAI_VE` VARCHAR(20) NOT NULL,
   `NGAY_THAM_QUAN` DATE NOT NULL,
-  `SO_LUONG_TOI_DA` INT NULL COMMENT 'NULL = chua xac nhan han muc',
+  `SO_LUONG_TOI_DA` INT NULL,
   `SO_LUONG_DA_BAN` INT NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `UQ_KHO_VE_MA` (`MA_KHO_VE`),
@@ -129,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `BANG_GIA_VE` (
   `MA_BANG_GIA` VARCHAR(20) NOT NULL,
   `MA_LOAI_VE` VARCHAR(20) NOT NULL,
   `TEN_BANG_GIA` VARCHAR(120) NOT NULL,
-  `DIEU_KIEN_GIA` VARCHAR(30) NOT NULL DEFAULT 'MAC_DINH' COMMENT 'MAC_DINH, CUOI_TUAN, NGAY_DAC_BIET, KHUYEN_MAI...',
+  `DIEU_KIEN_GIA` VARCHAR(30) NOT NULL DEFAULT 'MAC_DINH',
   `HIEU_LUC_TU` DATE NOT NULL,
   `HIEU_LUC_DEN` DATE NULL,
   `DON_GIA` DECIMAL(18,2) NOT NULL,
@@ -160,7 +115,6 @@ CREATE TABLE IF NOT EXISTS `NGAY_DAC_BIET` (
   CONSTRAINT `CK_NGAY_DAC_BIET_TRANG_THAI` CHECK (`TRANG_THAI` IN (0,1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ============================== LUU TRU =================================== */
 CREATE TABLE IF NOT EXISTS `LOAI_PHONG` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_LOAI_PHONG` VARCHAR(20) NOT NULL,
@@ -194,12 +148,11 @@ CREATE TABLE IF NOT EXISTS `PHONG` (
   CONSTRAINT `CK_PHONG_TRANG_THAI` CHECK (`TRANG_THAI` IN ('SAN_SANG','DANG_SU_DUNG','BAO_TRI'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ============================ DICH VU AN UONG ============================= */
 CREATE TABLE IF NOT EXISTS `DICH_VU_AN_UONG` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_DICH_VU` VARCHAR(20) NOT NULL,
   `TEN_DICH_VU` VARCHAR(150) NOT NULL,
-  `LOAI_DICH_VU` VARCHAR(30) NOT NULL COMMENT 'BUFFET, SUAT_AN, SET_MENU, DAC_SAN...',
+  `LOAI_DICH_VU` VARCHAR(30) NOT NULL,
   `MO_TA` VARCHAR(500) NULL,
   `GIA_DICH_VU` DECIMAL(18,2) NULL,
   `TRANG_THAI` TINYINT(1) NOT NULL DEFAULT 0,
@@ -214,7 +167,7 @@ CREATE TABLE IF NOT EXISTS `CA_AN` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_CA_AN` VARCHAR(20) NOT NULL,
   `TEN_CA_AN` VARCHAR(60) NOT NULL,
-  `GIO_BAT_DAU` TIME NULL COMMENT 'De NULL den khi gio hoat dong duoc xac nhan',
+  `GIO_BAT_DAU` TIME NULL,
   `GIO_KET_THUC` TIME NULL,
   `TRANG_THAI` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`ID`),
@@ -251,20 +204,19 @@ CREATE TABLE IF NOT EXISTS `DICH_VU_CA_AN` (
   CONSTRAINT `CK_DVCA_TRANG_THAI` CHECK (`TRANG_THAI` IN (0,1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ================================ DON DAT ================================ */
 CREATE TABLE IF NOT EXISTS `DON_DAT` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_DON_DAT` VARCHAR(20) NOT NULL,
   `MA_DON_HANG` VARCHAR(30) NOT NULL,
-  `MA_NGUOI_DUNG` VARCHAR(20) NULL COMMENT 'Chi co gia tri neu nhan vien lap don ho',
+  `MA_NGUOI_DUNG` VARCHAR(20) NULL,
   `HO_TEN_KHACH` VARCHAR(120) NOT NULL,
   `SDT_KHACH` VARCHAR(20) NOT NULL,
   `EMAIL_KHACH` VARCHAR(150) NULL,
   `GHI_CHU` VARCHAR(1000) NULL,
   `THOI_GIAN_DAT` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `TONG_TIEN` DECIMAL(18,2) NOT NULL DEFAULT 0 COMMENT 'Duoc Java Service cap nhat cung transaction voi chi tiet don',
-  `TIEN_COC_YEU_CAU` DECIMAL(18,2) NULL COMMENT 'NULL khi chinh sach coc chua duoc xac nhan',
-  `MA_QR` VARCHAR(255) NULL COMMENT 'Mot ma QR cap don, do ung dung phat hanh',
+  `TONG_TIEN` DECIMAL(18,2) NOT NULL DEFAULT 0,
+  `TIEN_COC_YEU_CAU` DECIMAL(18,2) NULL,
+  `MA_QR` VARCHAR(255) NULL,
   `TRANG_THAI_DON` VARCHAR(30) NOT NULL DEFAULT 'CHO_XAC_NHAN',
   `TRANG_THAI_THANH_TOAN` VARCHAR(30) NOT NULL DEFAULT 'CHUA_THANH_TOAN',
   `NGAY_CAP_NHAT` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -291,12 +243,12 @@ CREATE TABLE IF NOT EXISTS `CHI_TIET_DON` (
   `MA_LOAI_VE` VARCHAR(20) NULL,
   `MA_LOAI_PHONG` VARCHAR(20) NULL,
   `MA_DV_AN_UONG` VARCHAR(20) NULL,
-  `TEN_SAN_PHAM` VARCHAR(200) NOT NULL COMMENT 'Snapshot ten dich vu luc dat',
+  `TEN_SAN_PHAM` VARCHAR(200) NOT NULL,
   `SO_LUONG` INT NOT NULL,
-  `DON_GIA` DECIMAL(18,2) NOT NULL COMMENT 'Gia chup tai thoi diem dat; nguon tien duy nhat',
+  `DON_GIA` DECIMAL(18,2) NOT NULL,
   `THANH_TIEN` DECIMAL(20,2) GENERATED ALWAYS AS (`SO_LUONG` * `DON_GIA`) STORED,
   `TRANG_THAI` VARCHAR(20) NOT NULL DEFAULT 'HIEU_LUC',
-  `NGAY_SU_DUNG` DATE NULL COMMENT 'Ngay tham quan/an; ngay nhan phong voi dich vu phong',
+  `NGAY_SU_DUNG` DATE NULL,
   `NGAY_TAO` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `UQ_CHI_TIET_DON_MA` (`MA_CHI_TIET`),
@@ -320,7 +272,6 @@ CREATE TABLE IF NOT EXISTS `CHI_TIET_DON` (
   )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ============================= VE TUNG KHACH ============================== */
 CREATE TABLE IF NOT EXISTS `VE` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_VE` VARCHAR(20) NOT NULL,
@@ -343,7 +294,6 @@ CREATE TABLE IF NOT EXISTS `VE` (
   CONSTRAINT `CK_VE_TRANG_THAI` CHECK (`TRANG_THAI` IN ('CHUA_SU_DUNG','DA_SU_DUNG','DA_HUY'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ============================ DAT PHONG / PHAN PHONG ====================== */
 CREATE TABLE IF NOT EXISTS `DAT_PHONG` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_DAT_PHONG` VARCHAR(20) NOT NULL,
@@ -392,14 +342,13 @@ CREATE TABLE IF NOT EXISTS `PHAN_PHONG` (
   CONSTRAINT `CK_PHAN_PHONG_TRANG_THAI` CHECK (`TRANG_THAI` IN ('DANG_PHAN','DA_NHAN_PHONG','DA_TRA_PHONG','DA_HUY'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ============================== COMBO / QUYEN LOI ========================= */
 CREATE TABLE IF NOT EXISTS `THANH_PHAN_DICH_VU` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_THANH_PHAN` VARCHAR(20) NOT NULL,
   `TEN_THANH_PHAN` VARCHAR(150) NOT NULL,
-  `LOAI_THANH_PHAN` VARCHAR(30) NOT NULL COMMENT 'THAM_QUAN, AN_UONG, CAP_TREO, XE_DIEN, KHAC',
-  `MA_LOAI_VE` VARCHAR(20) NULL COMMENT 'Lien ket neu thanh phan la mot loai ve/diem tham quan duoc quan ly bang ve',
-  `MA_DV_AN_UONG` VARCHAR(20) NULL COMMENT 'Lien ket neu thanh phan la dich vu an uong',
+  `LOAI_THANH_PHAN` VARCHAR(30) NOT NULL,
+  `MA_LOAI_VE` VARCHAR(20) NULL,
+  `MA_DV_AN_UONG` VARCHAR(20) NULL,
   `MO_TA` VARCHAR(500) NULL,
   `TRANG_THAI` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`ID`),
@@ -419,7 +368,7 @@ CREATE TABLE IF NOT EXISTS `THANH_PHAN_DICH_VU` (
 
 CREATE TABLE IF NOT EXISTS `COMBO_THANH_PHAN` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `MA_LOAI_VE` VARCHAR(20) NOT NULL COMMENT 'Phai la loai ve TRON_GOI; Java Service kiem tra loai',
+  `MA_LOAI_VE` VARCHAR(20) NOT NULL,
   `MA_THANH_PHAN` VARCHAR(20) NOT NULL,
   `SO_LUONG_MOI_COMBO` INT NOT NULL DEFAULT 1,
   `THEO_DOI_SU_DUNG` TINYINT(1) NOT NULL DEFAULT 1,
@@ -460,7 +409,6 @@ CREATE TABLE IF NOT EXISTS `QUYEN_LOI_DON` (
   CONSTRAINT `CK_QL_TRANG_THAI` CHECK (`TRANG_THAI` IN ('HIEU_LUC','DA_HUY','DA_DUNG_HET'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ================================ DAT BAN ================================= */
 CREATE TABLE IF NOT EXISTS `DAT_BAN` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_DAT_BAN` VARCHAR(20) NOT NULL,
@@ -469,9 +417,9 @@ CREATE TABLE IF NOT EXISTS `DAT_BAN` (
   `MA_CA_AN` VARCHAR(20) NOT NULL,
   `NGAY_AN` DATE NOT NULL,
   `SO_KHACH` INT NOT NULL,
-  `MA_BAN_AN` VARCHAR(20) NULL COMMENT 'Nhan vien co the phan ban sau',
-  `MA_CHI_TIET` VARCHAR(20) NULL COMMENT 'Dat an mua le',
-  `MA_QUYEN_LOI` VARCHAR(20) NULL COMMENT 'Dat cho su dung quyen loi buffet/combo',
+  `MA_BAN_AN` VARCHAR(20) NULL,
+  `MA_CHI_TIET` VARCHAR(20) NULL,
+  `MA_QUYEN_LOI` VARCHAR(20) NULL,
   `TRANG_THAI` VARCHAR(25) NOT NULL DEFAULT 'CHO_XAC_NHAN',
   `MA_BAN_AN_DANG_GIU` VARCHAR(20) GENERATED ALWAYS AS (CASE WHEN `TRANG_THAI` <> 'DA_HUY' THEN `MA_BAN_AN` ELSE NULL END) STORED,
   `GHI_CHU` VARCHAR(500) NULL,
@@ -495,7 +443,6 @@ CREATE TABLE IF NOT EXISTS `DAT_BAN` (
   CONSTRAINT `CK_DAT_BAN_TRANG_THAI` CHECK (`TRANG_THAI` IN ('CHO_XAC_NHAN','DA_XAC_NHAN','DA_CHECK_IN','DA_HOAN_THANH','DA_HUY'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ======================== THANH TOAN / COC / HUY ========================= */
 CREATE TABLE IF NOT EXISTS `THANH_TOAN` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_THANH_TOAN` VARCHAR(20) NOT NULL,
@@ -503,7 +450,7 @@ CREATE TABLE IF NOT EXISTS `THANH_TOAN` (
   `LOAI_GIAO_DICH` VARCHAR(30) NOT NULL DEFAULT 'THANH_TOAN',
   `PHUONG_THUC_THANH_TOAN` VARCHAR(30) NOT NULL,
   `SO_TIEN` DECIMAL(18,2) NOT NULL,
-  `MA_GIAO_DICH` VARCHAR(120) NULL COMMENT 'NULL cho tien mat/khong co ma doi tac',
+  `MA_GIAO_DICH` VARCHAR(120) NULL,
   `TRANG_THAI` VARCHAR(30) NOT NULL DEFAULT 'CHO_THANH_TOAN',
   `THOI_GIAN_TAO` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `THOI_GIAN_THANH_TOAN` DATETIME NULL,
@@ -523,7 +470,7 @@ CREATE TABLE IF NOT EXISTS `CHINH_SACH_COC` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_CHINH_SACH_COC` VARCHAR(20) NOT NULL,
   `PHAM_VI_AP_DUNG` VARCHAR(20) NOT NULL DEFAULT 'TOAN_BO',
-  `TY_LE_COC` DECIMAL(5,2) NULL COMMENT 'Phan tram 0-100; NULL = chua xac nhan',
+  `TY_LE_COC` DECIMAL(5,2) NULL,
   `TIEN_COC_CO_DINH` DECIMAL(18,2) NULL,
   `HIEU_LUC_TU` DATE NULL,
   `HIEU_LUC_DEN` DATE NULL,
@@ -561,7 +508,7 @@ CREATE TABLE IF NOT EXISTS `CHINH_SACH_HUY` (
 CREATE TABLE IF NOT EXISTS `HUY_DON` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_HUY` VARCHAR(20) NOT NULL,
-  `MA_NHOM_HUY` VARCHAR(30) NOT NULL COMMENT 'Nhieu dong cung mot yeu cau huy co the dung chung nhom',
+  `MA_NHOM_HUY` VARCHAR(30) NOT NULL,
   `MA_CHI_TIET` VARCHAR(20) NOT NULL,
   `MA_DON_DAT` VARCHAR(20) NOT NULL,
   `MA_CHINH_SACH_HUY` VARCHAR(20) NULL,
@@ -594,7 +541,7 @@ CREATE TABLE IF NOT EXISTS `HOAN_TIEN` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_HOAN_TIEN` VARCHAR(20) NOT NULL,
   `MA_HUY` VARCHAR(20) NULL,
-  `MA_THANH_TOAN` VARCHAR(20) NOT NULL COMMENT 'Giao dich thanh toan goc; khong sua/xoa giao dich goc',
+  `MA_THANH_TOAN` VARCHAR(20) NOT NULL,
   `SO_TIEN` DECIMAL(18,2) NOT NULL,
   `TRANG_THAI` VARCHAR(20) NOT NULL DEFAULT 'CHO_HOAN',
   `MA_GIAO_DICH_HOAN` VARCHAR(120) NULL,
@@ -613,7 +560,6 @@ CREATE TABLE IF NOT EXISTS `HOAN_TIEN` (
   CONSTRAINT `CK_HOAN_TIEN_TRANG_THAI` CHECK (`TRANG_THAI` IN ('CHO_HOAN','DA_HOAN','THAT_BAI'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ================================ CHECK-IN ================================ */
 CREATE TABLE IF NOT EXISTS `CHECK_IN` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `MA_CHECK_IN` VARCHAR(20) NOT NULL,
@@ -654,7 +600,6 @@ CREATE TABLE IF NOT EXISTS `CHECK_IN` (
   )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-/* ================================ VIEW DOI SOAT ========================== */
 CREATE OR REPLACE VIEW `V_DON_DAT_TONG_HOP` AS
 SELECT
   d.`MA_DON_DAT`,
@@ -692,45 +637,34 @@ LEFT JOIN (
   GROUP BY t.`MA_DON_DAT`
 ) ht ON ht.`MA_DON_DAT` = d.`MA_DON_DAT`;
 
-/* ================================ DU LIEU NEN ============================= */
 INSERT IGNORE INTO `VAI_TRO` (`MA_VAI_TRO`, `TEN_VAI_TRO`, `MO_TA`) VALUES
   ('VT001', 'QUAN_LY', 'Quan tri va quan ly toan bo he thong'),
   ('VT004', 'NHAN_VIEN_VE', 'Ban ve va check-in khu cong vao'),
   ('VT005', 'NHAN_VIEN_NHA_HANG', 'Quan ly dat an va check-in khu an uong'),
   ('VT006', 'NHAN_VIEN_LUU_TRU', 'Quan ly dat phong va check-in khu luu tru');
 
-/* Gio ca an duoc de NULL cho den khi co lich gio chinh thuc. */
 INSERT IGNORE INTO `CA_AN` (`MA_CA_AN`, `TEN_CA_AN`, `GIO_BAT_DAU`, `GIO_KET_THUC`, `TRANG_THAI`) VALUES
   ('CA_SANG', 'Bua sang', NULL, NULL, 1),
   ('CA_TRUA', 'Bua trua', NULL, NULL, 1),
   ('CA_TOI', 'Bua toi', NULL, NULL, 1);
 
-/* Ty le/tien coc chua duoc xac nhan: tao ban ghi cho quan tri biet can cau hinh,
-   nhung de trang thai CAN_XAC_NHAN va khong tinh coc tu dong. */
 INSERT IGNORE INTO `CHINH_SACH_COC`
   (`MA_CHINH_SACH_COC`, `PHAM_VI_AP_DUNG`, `TY_LE_COC`, `TIEN_COC_CO_DINH`, `HIEU_LUC_TU`, `HIEU_LUC_DEN`, `TRANG_THAI`, `GHI_CHU`)
 VALUES
   ('COC001', 'TOAN_BO', NULL, NULL, NULL, NULL, 'CAN_XAC_NHAN', 'Chua co ty le/muc coc chinh thuc; khong duoc tu dong tinh coc.');
 
-/* Da xac nhan: huy tu 14 ngay tro len thi theo huong hoan tien;
-   dung 7 ngay thi theo huong mat coc; cac khoang khac de Java Service dua CAN_XAC_NHAN. */
 INSERT IGNORE INTO `CHINH_SACH_HUY`
   (`MA_CHINH_SACH_HUY`, `TEN_CHINH_SACH`, `SO_NGAY_TU`, `SO_NGAY_DEN`, `HANH_DONG`, `TY_LE_HOAN`, `TRANG_THAI`, `GHI_CHU`)
 VALUES
   ('HUY01', 'Huy truoc it nhat 14 ngay', 14, NULL, 'HOAN_TIEN', NULL, 1, 'Chinh sach theo yeu cau da trao doi; so tien hoan can tinh/duyet trong Java.'),
   ('HUY02', 'Huy dung moc 7 ngay', 7, 7, 'MAT_COC', 0, 1, 'Chi ap dung dung moc 7 ngay; moc khac chua duoc tu dong suy dien.');
 
-/* Khong seed don hang mau, tai khoan mat khau mac dinh, gia dich vu, so phong/ban,
-   gio ca an hay thanh phan combo vi cac thong tin nay chua duoc xac nhan tu nguon. */
-
-/* ================================ BAO CAO KHOI TAO ======================== */
-SELECT 'SKYGATEHUB schema da khoi tao' AS `KET_QUA`, DATABASE() AS `DATABASE_DANG_DUNG`;
+SELECT 'QL_Cong_Troi_Dong_Giang schema da khoi tao' AS `KET_QUA`, DATABASE() AS `DATABASE_DANG_DUNG`;
 SELECT `MA_VAI_TRO`, `TEN_VAI_TRO` FROM `VAI_TRO` ORDER BY `MA_VAI_TRO`;
 SELECT `MA_CHINH_SACH_HUY`, `SO_NGAY_TU`, `SO_NGAY_DEN`, `HANH_DONG`, `TRANG_THAI`
 FROM `CHINH_SACH_HUY` ORDER BY `MA_CHINH_SACH_HUY`;
 
-/* Kiem tra 28 bang chinh cua bo schema nay: ket qua mong doi = 28. */
-SELECT COUNT(*) AS `SO_BANG_SKYGATEHUB`
+SELECT COUNT(*) AS `SO_BANG`
 FROM information_schema.tables
 WHERE `TABLE_SCHEMA` = DATABASE()
   AND `TABLE_TYPE` = 'BASE TABLE'
@@ -756,7 +690,3 @@ WHERE `TABLE_SCHEMA` = DATABASE()
     'HUY_DON','HOAN_TIEN','CHECK_IN'
   )
 ORDER BY `TABLE_NAME`;
-
-USE `sky_gate_hub_v2`;
-DROP TABLE IF EXISTS `NGAY_DAC_BIET`;
-DROP TABLE IF EXISTS `CHINH_SACH_COC`;
