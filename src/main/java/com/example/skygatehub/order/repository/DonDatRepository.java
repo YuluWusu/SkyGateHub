@@ -1,7 +1,7 @@
 package com.example.skygatehub.order.repository;
 
+import com.example.skygatehub.common.enums.TrangThaiDon;
 import com.example.skygatehub.order.entity.DonDat;
-import com.example.skygatehub.order.enums.TrangThaiDon;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,23 +11,35 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DonDatRepository extends JpaRepository<DonDat, Integer> {
+public interface DonDatRepository extends JpaRepository<DonDat, Long> {
 
-    Optional<DonDat> findByMaDonCode(String maDonCode);
+    Optional<DonDat> findByMaDonDat(String maDonDat);
+
+    Optional<DonDat> findByMaDonHang(String maDonHang);
+
+    Optional<DonDat> findByMaQr(String maQr);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select d from DonDat d where d.maDonDat = :id")
-    Optional<DonDat> findByIdForUpdate(@Param("id") Integer id);
+    @Query("SELECT d FROM DonDat d WHERE d.maDonDat = :maDonDat")
+    Optional<DonDat> findByMaDonDatWithLock(@Param("maDonDat") String maDonDat);
 
-    boolean existsByMaDonCode(String maDonCode);
+    boolean existsByMaDonDat(String maDonDat);
 
-    Page<DonDat> findByKhachHang_MaNguoiDungOrderByNgayDatDesc(Integer maKhachHang, Pageable pageable);
+    boolean existsByMaDonHang(String maDonHang);
 
-    Page<DonDat> findByTrangThaiDonOrderByNgayDatDesc(TrangThaiDon trangThaiDon, Pageable pageable);
+    Page<DonDat> findByTrangThaiDonOrderByThoiGianDatDesc(TrangThaiDon trangThaiDon, Pageable pageable);
 
-    List<DonDat> findByKhachHang_SoDienThoaiOrderByNgayDatDesc(String soDienThoai);
+    List<DonDat> findBySdtKhachOrderByThoiGianDatDesc(String sdtKhach);
+
+    List<DonDat> findByNguoiDung_MaNguoiDungOrderByThoiGianDatDesc(String maNguoiDung);
+
+    /**
+     * Dùng cho scheduled task quét đơn hết hạn thanh toán
+     */
+    List<DonDat> findByTrangThaiDonAndThoiGianDatBefore(TrangThaiDon trangThaiDon, LocalDateTime thoiGian);
 }

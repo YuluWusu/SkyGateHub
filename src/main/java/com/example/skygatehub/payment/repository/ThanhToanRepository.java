@@ -1,33 +1,32 @@
 package com.example.skygatehub.payment.repository;
 
+import com.example.skygatehub.common.enums.TrangThaiThanhToan;
 import com.example.skygatehub.payment.entity.ThanhToan;
-import com.example.skygatehub.payment.enums.LoaiThanhToan;
-import com.example.skygatehub.payment.enums.TrangThaiThanhToan;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface ThanhToanRepository extends JpaRepository<ThanhToan, Integer> {
+public interface ThanhToanRepository extends JpaRepository<ThanhToan, Long> {
 
-    List<ThanhToan> findByDonDat_MaDonDatOrderByThoiGianGiaoDichAsc(Integer maDonDat);
+    Optional<ThanhToan> findByMaThanhToan(String maThanhToan);
 
-    @Query("""
-        select coalesce(sum(t.soTien), 0) from ThanhToan t
-        where t.donDat.maDonDat = :id
-          and t.trangThai = :tt
-          and t.loaiThanhToan in :loais
-    """)
-    BigDecimal sumByDonDatAndTrangThaiAndLoaiIn(
-            @Param("id") Integer id,
-            @Param("tt") TrangThaiThanhToan tt,
-            @Param("loais") Collection<LoaiThanhToan> loais
-    );
+    Optional<ThanhToan> findByMaGiaoDich(String maGiaoDich);
 
-    boolean existsByMaGiaoDich(String maGiaoDich);
+    List<ThanhToan> findByDonDat_MaDonDatOrderByThoiGianTaoAsc(String maDonDat);
+
+    List<ThanhToan> findByDonDat_MaDonDatAndTrangThai(String maDonDat, TrangThaiThanhToan trangThai);
+
+    @Query("SELECT COALESCE(SUM(t.soTien), 0) FROM ThanhToan t " +
+           "WHERE t.donDat.maDonDat = :maDonDat AND t.trangThai = 'DA_THANH_TOAN'")
+    BigDecimal sumPaidByDonDat(@Param("maDonDat") String maDonDat);
+
+    Page<ThanhToan> findByTrangThai(TrangThaiThanhToan trangThai, Pageable pageable);
 }

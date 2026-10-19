@@ -1,40 +1,36 @@
 package com.example.skygatehub.roombooking.repository;
 
-import com.example.skygatehub.order.enums.TrangThaiDon;
+import com.example.skygatehub.common.enums.TrangThaiDatPhong;
 import com.example.skygatehub.roombooking.entity.DatPhong;
-import com.example.skygatehub.roombooking.enums.TrangThaiDatPhong;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface DatPhongRepository extends JpaRepository<DatPhong, Integer> {
+public interface DatPhongRepository extends JpaRepository<DatPhong, Long> {
+
+    Optional<DatPhong> findByMaDatPhong(String maDatPhong);
+
+    List<DatPhong> findByChiTietDon_DonDat_MaDonDat(String maDonDat);
+
+    List<DatPhong> findByTrangThai(TrangThaiDatPhong trangThai);
 
     @Query("""
-        select coalesce(sum(dp.soLuongPhong), 0) from DatPhong dp
-        where dp.loaiPhong.maLoaiPhong = :maLoaiPhong
-          and dp.trangThai <> :trangThaiLoaiTru
-          and dp.donDat.trangThaiDon <> :donLoaiTru
-          and dp.ngayNhanPhong < :ngayTra
-          and dp.ngayTraPhong > :ngayNhan
+        SELECT COALESCE(SUM(dp.soLuongPhong), 0) FROM DatPhong dp
+        WHERE dp.loaiPhong.maLoaiPhong = :maLoaiPhong
+          AND dp.trangThai <> 'DA_HUY'
+          AND dp.chiTietDon.donDat.trangThaiDon <> 'DA_HUY'
+          AND dp.ngayNhanPhong < :ngayTra
+          AND dp.ngayTraPhong > :ngayNhan
     """)
     Integer sumBookedRoomsOverlapping(
-            @Param("maLoaiPhong") Integer maLoaiPhong,
+            @Param("maLoaiPhong") String maLoaiPhong,
             @Param("ngayNhan") LocalDate ngayNhan,
-            @Param("ngayTra") LocalDate ngayTra,
-            @Param("trangThaiLoaiTru") TrangThaiDatPhong trangThaiLoaiTru,
-            @Param("donLoaiTru") TrangThaiDon donLoaiTru
+            @Param("ngayTra") LocalDate ngayTra
     );
-
-    List<DatPhong> findByTrangThaiOrderByNgayNhanPhongAsc(TrangThaiDatPhong tt);
-
-    List<DatPhong> findByDonDat_MaDonDat(Integer maDonDat);
-
-    @Query("select coalesce(sum(dp.thanhTien), 0) from DatPhong dp where dp.donDat.maDonDat = :maDonDat")
-    BigDecimal sumThanhTienByDonDat(@Param("maDonDat") Integer maDonDat);
 }

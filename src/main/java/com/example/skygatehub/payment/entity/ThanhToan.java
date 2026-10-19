@@ -1,20 +1,21 @@
 package com.example.skygatehub.payment.entity;
 
-import com.example.skygatehub.account.entity.NguoiDung;
+import com.example.skygatehub.common.enums.LoaiGiaoDich;
+import com.example.skygatehub.common.enums.PhuongThucThanhToan;
+import com.example.skygatehub.common.enums.TrangThaiThanhToan;
 import com.example.skygatehub.order.entity.DonDat;
-import com.example.skygatehub.payment.enums.LoaiThanhToan;
-import com.example.skygatehub.payment.enums.PhuongThucThanhToan;
-import com.example.skygatehub.payment.enums.TrangThaiThanhToan;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Entity ánh xạ bảng THANH_TOAN trong QL_Cong_Troi_Dong_Giang_MySQL.sql.
+ * Hỗ trợ thanh toán nhiều đợt cho 1 đơn hàng.
+ */
 @Entity
 @Table(name = "THANH_TOAN")
 @Getter
@@ -24,48 +25,44 @@ public class ThanhToan {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MA_THANH_TOAN")
-    private Integer maThanhToan;
+    @Column(name = "ID")
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "MA_DON_DAT", nullable = false)
+    @Column(name = "MA_THANH_TOAN", length = 20, nullable = false, unique = true)
+    private String maThanhToan;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MA_DON_DAT", referencedColumnName = "MA_DON_DAT", nullable = false)
     private DonDat donDat;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "LOAI_THANH_TOAN", length = 30, nullable = false)
-    private LoaiThanhToan loaiThanhToan;
+    @Column(name = "LOAI_GIAO_DICH", length = 30, nullable = false)
+    private LoaiGiaoDich loaiGiaoDich = LoaiGiaoDich.THANH_TOAN;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "PHUONG_THUC_THANH_TOAN", length = 30, nullable = false)
+    private PhuongThucThanhToan phuongThucThanhToan;
 
     @Column(name = "SO_TIEN", precision = 18, scale = 2, nullable = false)
     private BigDecimal soTien;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "PHUONG_THUC", length = 30, nullable = false)
-    private PhuongThucThanhToan phuongThuc;
-
-    @Column(name = "MA_GIAO_DICH", length = 50)
+    @Column(name = "MA_GIAO_DICH", length = 120, unique = true)
     private String maGiaoDich;
 
-    @Column(name = "THOI_GIAN_GIAO_DICH")
-    private LocalDateTime thoiGianGiaoDich;
-
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "TRANG_THAI", length = 20)
-    private TrangThaiThanhToan trangThai;
+    @Column(name = "TRANG_THAI", length = 30, nullable = false)
+    private TrangThaiThanhToan trangThai = TrangThaiThanhToan.CHO_THANH_TOAN;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "NGUOI_THU")
-    private NguoiDung nguoiThu;
+    @Column(name = "THOI_GIAN_TAO", nullable = false, updatable = false)
+    private LocalDateTime thoiGianTao;
+
+    @Column(name = "THOI_GIAN_THANH_TOAN")
+    private LocalDateTime thoiGianThanhToan;
 
     @PrePersist
     public void prePersist() {
-        if (thoiGianGiaoDich == null) {
-            thoiGianGiaoDich = LocalDateTime.now();
-        }
-        if (trangThai == null) {
-            trangThai = TrangThaiThanhToan.THANH_CONG;
-        }
+        if (loaiGiaoDich == null) loaiGiaoDich = LoaiGiaoDich.THANH_TOAN;
+        if (trangThai == null) trangThai = TrangThaiThanhToan.CHO_THANH_TOAN;
+        if (thoiGianTao == null) thoiGianTao = LocalDateTime.now();
     }
 }

@@ -1,7 +1,7 @@
 package com.example.skygatehub.room.repository;
 
+import com.example.skygatehub.common.enums.TrangThaiPhanPhong;
 import com.example.skygatehub.room.entity.PhanPhong;
-import com.example.skygatehub.roombooking.enums.TrangThaiDatPhong;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,36 +9,29 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface PhanPhongRepository extends JpaRepository<PhanPhong, Integer> {
+public interface PhanPhongRepository extends JpaRepository<PhanPhong, Long> {
+
+    Optional<PhanPhong> findByMaPhanPhong(String maPhanPhong);
+
+    List<PhanPhong> findByDatPhong_MaDatPhong(String maDatPhong);
+
+    List<PhanPhong> findByPhong_MaPhong(String maPhong);
 
     @Query("""
-        select count(pp) > 0 from PhanPhong pp
-        where pp.phong.maPhong = :maPhong
-          and pp.datPhong.trangThai <> :daTra
-          and pp.datPhong.ngayNhanPhong < :ngayTra
-          and pp.datPhong.ngayTraPhong > :ngayNhan
+        SELECT COUNT(pp) > 0 FROM PhanPhong pp
+        WHERE pp.phong.maPhong = :maPhong
+          AND pp.trangThai <> 'DA_HUY'
+          AND pp.datPhong.ngayNhanPhong < :ngayTra
+          AND pp.datPhong.ngayTraPhong > :ngayNhan
     """)
     boolean existsOverlappingAssignment(
-            @Param("maPhong") Integer maPhong,
+            @Param("maPhong") String maPhong,
             @Param("ngayNhan") LocalDate ngayNhan,
-            @Param("ngayTra") LocalDate ngayTra,
-            @Param("daTra") TrangThaiDatPhong daTra
+            @Param("ngayTra") LocalDate ngayTra
     );
 
-    long countByDatPhong_MaDatPhong(Integer maDatPhong);
-
-    List<PhanPhong> findByDatPhong_MaDatPhong(Integer maDatPhong);
-
-    @Query("""
-        select pp from PhanPhong pp
-        where pp.datPhong.trangThai <> :daTra
-          and pp.datPhong.ngayNhanPhong <= :ngay
-          and pp.datPhong.ngayTraPhong > :ngay
-    """)
-    List<PhanPhong> findActiveOnDate(
-            @Param("ngay") LocalDate ngay,
-            @Param("daTra") TrangThaiDatPhong daTra
-    );
+    long countByDatPhong_MaDatPhongAndTrangThaiNot(String maDatPhong, TrangThaiPhanPhong trangThai);
 }

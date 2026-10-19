@@ -1,30 +1,29 @@
 package com.example.skygatehub.account.entity;
 
-import com.example.skygatehub.common.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
+/**
+ * Entity ánh xạ bảng VAI_TRO.
+ */
 @Entity
 @Table(name = "VAI_TRO")
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor
 public class VaiTro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MA_VAI_TRO")
-    private Integer maVaiTro;
+    @Column(name = "ID")
+    private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "TEN_VAI_TRO", length = 50, nullable = false, unique = true)
-    private RoleName tenVaiTro;
+    @Column(name = "MA_VAI_TRO", length = 20, nullable = false, unique = true)
+    private String maVaiTro;
 
-    @Column(name = "MO_TA", length = 200)
+    @Column(name = "TEN_VAI_TRO", length = 60, nullable = false, unique = true)
+    private String tenVaiTro;
+
+    @Column(name = "MO_TA", length = 255)
     private String moTa;
 }

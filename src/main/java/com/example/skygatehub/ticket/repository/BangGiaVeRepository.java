@@ -1,18 +1,26 @@
 package com.example.skygatehub.ticket.repository;
 
-import com.example.skygatehub.common.enums.LoaiKhach;
-import com.example.skygatehub.common.enums.LoaiNgay;
 import com.example.skygatehub.ticket.entity.BangGiaVe;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BangGiaVeRepository extends JpaRepository<BangGiaVe, Integer> {
+public interface BangGiaVeRepository extends JpaRepository<BangGiaVe, Long> {
 
-    Optional<BangGiaVe> findBySanPham_MaSanPhamAndLoaiKhachAndLoaiNgay(Integer maSanPham, LoaiKhach loaiKhach, LoaiNgay loaiNgay);
+    Optional<BangGiaVe> findByMaBangGia(String maBangGia);
 
-    List<BangGiaVe> findBySanPham_MaSanPham(Integer maSanPham);
+    List<BangGiaVe> findByLoaiVe_MaLoaiVeAndTrangThaiOrderByUuTienDesc(String maLoaiVe, Boolean trangThai);
+
+    @Query("SELECT b FROM BangGiaVe b WHERE b.loaiVe.maLoaiVe = :maLoaiVe " +
+           "AND b.trangThai = true " +
+           "AND b.hieuLucTu <= :ngay " +
+           "AND (b.hieuLucDen IS NULL OR b.hieuLucDen >= :ngay) " +
+           "ORDER BY b.uuTien DESC")
+    List<BangGiaVe> findValidPrices(@Param("maLoaiVe") String maLoaiVe, @Param("ngay") LocalDate ngay);
 }

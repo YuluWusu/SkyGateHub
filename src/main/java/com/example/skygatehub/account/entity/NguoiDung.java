@@ -1,67 +1,65 @@
 package com.example.skygatehub.account.entity;
 
-import com.example.skygatehub.account.enums.TrangThaiNguoiDung;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
+/**
+ * Entity ánh xạ bảng NGUOI_DUNG.
+ */
 @Entity
 @Table(name = "NGUOI_DUNG")
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor
 public class NguoiDung {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MA_NGUOI_DUNG")
-    private Integer maNguoiDung;
+    @Column(name = "ID")
+    private Long id;
 
-    @Column(name = "TEN_DANG_NHAP", length = 50, nullable = false, unique = true)
+    @Column(name = "MA_NGUOI_DUNG", length = 20, nullable = false, unique = true)
+    private String maNguoiDung;
+
+    @Column(name = "TEN_DANG_NHAP", length = 80, nullable = false, unique = true)
     private String tenDangNhap;
 
-    @Column(name = "MAT_KHAU", length = 255, nullable = false)
-    private String matKhau;
+    @Column(name = "MAT_KHAU_HASH", length = 255, nullable = false)
+    private String matKhauHash;
 
-    @Column(name = "HO_TEN", length = 100, nullable = false)
+    @Column(name = "HO_TEN", length = 120, nullable = false)
     private String hoTen;
 
-    @Column(name = "SO_DIEN_THOAI", length = 15, nullable = false)
-    private String soDienThoai;
-
-    @Column(name = "EMAIL", length = 100)
+    @Column(name = "EMAIL", length = 150)
     private String email;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "TRANG_THAI", length = 20)
-    private TrangThaiNguoiDung trangThai;
+    @Column(name = "SO_DIEN_THOAI", length = 20)
+    private String soDienThoai;
 
-    @Column(name = "NGAY_TAO")
+    @Column(name = "TRANG_THAI", nullable = false)
+    private Boolean trangThai;
+
+    @Column(name = "CAN_DOI_MAT_KHAU", nullable = false)
+    private Boolean canDoiMatKhau;
+
+    @Column(name = "NGAY_TAO", nullable = false, updatable = false)
     private LocalDateTime ngayTao;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "NGUOI_DUNG_VAI_TRO",
-            joinColumns = @JoinColumn(name = "MA_NGUOI_DUNG"),
-            inverseJoinColumns = @JoinColumn(name = "MA_VAI_TRO")
-    )
-    private Set<VaiTro> vaiTros = new HashSet<>();
+    @Column(name = "NGAY_CAP_NHAT", nullable = false)
+    private LocalDateTime ngayCapNhat;
 
     @PrePersist
     public void prePersist() {
-        if (trangThai == null) {
-            trangThai = TrangThaiNguoiDung.HOAT_DONG;
-        }
-        if (ngayTao == null) {
-            ngayTao = LocalDateTime.now();
-        }
+        if (trangThai == null) trangThai = true;
+        if (canDoiMatKhau == null) canDoiMatKhau = true;
+        if (ngayTao == null) ngayTao = LocalDateTime.now();
+        if (ngayCapNhat == null) ngayCapNhat = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        ngayCapNhat = LocalDateTime.now();
     }
 }

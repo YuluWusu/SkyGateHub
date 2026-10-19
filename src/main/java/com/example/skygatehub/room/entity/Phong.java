@@ -1,15 +1,18 @@
 package com.example.skygatehub.room.entity;
 
-import com.example.skygatehub.room.enums.TrangThaiPhong;
+import com.example.skygatehub.common.enums.TrangThaiPhong;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
+/**
+ * Entity ánh xạ bảng PHONG trong QL_Cong_Troi_Dong_Giang_MySQL.sql.
+ */
 @Entity
-@Table(name = "PHONG")
+@Table(name = "PHONG", uniqueConstraints = {
+    @UniqueConstraint(name = "UQ_PHONG_MA_LOAI", columnNames = {"MA_PHONG", "MA_LOAI_PHONG"})
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,31 +20,25 @@ public class Phong {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MA_PHONG")
-    private Integer maPhong;
+    @Column(name = "ID")
+    private Long id;
 
-    @Column(name = "SO_PHONG", length = 20, nullable = false, unique = true)
-    private String soPhong;
+    @Column(name = "MA_PHONG", length = 20, nullable = false, unique = true)
+    private String maPhong;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "MA_LOAI_PHONG", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MA_LOAI_PHONG", referencedColumnName = "MA_LOAI_PHONG", nullable = false)
     private LoaiPhong loaiPhong;
 
-    @Column(name = "TANG")
-    private Integer tang;
+    @Column(name = "SO_PHONG", length = 30, nullable = false, unique = true)
+    private String soPhong;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "TRANG_THAI", length = 30)
-    private TrangThaiPhong trangThai;
+    @Column(name = "TRANG_THAI", length = 20, nullable = false)
+    private TrangThaiPhong trangThai = TrangThaiPhong.SAN_SANG;
 
     @PrePersist
     public void prePersist() {
-        if (tang == null) {
-            tang = 1;
-        }
-        if (trangThai == null) {
-            trangThai = TrangThaiPhong.SAN_SANG;
-        }
+        if (trangThai == null) trangThai = TrangThaiPhong.SAN_SANG;
     }
 }
