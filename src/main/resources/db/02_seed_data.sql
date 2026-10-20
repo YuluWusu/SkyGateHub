@@ -29,6 +29,7 @@ DELETE FROM `CA_AN`;
 DELETE FROM `DICH_VU_AN_UONG`;
 DELETE FROM `PHONG`;
 DELETE FROM `LOAI_PHONG`;
+DELETE FROM `KHU_LUU_TRU`;
 DELETE FROM `NGAY_DAC_BIET`;
 DELETE FROM `BANG_GIA_VE`;
 DELETE FROM `KHO_VE`;
@@ -199,63 +200,67 @@ INSERT INTO `KHO_VE` (`MA_KHO_VE`, `MA_LOAI_VE`, `NGAY_THAM_QUAN`, `SO_LUONG_TOI
   ('KV024', 'VE25', '2026-05-25', 500, 120),
   ('KV025', 'VE01', '2026-05-26', 500, 125);
 
--- 8. LOAI_PHONG (22 ban ghi loai phong)
-INSERT INTO `LOAI_PHONG` (`MA_LOAI_PHONG`, `TEN_LOAI_PHONG`, `MO_TA`, `SO_NGUOI_TOI_DA`, `GIA_CO_BAN`, `HINH_ANH`, `TRANG_THAI`) VALUES
-  ('LP01', 'Bungalow Doi May Standard', 'Phong don view thung lung doi may', 2, 1200000, 'bungalow_std.jpg', 1),
-  ('LP02', 'Bungalow Doi May Deluxe', 'Phong doi ban cong rong huong hoang hon', 2, 1600000, 'bungalow_dlx.jpg', 1),
-  ('LP03', 'Bungalow Suoi Hoa Family', 'Bungalow 2 giuong lon phu hop gia dinh', 4, 2400000, 'bungalow_fam.jpg', 1),
-  ('LP04', 'Villa Rung Nguyen Sinh 1PN', 'Villa biet lap giua rung cay nguyen sinh', 2, 2800000, 'villa_1pn.jpg', 1),
-  ('LP05', 'Villa Rung Nguyen Sinh 2PN', 'Villa gia dinh co be boi khoang nong rieng', 6, 4500000, 'villa_2pn.jpg', 1),
-  ('LP06', 'Villa Hoang Hon Panorama', 'Villa view 360 do tren dinh nui', 4, 5200000, 'villa_pano.jpg', 1),
-  ('LP07', 'Homestay Co Tu Traditional', 'Phong phong cach kien truc nha dai dan toc Co Tu', 3, 850000, 'home_cotu.jpg', 1),
-  ('LP08', 'Homestay Ben Suoi Eco', 'Phong go ben bo suoi mat lanh', 2, 950000, 'home_suoi.jpg', 1),
-  ('LP09', 'Glamping Cao Cap Luxury', 'Leu cam trai sang trong day du tien nghi', 2, 110000, 'glamping_lux.jpg', 1),
-  ('LP10', 'Glamping Gia Dinh Safari', 'Leu safari rong rai cho 4 thanh vien', 4, 1800000, 'glamping_safari.jpg', 1),
-  ('LP11', 'Suite Presidential SkyGate', 'Phong tong thong sang trong bac nhat', 4, 9900000, 'suite_pres.jpg', 1),
-  ('LP12', 'Bungalow Ven Ho Tinh Lang', 'Phong ven ho nuoc yen binh', 2, 1750000, 'bung_lake.jpg', 1),
-  ('LP13', 'Homestay Vong Nguyet', 'Tang gac mai ngam sao dem', 2, 900000, 'home_moon.jpg', 1),
-  ('LP14', 'Villa Thac Nuoc Waterfall', 'Villa sat canh dong thac tu nhien', 6, 6000000, 'villa_fall.jpg', 1),
-  ('LP15', 'Bungalow Du Xuan Classic', 'Phong phong cach hoai niem Tay Nguyen', 2, 1350000, 'bung_classic.jpg', 1),
-  ('LP16', 'Homestay Vuon Che Xanh', 'Gan doi che xanh muot', 2, 800000, 'home_tea.jpg', 1),
-  ('LP17', 'Villa Ben Thuyen Riverview', 'Huong nhin ra ben thuyen kayak', 4, 3800000, 'villa_river.jpg', 1),
-  ('LP18', 'Bungalow Doi Gio', 'Don gio mat tren cao nguyen', 2, 1450000, 'bung_wind.jpg', 1),
-  ('LP19', 'Homestay Am Cung Cozy', 'Phong am cung phu hop cap doi', 2, 750000, 'home_cozy.jpg', 1),
-  ('LP20', 'Villa SunRise Binh Minh', 'Don anh binh minh dau tien tren Cua Troi', 4, 4200000, 'villa_sunrise.jpg', 1),
-  ('LP21', 'Bungalow May Ngan View', 'Can phong giua bien may bong benh', 2, 1900000, 'bung_cloud.jpg', 1),
-  ('LP22', 'Villa Sanctuary Thien Dinh', 'Khong gian nghi duong tinh duong', 4, 5500000, 'villa_sanc.jpg', 1);
+-- 8. KHU_LUU_TRU (4 khu luu tru)
+INSERT INTO `KHU_LUU_TRU` (`MA_KHU`, `TEN_KHU`, `HANG_SAO`, `DIA_CHI`, `EMAIL`, `HOTLINE`, `HINH_ANH`) VALUES
+  (1, 'FIVITEL Sông Ngân', 5, 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng', 'booking@congtroidonggiang.com', '1900 866644', 'song_ngan.jpg'),
+  (2, 'FIVITEL Cầu Kiều', 5, 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng', 'booking@congtroidonggiang.com', '1900 866644', 'cau_kieu.jpg'),
+  (3, 'FIVITEL Ô Thước', 5, 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng', 'booking@congtroidonggiang.com', '1900 866644', 'o_thuoc.jpg'),
+  (4, 'Nhà Moong', 5, 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng', 'booking@congtroidonggiang.com', '1900 866644', 'nha_moong.jpg');
 
--- 9. PHONG (30 phong vat ly)
+-- 8.1. LOAI_PHONG (15 loai phong dung tung khu, dien tich va gia tu anh thuc te)
+INSERT INTO `LOAI_PHONG` (`MA_LOAI_PHONG`, `MA_KHU`, `TEN_LOAI_PHONG`, `DIEN_TICH`, `LOAI_GIUONG`, `SUC_CHUA_NGUOI_LON`, `SUC_CHUA_TRE_EM`, `GIA_CO_BAN`, `HINH_ANH`) VALUES
+  -- 1. FIVITEL Sông Ngân (Ảnh 4: 27m2 -> 33m2)
+  (1, 1, 'Superior DBL', 27, 'DBL', 2, 1, 900000.00, 'songngan_sup_dbl.jpg'),
+  (2, 1, 'Superior Twin', 27, 'TWIN', 2, 1, 900000.00, 'songngan_sup_twin.jpg'),
+  (3, 1, 'Deluxe DBL', 27, 'DBL', 2, 1, 1000000.00, 'songngan_dlx_dbl.jpg'),
+  (4, 1, 'Deluxe Twin', 27, 'TWIN', 2, 1, 1000000.00, 'songngan_dlx_twin.jpg'),
+  (5, 1, 'Suite DBL', 28, 'DBL', 2, 1, 1100000.00, 'songngan_suite_dbl.jpg'),
+  (6, 1, 'Family DBL + Single', 33, 'DBL_SINGLE', 3, 1, 1200000.00, 'songngan_family.jpg'),
+  -- 2. FIVITEL Cầu Kiều (Ảnh 5: 24m2, 30m2, 52m2)
+  (7, 2, 'Standard DBL', 24, 'DBL', 2, 1, 800000.00, 'caukieu_std_dbl.jpg'),
+  (8, 2, 'Deluxe DBL', 30, 'DBL', 2, 1, 1000000.00, 'caukieu_dlx_dbl.jpg'),
+  (9, 2, 'Vip DBL', 52, 'DBL', 2, 1, 1350000.00, 'caukieu_vip_dbl.jpg'),
+  -- 3. FIVITEL Ô Thước (Ảnh 1: 25m2, 30m2)
+  (10, 3, 'Standard DBL', 25, 'DBL', 2, 1, 800000.00, 'othuoc_std_dbl.jpg'),
+  (11, 3, 'Superior DBL', 30, 'DBL', 2, 1, 900000.00, 'othuoc_sup_dbl.jpg'),
+  (12, 3, 'Superior Twin', 30, 'TWIN', 2, 1, 900000.00, 'othuoc_sup_twin.jpg'),
+  (13, 3, 'Deluxe DBL', 30, 'DBL', 2, 1, 1000000.00, 'othuoc_dlx_dbl.jpg'),
+  (14, 3, 'Deluxe Twin', 30, 'TWIN', 2, 1, 1000000.00, 'othuoc_dlx_twin.jpg'),
+  -- 4. Nhà Moong (Ảnh 2: 25m2)
+  (15, 4, 'Nhà Moong DBL/Bungalow', 25, 'BUNGALOW', 2, 1, 900000.00, 'nhamoong_dbl.jpg');
+
+-- 9. PHONG (30 phong vat ly phan bo theo 15 loai phong)
 INSERT INTO `PHONG` (`MA_PHONG`, `MA_LOAI_PHONG`, `SO_PHONG`, `TRANG_THAI`) VALUES
-  ('P001', 'LP02', 'Room-101', 'SAN_SANG'),
-  ('P002', 'LP03', 'Room-102', 'SAN_SANG'),
-  ('P003', 'LP04', 'Room-103', 'SAN_SANG'),
-  ('P004', 'LP05', 'Room-104', 'SAN_SANG'),
-  ('P005', 'LP06', 'Room-105', 'SAN_SANG'),
-  ('P006', 'LP07', 'Room-106', 'SAN_SANG'),
-  ('P007', 'LP08', 'Room-107', 'SAN_SANG'),
-  ('P008', 'LP09', 'Room-108', 'SAN_SANG'),
-  ('P009', 'LP10', 'Room-109', 'SAN_SANG'),
-  ('P010', 'LP11', 'Room-110', 'SAN_SANG'),
-  ('P011', 'LP12', 'Room-111', 'SAN_SANG'),
-  ('P012', 'LP13', 'Room-112', 'SAN_SANG'),
-  ('P013', 'LP14', 'Room-113', 'SAN_SANG'),
-  ('P014', 'LP15', 'Room-114', 'SAN_SANG'),
-  ('P015', 'LP16', 'Room-115', 'SAN_SANG'),
-  ('P016', 'LP17', 'Room-116', 'SAN_SANG'),
-  ('P017', 'LP18', 'Room-117', 'SAN_SANG'),
-  ('P018', 'LP19', 'Room-118', 'SAN_SANG'),
-  ('P019', 'LP20', 'Room-119', 'SAN_SANG'),
-  ('P020', 'LP21', 'Room-120', 'SAN_SANG'),
-  ('P021', 'LP22', 'Room-121', 'SAN_SANG'),
-  ('P022', 'LP01', 'Room-122', 'SAN_SANG'),
-  ('P023', 'LP02', 'Room-123', 'SAN_SANG'),
-  ('P024', 'LP03', 'Room-124', 'SAN_SANG'),
-  ('P025', 'LP04', 'Room-125', 'DANG_SU_DUNG'),
-  ('P026', 'LP05', 'Room-126', 'DANG_SU_DUNG'),
-  ('P027', 'LP06', 'Room-127', 'DANG_SU_DUNG'),
-  ('P028', 'LP07', 'Room-128', 'DANG_SU_DUNG'),
-  ('P029', 'LP08', 'Room-129', 'BAO_TRI'),
-  ('P030', 'LP09', 'Room-130', 'BAO_TRI');
+  ('P001', 1, 'Room-101', 'SAN_SANG'),
+  ('P002', 3, 'Room-102', 'SAN_SANG'),
+  ('P003', 5, 'Room-103', 'SAN_SANG'),
+  ('P004', 1, 'Room-104', 'SAN_SANG'),
+  ('P005', 9, 'Room-105', 'SAN_SANG'),
+  ('P006', 6, 'Room-106', 'SAN_SANG'),
+  ('P007', 15, 'Room-107', 'SAN_SANG'),
+  ('P008', 8, 'Room-108', 'SAN_SANG'),
+  ('P009', 10, 'Room-109', 'SAN_SANG'),
+  ('P010', 11, 'Room-110', 'SAN_SANG'),
+  ('P011', 13, 'Room-111', 'SAN_SANG'),
+  ('P012', 1, 'Room-112', 'SAN_SANG'),
+  ('P013', 3, 'Room-113', 'SAN_SANG'),
+  ('P014', 5, 'Room-114', 'SAN_SANG'),
+  ('P015', 9, 'Room-115', 'SAN_SANG'),
+  ('P016', 8, 'Room-116', 'SAN_SANG'),
+  ('P017', 10, 'Room-117', 'SAN_SANG'),
+  ('P018', 11, 'Room-118', 'SAN_SANG'),
+  ('P019', 13, 'Room-119', 'SAN_SANG'),
+  ('P020', 1, 'Room-120', 'SAN_SANG'),
+  ('P021', 3, 'Room-121', 'SAN_SANG'),
+  ('P022', 5, 'Room-122', 'SAN_SANG'),
+  ('P023', 2, 'Room-123', 'SAN_SANG'),
+  ('P024', 4, 'Room-124', 'SAN_SANG'),
+  ('P025', 7, 'Room-125', 'DANG_SU_DUNG'),
+  ('P026', 12, 'Room-126', 'DANG_SU_DUNG'),
+  ('P027', 14, 'Room-127', 'DANG_SU_DUNG'),
+  ('P028', 15, 'Room-128', 'DANG_SU_DUNG'),
+  ('P029', 6, 'Room-129', 'BAO_TRI'),
+  ('P030', 7, 'Room-130', 'BAO_TRI');
 
 -- 10. DICH_VU_AN_UONG (25 dich vu nha hang)
 INSERT INTO `DICH_VU_AN_UONG` (`MA_DICH_VU`, `TEN_DICH_VU`, `LOAI_DICH_VU`, `MO_TA`, `GIA_DICH_VU`, `TRANG_THAI`) VALUES
@@ -439,45 +444,45 @@ INSERT INTO `DON_DAT` (`MA_DON_DAT`, `MA_DON_HANG`, `MA_NGUOI_DUNG`, `HO_TEN_KHA
 -- Chu y: THANH_TIEN la cot tinh toan GENERATED STORED -> KHONG dua vao danh sach cot INSERT
 INSERT INTO `CHI_TIET_DON` (`MA_CHI_TIET`, `MA_DON_DAT`, `LOAI_DICH_VU`, `MA_LOAI_VE`, `MA_LOAI_PHONG`, `MA_DV_AN_UONG`, `TEN_SAN_PHAM`, `SO_LUONG`, `DON_GIA`, `TRANG_THAI`, `NGAY_SU_DUNG`) VALUES
   ('CT001', 'DD001', 'VE', 'VE01', NULL, NULL, 'Ve Tham Quan Nguoi Lon', 2, 350000, 'HIEU_LUC', '2026-05-02'),
-  ('CT002', 'DD001', 'PHONG', NULL, 'LP01', NULL, 'Bungalow Doi May Standard', 1, 1200000, 'HIEU_LUC', '2026-05-02'),
+  ('CT002', 'DD001', 'PHONG', NULL, 1, NULL, 'Superior DBL (FIVITEL Song Ngan)', 1, 1200000, 'HIEU_LUC', '2026-05-02'),
   ('CT003', 'DD002', 'VE', 'VE03', NULL, NULL, 'Combo Cong Troi 1 Ngay Nguoi Lon', 4, 650000, 'HIEU_LUC', '2026-05-05'),
   ('CT004', 'DD002', 'AN_UONG', NULL, NULL, 'DV03', 'Set Menu Com Lam Ga Nuong 4 Nguoi', 1, 650000, 'HIEU_LUC', '2026-05-05'),
-  ('CT005', 'DD003', 'PHONG', NULL, 'LP02', NULL, 'Bungalow Doi May Deluxe', 2, 1600000, 'HIEU_LUC', '2026-05-10'),
+  ('CT005', 'DD003', 'PHONG', NULL, 3, NULL, 'Deluxe DBL (FIVITEL Song Ngan)', 2, 1600000, 'HIEU_LUC', '2026-05-10'),
   ('CT006', 'DD003', 'AN_UONG', NULL, NULL, 'DV02', 'Buffet Toi Nuong BBQ Cao Nguyen', 4, 350000, 'HIEU_LUC', '2026-05-10'),
   ('CT007', 'DD004', 'VE', 'VE01', NULL, NULL, 'Ve Tham Quan Nguoi Lon', 3, 350000, 'HIEU_LUC', '2026-05-12'),
   ('CT008', 'DD004', 'VE', 'VE02', NULL, NULL, 'Ve Tham Quan Tre Em', 2, 200000, 'HIEU_LUC', '2026-05-12'),
   ('CT009', 'DD005', 'VE', 'VE08', NULL, NULL, 'Combo Trai Nghiem Sinh Thai VIP', 2, 950000, 'HIEU_LUC', '2026-05-08'),
-  ('CT010', 'DD006', 'PHONG', NULL, 'LP04', NULL, 'Villa Rung Nguyen Sinh 1PN', 1, 2800000, 'HIEU_LUC', '2026-05-15'),
+  ('CT010', 'DD006', 'PHONG', NULL, 5, NULL, 'Suite DBL (FIVITEL Song Ngan)', 1, 2800000, 'HIEU_LUC', '2026-05-15'),
   ('CT011', 'DD006', 'AN_UONG', NULL, NULL, 'DV01', 'Buffet Trua Am Thuc Co Tu', 2, 250000, 'HIEU_LUC', '2026-05-15'),
   ('CT012', 'DD007', 'VE', 'VE01', NULL, NULL, 'Ve Tham Quan Nguoi Lon', 2, 350000, 'DA_HUY', '2026-05-20'),
-  ('CT013', 'DD007', 'PHONG', NULL, 'LP01', NULL, 'Bungalow Doi May Standard', 1, 1200000, 'DA_HUY', '2026-05-20'),
+  ('CT013', 'DD007', 'PHONG', NULL, 1, NULL, 'Superior DBL (FIVITEL Song Ngan)', 1, 1200000, 'DA_HUY', '2026-05-20'),
   ('CT014', 'DD008', 'VE', 'VE13', NULL, NULL, 'Combo Gia Dinh 2 Lon 1 Tre', 1, 1200000, 'HIEU_LUC', '2026-05-09'),
-  ('CT015', 'DD009', 'PHONG', NULL, 'LP05', NULL, 'Villa Rung Nguyen Sinh 2PN', 1, 4500000, 'HIEU_LUC', '2026-05-18'),
+  ('CT015', 'DD009', 'PHONG', NULL, 9, NULL, 'Vip DBL (FIVITEL Cau Kieu)', 1, 4500000, 'HIEU_LUC', '2026-05-18'),
   ('CT016', 'DD009', 'VE', 'VE05', NULL, NULL, 'Ve Cap Treo Nguoi Lon', 4, 250000, 'HIEU_LUC', '2026-05-18'),
   ('CT017', 'DD010', 'AN_UONG', NULL, NULL, 'DV05', 'Set Menu Thit Lon Ban 7 Mon', 2, 820000, 'HIEU_LUC', '2026-05-16'),
   ('CT018', 'DD011', 'VE', 'VE01', NULL, NULL, 'Ve Tham Quan Nguoi Lon', 5, 350000, 'HIEU_LUC', '2026-05-11'),
-  ('CT019', 'DD012', 'PHONG', NULL, 'LP03', NULL, 'Bungalow Suoi Hoa Family', 1, 2400000, 'HIEU_LUC', '2026-05-22'),
+  ('CT019', 'DD012', 'PHONG', NULL, 6, NULL, 'Family DBL + Single (FIVITEL Song Ngan)', 1, 2400000, 'HIEU_LUC', '2026-05-22'),
   ('CT020', 'DD013', 'VE', 'VE17', NULL, NULL, 'Combo Cap Treo Va Buffet', 2, 520000, 'HIEU_LUC', '2026-05-14'),
   ('CT021', 'DD013', 'AN_UONG', NULL, NULL, 'DV11', 'Ruou Can Co Tu Dac Biet', 1, 220000, 'HIEU_LUC', '2026-05-14'),
-  ('CT022', 'DD014', 'PHONG', NULL, 'LP07', NULL, 'Homestay Co Tu Traditional', 2, 850000, 'DA_HUY', '2026-05-25'),
+  ('CT022', 'DD014', 'PHONG', NULL, 15, NULL, 'Nha Moong DBL/Bungalow', 2, 850000, 'DA_HUY', '2026-05-25'),
   ('CT023', 'DD015', 'VE', 'VE03', NULL, NULL, 'Combo Cong Troi 1 Ngay Nguoi Lon', 3, 650000, 'HIEU_LUC', '2026-05-13'),
   ('CT024', 'DD015', 'VE', 'VE07', NULL, NULL, 'Ve Xe Dien Noi Khu', 3, 50000, 'HIEU_LUC', '2026-05-13'),
-  ('CT025', 'DD016', 'PHONG', NULL, 'LP06', NULL, 'Villa Hoang Hon Panorama', 1, 5200000, 'HIEU_LUC', '2026-05-30'),
+  ('CT025', 'DD016', 'PHONG', NULL, 8, NULL, 'Deluxe DBL (FIVITEL Cau Kieu)', 1, 5200000, 'HIEU_LUC', '2026-05-30'),
   ('CT026', 'DD017', 'AN_UONG', NULL, NULL, 'DV01', 'Buffet Trua Am Thuc Co Tu', 6, 250000, 'HIEU_LUC', '2026-05-17'),
   ('CT027', 'DD018', 'VE', 'VE01', NULL, NULL, 'Ve Tham Quan Nguoi Lon', 4, 350000, 'HIEU_LUC', '2026-05-19'),
   ('CT028', 'DD018', 'VE', 'VE05', NULL, NULL, 'Ve Cap Treo Nguoi Lon', 4, 250000, 'HIEU_LUC', '2026-05-19'),
   ('CT029', 'DD018', 'AN_UONG', NULL, NULL, 'DV06', 'Lau Ga La E Tay Giang', 1, 450000, 'HIEU_LUC', '2026-05-19'),
-  ('CT030', 'DD019', 'PHONG', NULL, 'LP08', NULL, 'Homestay Ben Suoi Eco', 2, 950000, 'HIEU_LUC', '2026-05-24'),
+  ('CT030', 'DD019', 'PHONG', NULL, 10, NULL, 'Standard DBL (FIVITEL O Thuoc)', 2, 950000, 'HIEU_LUC', '2026-05-24'),
   ('CT031', 'DD020', 'VE', 'VE25', NULL, NULL, 'Combo All-Inclusive Sieu VIP', 1, 1800000, 'HIEU_LUC', '2026-05-21'),
   ('CT032', 'DD021', 'VE', 'VE01', NULL, NULL, 'Ve Tham Quan Nguoi Lon', 2, 350000, 'HIEU_LUC', '2026-05-23'),
   ('CT033', 'DD021', 'AN_UONG', NULL, NULL, 'DV04', 'Set Menu Ca Nien Rau Rung', 1, 480000, 'HIEU_LUC', '2026-05-23'),
   ('CT034', 'DD022', 'VE', 'VE03', NULL, NULL, 'Combo Cong Troi 1 Ngay Nguoi Lon', 2, 650000, 'DA_HUY', '2026-05-28'),
-  ('CT035', 'DD023', 'PHONG', NULL, 'LP09', NULL, 'Glamping Cao Cap Luxury', 1, 1100000, 'HIEU_LUC', '2026-05-26'),
+  ('CT035', 'DD023', 'PHONG', NULL, 11, NULL, 'Superior DBL (FIVITEL O Thuoc)', 1, 1100000, 'HIEU_LUC', '2026-05-26'),
   ('CT036', 'DD023', 'AN_UONG', NULL, NULL, 'DV14', 'Set Tiec Nuong San Vuon VIP', 1, 1500000, 'HIEU_LUC', '2026-05-26'),
   ('CT037', 'DD024', 'VE', 'VE09', NULL, NULL, 'Ve Tham Quan Suoi Hoa Nguoi Lon', 4, 280000, 'HIEU_LUC', '2026-05-29'),
   ('CT038', 'DD024', 'VE', 'VE11', NULL, NULL, 'Ve Cheo Thuyen Kayak Cay Xanh', 2, 120000, 'HIEU_LUC', '2026-05-29'),
   ('CT039', 'DD025', 'VE', 'VE01', NULL, NULL, 'Ve Tham Quan Nguoi Lon', 2, 350000, 'HIEU_LUC', '2026-05-27'),
-  ('CT040', 'DD025', 'PHONG', NULL, 'LP10', NULL, 'Glamping Gia Dinh Safari', 1, 1800000, 'HIEU_LUC', '2026-05-27');
+  ('CT040', 'DD025', 'PHONG', NULL, 13, NULL, 'Deluxe DBL (FIVITEL O Thuoc)', 1, 1800000, 'HIEU_LUC', '2026-05-27');
 
 -- 19. VE (25 ve phat hanh)
 INSERT INTO `VE` (`MA_VE`, `MA_DON_DAT`, `MA_CHI_TIET`, `MA_LOAI_VE`, `MA_VE_CHUOI`, `NGAY_THAM_QUAN`, `TRANG_THAI`, `THOI_GIAN_SU_DUNG`) VALUES
@@ -509,53 +514,53 @@ INSERT INTO `VE` (`MA_VE`, `MA_DON_DAT`, `MA_CHI_TIET`, `MA_LOAI_VE`, `MA_VE_CHU
 
 -- 20. DAT_PHONG (22 ban ghi)
 INSERT INTO `DAT_PHONG` (`MA_DAT_PHONG`, `MA_DON_DAT`, `MA_CHI_TIET`, `MA_LOAI_PHONG`, `NGAY_NHAN_PHONG`, `NGAY_TRA_PHONG`, `SO_LUONG_PHONG`, `SO_KHACH`, `TRANG_THAI`) VALUES
-  ('DP001', 'DD001', 'CT002', 'LP01', '2026-05-02', '2026-05-03', 1, 2, 'DA_TRA_PHONG'),
-  ('DP002', 'DD003', 'CT005', 'LP02', '2026-05-10', '2026-05-12', 2, 4, 'DA_NHAN_PHONG'),
-  ('DP003', 'DD006', 'CT010', 'LP04', '2026-05-15', '2026-05-17', 1, 2, 'DA_XAC_NHAN'),
-  ('DP004', 'DD007', 'CT013', 'LP01', '2026-05-20', '2026-05-22', 1, 2, 'DA_HUY'),
-  ('DP005', 'DD009', 'CT015', 'LP05', '2026-05-18', '2026-05-20', 1, 4, 'DA_TRA_PHONG'),
-  ('DP006', 'DD012', 'CT019', 'LP03', '2026-05-22', '2026-05-24', 1, 4, 'CHO_XAC_NHAN'),
-  ('DP007', 'DD014', 'CT022', 'LP07', '2026-05-25', '2026-05-26', 2, 4, 'DA_HUY'),
-  ('DP008', 'DD016', 'CT025', 'LP06', '2026-05-30', '2026-06-01', 1, 3, 'DA_XAC_NHAN'),
-  ('DP009', 'DD019', 'CT030', 'LP08', '2026-05-24', '2026-05-26', 2, 4, 'DA_XAC_NHAN'),
-  ('DP010', 'DD023', 'CT035', 'LP09', '2026-05-26', '2026-05-27', 1, 2, 'DA_TRA_PHONG'),
-  ('DP011', 'DD025', 'CT040', 'LP10', '2026-05-27', '2026-05-29', 1, 4, 'DA_TRA_PHONG'),
-  ('DP012', 'DD001', 'CT002', 'LP01', '2026-06-01', '2026-06-03', 1, 2, 'DA_XAC_NHAN'),
-  ('DP013', 'DD003', 'CT005', 'LP02', '2026-06-05', '2026-06-07', 1, 2, 'DA_XAC_NHAN'),
-  ('DP014', 'DD006', 'CT010', 'LP04', '2026-06-08', '2026-06-10', 1, 2, 'DA_XAC_NHAN'),
-  ('DP015', 'DD009', 'CT015', 'LP05', '2026-06-11', '2026-06-13', 1, 4, 'DA_XAC_NHAN'),
-  ('DP016', 'DD016', 'CT025', 'LP06', '2026-06-15', '2026-06-17', 1, 2, 'DA_XAC_NHAN'),
-  ('DP017', 'DD019', 'CT030', 'LP08', '2026-06-18', '2026-06-20', 1, 2, 'DA_XAC_NHAN'),
-  ('DP018', 'DD023', 'CT035', 'LP09', '2026-06-21', '2026-06-22', 1, 2, 'DA_XAC_NHAN'),
-  ('DP019', 'DD025', 'CT040', 'LP10', '2026-06-25', '2026-06-27', 1, 4, 'DA_XAC_NHAN'),
-  ('DP020', 'DD001', 'CT002', 'LP01', '2026-07-01', '2026-07-03', 1, 2, 'DA_XAC_NHAN'),
-  ('DP021', 'DD003', 'CT005', 'LP02', '2026-07-05', '2026-07-07', 1, 2, 'DA_XAC_NHAN'),
-  ('DP022', 'DD006', 'CT010', 'LP04', '2026-07-10', '2026-07-12', 1, 2, 'DA_XAC_NHAN');
+  ('DP001', 'DD001', 'CT002', 1, '2026-05-02', '2026-05-03', 1, 2, 'DA_TRA_PHONG'),
+  ('DP002', 'DD003', 'CT005', 3, '2026-05-10', '2026-05-12', 2, 4, 'DA_NHAN_PHONG'),
+  ('DP003', 'DD006', 'CT010', 5, '2026-05-15', '2026-05-17', 1, 2, 'DA_XAC_NHAN'),
+  ('DP004', 'DD007', 'CT013', 1, '2026-05-20', '2026-05-22', 1, 2, 'DA_HUY'),
+  ('DP005', 'DD009', 'CT015', 9, '2026-05-18', '2026-05-20', 1, 4, 'DA_TRA_PHONG'),
+  ('DP006', 'DD012', 'CT019', 6, '2026-05-22', '2026-05-24', 1, 4, 'CHO_XAC_NHAN'),
+  ('DP007', 'DD014', 'CT022', 15, '2026-05-25', '2026-05-26', 2, 4, 'DA_HUY'),
+  ('DP008', 'DD016', 'CT025', 8, '2026-05-30', '2026-06-01', 1, 3, 'DA_XAC_NHAN'),
+  ('DP009', 'DD019', 'CT030', 10, '2026-05-24', '2026-05-26', 2, 4, 'DA_XAC_NHAN'),
+  ('DP010', 'DD023', 'CT035', 11, '2026-05-26', '2026-05-27', 1, 2, 'DA_TRA_PHONG'),
+  ('DP011', 'DD025', 'CT040', 13, '2026-05-27', '2026-05-29', 1, 4, 'DA_TRA_PHONG'),
+  ('DP012', 'DD001', 'CT002', 1, '2026-06-01', '2026-06-03', 1, 2, 'DA_XAC_NHAN'),
+  ('DP013', 'DD003', 'CT005', 3, '2026-06-05', '2026-06-07', 1, 2, 'DA_XAC_NHAN'),
+  ('DP014', 'DD006', 'CT010', 5, '2026-06-08', '2026-06-10', 1, 2, 'DA_XAC_NHAN'),
+  ('DP015', 'DD009', 'CT015', 9, '2026-06-11', '2026-06-13', 1, 4, 'DA_XAC_NHAN'),
+  ('DP016', 'DD016', 'CT025', 8, '2026-06-15', '2026-06-17', 1, 2, 'DA_XAC_NHAN'),
+  ('DP017', 'DD019', 'CT030', 10, '2026-06-18', '2026-06-20', 1, 2, 'DA_XAC_NHAN'),
+  ('DP018', 'DD023', 'CT035', 11, '2026-06-21', '2026-06-22', 1, 2, 'DA_XAC_NHAN'),
+  ('DP019', 'DD025', 'CT040', 13, '2026-06-25', '2026-06-27', 1, 4, 'DA_XAC_NHAN'),
+  ('DP020', 'DD001', 'CT002', 1, '2026-07-01', '2026-07-03', 1, 2, 'DA_XAC_NHAN'),
+  ('DP021', 'DD003', 'CT005', 3, '2026-07-05', '2026-07-07', 1, 2, 'DA_XAC_NHAN'),
+  ('DP022', 'DD006', 'CT010', 5, '2026-07-10', '2026-07-12', 1, 2, 'DA_XAC_NHAN');
 
 -- 21. PHAN_PHONG (22 ban ghi phan bo phong)
 INSERT INTO `PHAN_PHONG` (`MA_PHAN_PHONG`, `MA_DAT_PHONG`, `MA_LOAI_PHONG`, `MA_PHONG`, `MA_NHAN_VIEN`, `THOI_GIAN_PHAN`, `TRANG_THAI`) VALUES
-  ('PP001', 'DP001', 'LP01', 'P001', 'ND004', '2026-05-01 10:00:00', 'DA_TRA_PHONG'),
-  ('PP002', 'DP002', 'LP02', 'P002', 'ND004', '2026-05-01 10:00:00', 'DA_NHAN_PHONG'),
-  ('PP003', 'DP003', 'LP04', 'P003', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP004', 'DP004', 'LP01', 'P004', 'ND004', '2026-05-01 10:00:00', 'DA_HUY'),
-  ('PP005', 'DP005', 'LP05', 'P005', 'ND004', '2026-05-01 10:00:00', 'DA_TRA_PHONG'),
-  ('PP006', 'DP006', 'LP03', 'P006', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP007', 'DP007', 'LP07', 'P007', 'ND004', '2026-05-01 10:00:00', 'DA_HUY'),
-  ('PP008', 'DP008', 'LP06', 'P008', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP009', 'DP009', 'LP08', 'P009', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP010', 'DP010', 'LP09', 'P010', 'ND004', '2026-05-01 10:00:00', 'DA_TRA_PHONG'),
-  ('PP011', 'DP011', 'LP10', 'P011', 'ND004', '2026-05-01 10:00:00', 'DA_TRA_PHONG'),
-  ('PP012', 'DP012', 'LP01', 'P012', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP013', 'DP013', 'LP02', 'P013', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP014', 'DP014', 'LP04', 'P014', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP015', 'DP015', 'LP05', 'P015', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP016', 'DP016', 'LP06', 'P016', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP017', 'DP017', 'LP08', 'P017', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP018', 'DP018', 'LP09', 'P018', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP019', 'DP019', 'LP10', 'P019', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP020', 'DP020', 'LP01', 'P020', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP021', 'DP021', 'LP02', 'P021', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
-  ('PP022', 'DP022', 'LP04', 'P022', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN');
+  ('PP001', 'DP001', 1, 'P001', 'ND004', '2026-05-01 10:00:00', 'DA_TRA_PHONG'),
+  ('PP002', 'DP002', 3, 'P002', 'ND004', '2026-05-01 10:00:00', 'DA_NHAN_PHONG'),
+  ('PP003', 'DP003', 5, 'P003', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP004', 'DP004', 1, 'P004', 'ND004', '2026-05-01 10:00:00', 'DA_HUY'),
+  ('PP005', 'DP005', 9, 'P005', 'ND004', '2026-05-01 10:00:00', 'DA_TRA_PHONG'),
+  ('PP006', 'DP006', 6, 'P006', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP007', 'DP007', 15, 'P007', 'ND004', '2026-05-01 10:00:00', 'DA_HUY'),
+  ('PP008', 'DP008', 8, 'P008', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP009', 'DP009', 10, 'P009', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP010', 'DP010', 11, 'P010', 'ND004', '2026-05-01 10:00:00', 'DA_TRA_PHONG'),
+  ('PP011', 'DP011', 13, 'P011', 'ND004', '2026-05-01 10:00:00', 'DA_TRA_PHONG'),
+  ('PP012', 'DP012', 1, 'P012', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP013', 'DP013', 3, 'P013', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP014', 'DP014', 5, 'P014', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP015', 'DP015', 9, 'P015', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP016', 'DP016', 8, 'P016', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP017', 'DP017', 10, 'P017', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP018', 'DP018', 11, 'P018', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP019', 'DP019', 13, 'P019', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP020', 'DP020', 1, 'P020', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP021', 'DP021', 3, 'P021', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN'),
+  ('PP022', 'DP022', 5, 'P022', 'ND004', '2026-05-01 10:00:00', 'DANG_PHAN');
 
 -- 22. QUYEN_LOI_DON (25 ban ghi chup quyen loi combo)
 INSERT INTO `QUYEN_LOI_DON` (`MA_QUYEN_LOI`, `MA_DON_DAT`, `MA_CHI_TIET`, `MA_THANH_PHAN`, `TEN_THANH_PHAN_CHUP`, `LOAI_THANH_PHAN_CHUP`, `SO_LUONG_TOI_DA`, `SO_LUONG_DA_DUNG`, `THEO_DOI_SU_DUNG`, `TRANG_THAI`) VALUES
@@ -738,6 +743,7 @@ SELECT 'So luong ban ghi trong cac bang chinh (Tieu chi 4.1 >= 20):' AS `MUC_KIE
 SELECT 'NGUOI_DUNG' AS BANG, COUNT(*) AS SO_BAN_GHI FROM NGUOI_DUNG
 UNION ALL SELECT 'LOAI_VE', COUNT(*) FROM LOAI_VE
 UNION ALL SELECT 'BANG_GIA_VE', COUNT(*) FROM BANG_GIA_VE
+UNION ALL SELECT 'KHU_LUU_TRU', COUNT(*) FROM KHU_LUU_TRU
 UNION ALL SELECT 'LOAI_PHONG', COUNT(*) FROM LOAI_PHONG
 UNION ALL SELECT 'PHONG', COUNT(*) FROM PHONG
 UNION ALL SELECT 'DICH_VU_AN_UONG', COUNT(*) FROM DICH_VU_AN_UONG

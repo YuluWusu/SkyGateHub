@@ -1,11 +1,11 @@
 package com.example.skygatehub.common.network.server;
 
-import com.example.skygatehub.account.repository.NguoiDungRepository;
-import com.example.skygatehub.checkin.repository.CheckInRepository;
-import com.example.skygatehub.dining.repository.DatBanRepository;
-import com.example.skygatehub.order.repository.DonDatRepository;
-import com.example.skygatehub.order.repository.VeRepository;
-import com.example.skygatehub.roombooking.repository.DatPhongRepository;
+import com.example.skygatehub.repository.account.NguoiDungRepository;
+import com.example.skygatehub.repository.checkin.CheckInRepository;
+import com.example.skygatehub.repository.dining.DatBanRepository;
+import com.example.skygatehub.repository.order.DonDatRepository;
+import com.example.skygatehub.repository.order.VeRepository;
+import com.example.skygatehub.repository.roombooking.DatPhongRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -113,3 +113,4 @@ public class CheckInSocketServer {
         }
     }
 }
+

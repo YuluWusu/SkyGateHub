@@ -1,22 +1,22 @@
 package com.example.skygatehub.common.network.server;
 
-import com.example.skygatehub.account.entity.NguoiDung;
-import com.example.skygatehub.account.repository.NguoiDungRepository;
-import com.example.skygatehub.checkin.entity.CheckIn;
-import com.example.skygatehub.checkin.repository.CheckInRepository;
+import com.example.skygatehub.entity.account.NguoiDung;
+import com.example.skygatehub.repository.account.NguoiDungRepository;
+import com.example.skygatehub.entity.checkin.CheckIn;
+import com.example.skygatehub.repository.checkin.CheckInRepository;
 import com.example.skygatehub.common.enums.LoaiCheckIn;
 import com.example.skygatehub.common.enums.TrangThaiCheckIn;
 import com.example.skygatehub.common.enums.TrangThaiDatBan;
 import com.example.skygatehub.common.enums.TrangThaiDatPhong;
 import com.example.skygatehub.common.enums.TrangThaiVe;
-import com.example.skygatehub.dining.entity.DatBan;
-import com.example.skygatehub.dining.repository.DatBanRepository;
-import com.example.skygatehub.order.entity.DonDat;
-import com.example.skygatehub.order.entity.Ve;
-import com.example.skygatehub.order.repository.DonDatRepository;
-import com.example.skygatehub.order.repository.VeRepository;
-import com.example.skygatehub.roombooking.entity.DatPhong;
-import com.example.skygatehub.roombooking.repository.DatPhongRepository;
+import com.example.skygatehub.entity.dining.DatBan;
+import com.example.skygatehub.repository.dining.DatBanRepository;
+import com.example.skygatehub.entity.order.DonDat;
+import com.example.skygatehub.entity.order.Ve;
+import com.example.skygatehub.repository.order.DonDatRepository;
+import com.example.skygatehub.repository.order.VeRepository;
+import com.example.skygatehub.entity.roombooking.DatPhong;
+import com.example.skygatehub.repository.roombooking.DatPhongRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -315,3 +315,4 @@ public class CheckInClientHandler implements Runnable {
         });
     }
 }
+

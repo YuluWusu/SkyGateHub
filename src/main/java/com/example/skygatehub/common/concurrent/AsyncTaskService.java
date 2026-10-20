@@ -1,7 +1,7 @@
 package com.example.skygatehub.common.concurrent;
 
-import com.example.skygatehub.order.entity.DonDat;
-import com.example.skygatehub.order.repository.DonDatRepository;
+import com.example.skygatehub.entity.order.DonDat;
+import com.example.skygatehub.repository.order.DonDatRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -88,3 +88,4 @@ public class AsyncTaskService {
         }
     }
 }
+
