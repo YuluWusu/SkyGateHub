@@ -1,6 +1,6 @@
 # ARCHITECTURE.md — SkyGateHub (Hệ thống Quản lý & Đặt dịch vụ KDL Sinh thái Cổng Trời Đông Giang)
 
-> **Nguồn sự thật duy nhất:** `QL_Cong_Troi_Dong_Giang_MySQL.sql` (28 bảng + View `V_DON_DAT_TONG_HOP`)
+> **Nguồn sự thật duy nhất:** `QL_Cong_Troi_Dong_Giang_MySQL.sql` (29 bảng + View `V_DON_DAT_TONG_HOP`)
 > **Stack:** Spring Boot 3 · Spring Data JPA · Thymeleaf · Bootstrap 5 · MySQL 8.x · Java 21
 
 ---
@@ -8,7 +8,7 @@
 ## Mục lục
 
 1. [Tổng quan kiến trúc](#1-tổng-quan-kiến-trúc)
-2. [Phân tích Bounded Context & Ánh xạ 28 bảng](#2-phân-tích-bounded-context--ánh-xạ-28-bảng)
+2. [Phân tích Bounded Context & Ánh xạ 29 bảng](#2-phân-tích-bounded-context--ánh-xạ-29-bảng)
 3. [Quy chuẩn Mapping JPA cho Entity](#3-quy-chuẩn-mapping-jpa-cho-entity)
 4. [Phân chia công việc cho 5 thành viên (M1–M5)](#4-phân-chia-công-việc-cho-5-thành-viên-m1m5)
 5. [Thiết kế Xử lý đồng thời](#5-thiết-kế-xử-lý-đồng-thời)
@@ -42,7 +42,7 @@
 ┌────────────────▼────────────────────────────────────────────────────┐
 │                       PERSISTENCE LAYER                             │
 │  Spring Data JPA Repositories                                       │
-│  28 Entity ↔ 28 Table · 1 View (V_DON_DAT_TONG_HOP - read-only)   │
+│  29 Entity ↔ 29 Table · 1 View (V_DON_DAT_TONG_HOP - read-only)   │
 └────────────────┬────────────────────────────────────────────────────┘
                  │ JDBC (HikariCP)
 ┌────────────────▼────────────────────────────────────────────────────┐
@@ -52,12 +52,15 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2. Cấu trúc Package (Package-by-Feature)
+### 1.2. Cấu trúc Package (Package-by-Layer)
+
+Dự án được tổ chức theo kiến trúc **Package-by-Layer** (các thư mục tầng kiến trúc lớn chứa các phân hệ con):
 
 ```
 com.example.skygatehub
 ├── SkyGateHubApplication.java          // Main class, @EnableAsync, @EnableScheduling
-├── config/                             // Cấu hình dùng chung
+├── config/                             // Cấu hình hệ thống (auth, security, web...)
+│   ├── auth/
 │   ├── AsyncConfig.java                // ThreadPool cho @Async
 │   ├── SchedulerConfig.java            // ThreadPool cho @Scheduled
 │   └── AppProperties.java             // @ConfigurationProperties
@@ -75,104 +78,84 @@ com.example.skygatehub
 │       └── client/
 │           └── GateCheckinClientApp.java
 │
-├── account/     (M1)                   // Quản lý Người dùng & Xác thực
-│   ├── entity/
-│   │   ├── NguoiDung.java
-│   │   ├── VaiTro.java
-│   │   └── NguoiDungVaiTro.java        // Bảng liên kết PK composite
-│   ├── enums/
-│   ├── repository/
-│   ├── service/
-│   └── controller/
+├── controller/                         // Tầng CONTROLLER theo phân hệ
+│   ├── account/                        // (M1) Quản lý tài khoản
+│   ├── auth/                           // (M1) Đăng nhập, xác thực
+│   ├── cart/                           // (M5) Giỏ hàng session
+│   ├── checkin/                        // (M5) Quét mã check-in
+│   ├── dashboard/                      // (M5) Báo cáo thống kê
+│   ├── dining/                         // (M4) Ẩm thực & Đặt bàn
+│   ├── order/                          // (M5) Đơn đặt & Checkout
+│   ├── payment/                        // (M5) Thanh toán & Cọc
+│   ├── room/                           // (M3) Quản trị phòng & Room Map
+│   ├── roombooking/                    // (M2) Đặt phòng (khách hàng)
+│   └── ticket/                         // (M1) Quản lý vé & Combo
 │
-├── ticket/      (M1)                   // Vé tham quan, Combo, Bảng giá
-│   ├── entity/
-│   │   ├── LoaiVe.java
-│   │   ├── BangGiaVe.java
-│   │   ├── NgayDacBiet.java
-│   │   ├── KhoVe.java
-│   │   ├── ThanhPhanDichVu.java
-│   │   └── ComboThanhPhan.java
-│   ├── enums/
-│   ├── repository/
-│   ├── service/
-│   └── controller/
+├── dto/                                // Tầng DTO (Data Transfer Objects)
+│   ├── account/
+│   ├── auth/
+│   ├── cancellation/
+│   ├── cart/
+│   ├── checkin/
+│   ├── dashboard/
+│   ├── dining/
+│   ├── order/
+│   ├── payment/
+│   ├── room/                           // LoaiPhongRequest, PhongRequest, RoomMapCell...
+│   ├── roombooking/                    // RoomQuoteRequest, RoomSearchRequest...
+│   └── ticket/
 │
-├── roombooking/ (M2)                   // Đặt phòng (phía Khách hàng)
-│   ├── entity/
-│   │   └── DatPhong.java
-│   ├── enums/
-│   ├── dto/
-│   ├── repository/
-│   ├── service/
-│   └── controller/
+├── entity/                             // Tầng ENTITY ánh xạ 29 bảng theo phân hệ
+│   ├── account/                        // NguoiDung, VaiTro, NguoiDungVaiTro
+│   ├── cancellation/                   // HuyDon, HoanTien
+│   ├── checkin/                        // CheckIn
+│   ├── dining/                         // DichVuAnUong, CaAn, BanAn, DichVuCaAn, DatBan
+│   ├── order/                          // DonDat, ChiTietDon, Ve, QuyenLoiDon, VDonDatTongHop
+│   ├── payment/                        // ThanhToan, ChinhSachCoc, ChinhSachHuy
+│   ├── room/                           // KhuLuuTru, LoaiPhong, Phong, PhanPhong
+│   ├── roombooking/                    // DatPhong
+│   └── ticket/                         // LoaiVe, BangGiaVe, NgayDacBiet, KhoVe, ThanhPhanDichVu, ComboThanhPhan
 │
-├── room/        (M3)                   // Vận hành phòng (phía Quản trị)
-│   ├── entity/
-│   │   ├── LoaiPhong.java
-│   │   ├── Phong.java
-│   │   └── PhanPhong.java
-│   ├── enums/
-│   ├── dto/
-│   ├── repository/
-│   ├── service/
-│   └── controller/
+├── enums/                              // Tầng ENUMS theo phân hệ
+│   ├── account/
+│   ├── auth/
+│   ├── cancellation/
+│   ├── dining/
+│   ├── order/
+│   ├── payment/
+│   ├── room/
+│   ├── roombooking/
+│   └── ticket/
 │
-├── dining/      (M4)                   // Ẩm thực, Bàn ăn, Ca ăn
-│   ├── entity/
-│   │   ├── DichVuAnUong.java
-│   │   ├── CaAn.java
-│   │   ├── BanAn.java
-│   │   ├── DichVuCaAn.java
-│   │   └── DatBan.java
-│   ├── enums/
-│   ├── repository/
-│   ├── service/
-│   └── controller/
+├── repository/                         // Tầng REPOSITORY (Spring Data JPA)
+│   ├── account/
+│   ├── cancellation/
+│   ├── checkin/
+│   ├── dining/
+│   ├── order/
+│   ├── payment/
+│   ├── room/                           // KhuLuuTruRepository, LoaiPhongRepository...
+│   ├── roombooking/
+│   └── ticket/
 │
-├── order/       (M5)                   // Đơn đặt tổng hợp, Giỏ hàng, Thanh toán
-│   ├── entity/
-│   │   ├── DonDat.java
-│   │   ├── ChiTietDon.java
-│   │   ├── Ve.java
-│   │   └── QuyenLoiDon.java
-│   ├── enums/
-│   ├── dto/
-│   ├── repository/
-│   ├── service/
-│   └── controller/
-│
-├── payment/     (M5)                   // Thanh toán & Chính sách cọc
-│   ├── entity/
-│   │   ├── ThanhToan.java
-│   │   ├── ChinhSachCoc.java
-│   │   └── ChinhSachHuy.java
-│   ├── enums/
-│   ├── repository/
-│   ├── service/
-│   └── controller/
-│
-├── cancellation/ (M5)                  // Hủy đơn & Hoàn tiền
-│   ├── entity/
-│   │   ├── HuyDon.java
-│   │   └── HoanTien.java
-│   ├── enums/
-│   ├── repository/
-│   ├── service/
-│   └── controller/
-│
-└── checkin/     (M5)                   // Check-in đa khu vực & Dashboard
-    ├── entity/
-    │   └── CheckIn.java
-    ├── enums/
-    ├── repository/
-    ├── service/
-    └── controller/
+└── service/                            // Tầng SERVICE & SERVICE IMPL
+    ├── account/
+    ├── auth/
+    ├── cancellation/
+    ├── cart/
+    ├── checkin/
+    ├── dashboard/
+    ├── dining/
+    ├── order/
+    ├── payment/
+    ├── room/
+    ├── roombooking/
+    └── ticket/
 ```
 
 ---
 
-## 2. Phân tích Bounded Context & Ánh xạ 28 bảng
+## 2. Phân tích Bounded Context & Ánh xạ 29 bảng
 
 ### 2.1. Bản đồ Bounded Context
 
@@ -190,12 +173,12 @@ com.example.skygatehub
 │                                                                                 │
 │  ACCOMMODATION CONTEXT                  DINING CONTEXT                         │
 │  ┌─────────────────────┐                ┌──────────────────────────────────┐   │
-│  │ LOAI_PHONG           │                │ DICH_VU_AN_UONG                  │   │
-│  │ PHONG                │                │ CA_AN                            │   │
-│  │ DAT_PHONG            │                │ BAN_AN                           │   │
-│  │ PHAN_PHONG           │                │ DICH_VU_CA_AN                    │   │
-│  └─────────────────────┘                │ DAT_BAN                          │   │
-│                                          └──────────────────────────────────┘   │
+│  │ KHU_LUU_TRU         │                │ DICH_VU_AN_UONG                  │   │
+│  │ LOAI_PHONG           │                │ CA_AN                            │   │
+│  │ PHONG                │                │ BAN_AN                           │   │
+│  │ DAT_PHONG            │                │ DICH_VU_CA_AN                    │   │
+│  │ PHAN_PHONG           │                │ DAT_BAN                          │   │
+│  └─────────────────────┘                └──────────────────────────────────┘   │
 │                                                                                 │
 │  ORDER & FULFILLMENT CONTEXT (Aggregate Root: DON_DAT)                         │
 │  ┌─────────────────────────────────────────────────────────────────────────┐   │
@@ -210,7 +193,7 @@ com.example.skygatehub
 └────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2. Vai trò chi tiết từng bảng (28 bảng)
+### 2.2. Vai trò chi tiết từng bảng (29 bảng)
 
 #### IDENTITY & ACCESS CONTEXT (3 bảng)
 
@@ -231,39 +214,40 @@ com.example.skygatehub
 | 8 | `THANH_PHAN_DICH_VU` | Master data thành phần dịch vụ (tham quan, ăn uống, cáp treo, xe điện, khác). Mỗi thành phần có thể liên kết tới 1 `LOAI_VE` hoặc 1 `DICH_VU_AN_UONG` tùy loại. |
 | 9 | `COMBO_THANH_PHAN` | Ánh xạ M:N giữa LOAI_VE (vé combo) và THANH_PHAN_DICH_VU. `SO_LUONG_MOI_COMBO` = bao nhiêu lượt mỗi combo. `THEO_DOI_SU_DUNG` = có cần đếm sử dụng hay không (chống buffet trùng). |
 
-#### ACCOMMODATION CONTEXT (4 bảng)
+#### ACCOMMODATION CONTEXT (5 bảng)
 
 | # | Bảng | Vai trò |
 |---|------|---------|
-| 10 | `LOAI_PHONG` | Master data loại phòng (Homestay, Bungalow, Villa...). `SO_NGUOI_TOI_DA`, `GIA_CO_BAN`. |
-| 11 | `PHONG` | Danh sách phòng vật lý. FK → LOAI_PHONG. `TRANG_THAI ∈ {SAN_SANG, DANG_SU_DUNG, BAO_TRI}`. Unique constraint `(MA_PHONG, MA_LOAI_PHONG)` phục vụ FK phức hợp từ PHAN_PHONG. |
-| 12 | `DAT_PHONG` | Booking phòng liên kết tới `CHI_TIET_DON`. `NGAY_NHAN_PHONG < NGAY_TRA_PHONG`. `TRANG_THAI ∈ {CHO_XAC_NHAN, DA_XAC_NHAN, DA_NHAN_PHONG, DA_TRA_PHONG, DA_HUY}`. |
-| 13 | `PHAN_PHONG` | Phân bổ phòng cụ thể cho booking. FK phức hợp `(MA_DAT_PHONG, MA_LOAI_PHONG) → DAT_PHONG` và `(MA_PHONG, MA_LOAI_PHONG) → PHONG` đảm bảo type-safety: chỉ gán phòng đúng loại. Unique `(MA_DAT_PHONG, MA_PHONG)` chống gán trùng. |
+| 10 | `KHU_LUU_TRU` | Master data khu lưu trú (FIVITEL Sông Ngân, FIVITEL Cầu Kiều, FIVITEL Ô Thước, Nhà Moong). `HANG_SAO`, `DIA_CHI`, `EMAIL`, `HOTLINE`, `HINH_ANH`. |
+| 11 | `LOAI_PHONG` | Master data 15 loại phòng thực tế phân theo từng khu lưu trú (`MA_KHU`). `DIEN_TICH`, `LOAI_GIUONG`, `SUC_CHUA_NGUOI_LON`, `SUC_CHUA_TRE_EM`, `GIA_CO_BAN`, `HINH_ANH`. |
+| 12 | `PHONG` | Danh sách 30 phòng vật lý. FK → LOAI_PHONG. `TRANG_THAI ∈ {SAN_SANG, DANG_SU_DUNG, BAO_TRI}`. Unique constraint `(MA_PHONG, MA_LOAI_PHONG)` phục vụ FK phức hợp từ PHAN_PHONG. |
+| 13 | `DAT_PHONG` | Booking phòng liên kết tới `CHI_TIET_DON`. `NGAY_NHAN_PHONG < NGAY_TRA_PHONG`. `TRANG_THAI ∈ {CHO_XAC_NHAN, DA_XAC_NHAN, DA_NHAN_PHONG, DA_TRA_PHONG, DA_HUY}`. |
+| 14 | `PHAN_PHONG` | Phân bổ phòng cụ thể cho booking. FK phức hợp `(MA_DAT_PHONG, MA_LOAI_PHONG) → DAT_PHONG` và `(MA_PHONG, MA_LOAI_PHONG) → PHONG` đảm bảo type-safety: chỉ gán phòng đúng loại. Unique `(MA_DAT_PHONG, MA_PHONG)` chống gán trùng. |
 
 #### DINING CONTEXT (5 bảng)
 
 | # | Bảng | Vai trò |
 |---|------|---------|
-| 14 | `DICH_VU_AN_UONG` | Master data dịch vụ ăn uống (buffet, set menu, à la carte...). |
-| 15 | `CA_AN` | Ca ăn: buổi sáng/trưa/tối. `GIO_BAT_DAU/KET_THUC` tùy chọn. |
-| 16 | `BAN_AN` | Bàn ăn vật lý: `SO_BAN`, `KHU_VUC`, `SUC_CHUA`. `TRANG_THAI ∈ {SAN_SANG, DANG_SU_DUNG, BAO_TRI}`. |
-| 17 | `DICH_VU_CA_AN` | Bảng liên kết M:N giữa `DICH_VU_AN_UONG` và `CA_AN`: dịch vụ nào phục vụ ca nào. |
-| 18 | `DAT_BAN` | Đặt bàn ăn. Có 2 nguồn: từ `CHI_TIET_DON` (đặt trực tiếp) HOẶC từ `QUYEN_LOI_DON` (combo). FK `(MA_DICH_VU, MA_CA_AN) → DICH_VU_CA_AN`. **Cột tính toán `MA_BAN_AN_DANG_GIU`**: = MA_BAN_AN khi chưa hủy, = NULL khi đã hủy → Unique `(MA_BAN_AN_DANG_GIU, NGAY_AN, MA_CA_AN)` **chống đặt trùng bàn cùng ca cùng ngày** mà vẫn cho phép tái sử dụng bàn sau khi hủy. |
+| 15 | `DICH_VU_AN_UONG` | Master data dịch vụ ăn uống (buffet, set menu, à la carte...). |
+| 16 | `CA_AN` | Ca ăn: buổi sáng/trưa/tối. `GIO_BAT_DAU/KET_THUC` tùy chọn. |
+| 17 | `BAN_AN` | Bàn ăn vật lý: `SO_BAN`, `KHU_VUC`, `SUC_CHUA`. `TRANG_THAI ∈ {SAN_SANG, DANG_SU_DUNG, BAO_TRI}`. |
+| 18 | `DICH_VU_CA_AN` | Bảng liên kết M:N giữa `DICH_VU_AN_UONG` và `CA_AN`: dịch vụ nào phục vụ ca nào. |
+| 19 | `DAT_BAN` | Đặt bàn ăn. Có 2 nguồn: từ `CHI_TIET_DON` (đặt trực tiếp) HOẶC từ `QUYEN_LOI_DON` (combo). FK `(MA_DICH_VU, MA_CA_AN) → DICH_VU_CA_AN`. **Cột tính toán `MA_BAN_AN_DANG_GIU`**: = MA_BAN_AN khi chưa hủy, = NULL khi đã hủy → Unique `(MA_BAN_AN_DANG_GIU, NGAY_AN, MA_CA_AN)` **chống đặt trùng bàn cùng ca cùng ngày** mà vẫn cho phép tái sử dụng bàn sau khi hủy. |
 
 #### ORDER & FULFILLMENT CONTEXT (10 bảng + 1 View)
 
 | # | Bảng | Vai trò |
 |---|------|---------|
-| 19 | `DON_DAT` | **Aggregate Root** – Đơn đặt tổng hợp. `MA_DON_HANG` = mã hiển thị khách hàng. `TONG_TIEN` = tổng phải thu (cập nhật từ service, khớp 100% với SUM(CHI_TIET_DON.THANH_TIEN) khi HIEU_LUC). `TIEN_COC_YEU_CAU` = số tiền cọc. `MA_QR` = mã QR token duy nhất cho đơn. |
-| 20 | `CHI_TIET_DON` | **Nguồn tiền duy nhất** của hệ thống. Mỗi dòng = 1 dịch vụ trong đơn. `LOAI_DICH_VU ∈ {VE, PHONG, AN_UONG}` + CHECK constraint đảm bảo chỉ 1 FK tương ứng != NULL. **`THANH_TIEN = SO_LUONG * DON_GIA` là GENERATED STORED** → không INSERT/UPDATE. `TRANG_THAI ∈ {HIEU_LUC, DA_HUY}`. |
-| 21 | `VE` | Vé thực tế phát hành. FK composite `(MA_CHI_TIET, MA_DON_DAT) → CHI_TIET_DON`. `MA_VE_CHUOI` = chuỗi token duy nhất cho check-in. `TRANG_THAI ∈ {CHUA_SU_DUNG, DA_SU_DUNG, DA_HUY}`. |
-| 22 | `QUYEN_LOI_DON` | **Chụp (snapshot) thành phần combo** tại thời điểm đặt. Chống tính trùng khi combo bao gồm buffet: `SO_LUONG_TOI_DA/DA_DUNG`, `THEO_DOI_SU_DUNG` = có đếm hay không. Khi check-in combo buffet, hệ thống trừ `SO_LUONG_DA_DUNG`. |
-| 23 | `THANH_TOAN` | Ghi nhận từng đợt thanh toán. `LOAI_GIAO_DICH ∈ {DAT_COC, THANH_TOAN_DU, THANH_TOAN_CON_LAI, THANH_TOAN}`. `PHUONG_THUC ∈ {TIEN_MAT, CHUYEN_KHOAN, VNPAY, MOMO, THE_KHAC}`. **Hỗ trợ thanh toán nhiều đợt** cho 1 đơn. |
-| 24 | `CHINH_SACH_COC` | Chính sách đặt cọc theo phạm vi (TOAN_BO, VE, PHONG, AN_UONG). Có tỷ lệ % hoặc mức cố định. |
-| 25 | `CHINH_SACH_HUY` | Chính sách hủy theo số ngày trước ngày sử dụng. `HANH_DONG ∈ {HOAN_TIEN, MAT_COC, CAN_XAC_NHAN}`. |
-| 26 | `HUY_DON` | Yêu cầu hủy **từng CHI_TIET_DON** (không hủy cả đơn 1 cục). `MA_NHOM_HUY` nhóm nhiều dòng hủy cùng lúc. Quy trình: CAN_XAC_NHAN → DA_DUYET/TU_CHOI → DA_XU_LY. `TIEN_HOAN/TIEN_GIU_LAI` tính từ chính sách. |
-| 27 | `HOAN_TIEN` | Ghi nhận hoàn tiền **trỏ ngược lại THANH_TOAN gốc**. Tách biệt hoàn toàn với THANH_TOAN (1 thanh toán có thể hoàn nhiều lần). `TRANG_THAI ∈ {CHO_HOAN, DA_HOAN, THAT_BAI}`. |
-| 28 | `CHECK_IN` | Check-in đa khu vực: `LOAI_CHECK_IN ∈ {VE, PHONG, AN_UONG}`. CHECK constraint đảm bảo đúng loại FK. Unique trên `MA_VE`, `MA_DAT_PHONG`, `MA_DAT_BAN` → **chống quét trùng QR**. |
+| 20 | `DON_DAT` | **Aggregate Root** – Đơn đặt tổng hợp. `MA_DON_HANG` = mã hiển thị khách hàng. `TONG_TIEN` = tổng phải thu (cập nhật từ service, khớp 100% với SUM(CHI_TIET_DON.THANH_TIEN) khi HIEU_LUC). `TIEN_COC_YEU_CAU` = số tiền cọc. `MA_QR` = mã QR token duy nhất cho đơn. |
+| 21 | `CHI_TIET_DON` | **Nguồn tiền duy nhất** của hệ thống. Mỗi dòng = 1 dịch vụ trong đơn. `LOAI_DICH_VU ∈ {VE, PHONG, AN_UONG}` + CHECK constraint đảm bảo chỉ 1 FK tương ứng != NULL. **`THANH_TIEN = SO_LUONG * DON_GIA` là GENERATED STORED** → không INSERT/UPDATE. `TRANG_THAI ∈ {HIEU_LUC, DA_HUY}`. |
+| 22 | `VE` | Vé thực tế phát hành. FK composite `(MA_CHI_TIET, MA_DON_DAT) → CHI_TIET_DON`. `MA_VE_CHUOI` = chuỗi token duy nhất cho check-in. `TRANG_THAI ∈ {CHUA_SU_DUNG, DA_SU_DUNG, DA_HUY}`. |
+| 23 | `QUYEN_LOI_DON` | **Chụp (snapshot) thành phần combo** tại thời điểm đặt. Chống tính trùng khi combo bao gồm buffet: `SO_LUONG_TOI_DA/DA_DUNG`, `THEO_DOI_SU_DUNG` = có đếm hay không. Khi check-in combo buffet, hệ thống trừ `SO_LUONG_DA_DUNG`. |
+| 24 | `THANH_TOAN` | Ghi nhận từng đợt thanh toán. `LOAI_GIAO_DICH ∈ {DAT_COC, THANH_TOAN_DU, THANH_TOAN_CON_LAI, THANH_TOAN}`. `PHUONG_THUC ∈ {TIEN_MAT, CHUYEN_KHOAN, VNPAY, MOMO, THE_KHAC}`. **Hỗ trợ thanh toán nhiều đợt** cho 1 đơn. |
+| 25 | `CHINH_SACH_COC` | Chính sách đặt cọc theo phạm vi (TOAN_BO, VE, PHONG, AN_UONG). Có tỷ lệ % hoặc mức cố định. |
+| 26 | `CHINH_SACH_HUY` | Chính sách hủy theo số ngày trước ngày sử dụng. `HANH_DONG ∈ {HOAN_TIEN, MAT_COC, CAN_XAC_NHAN}`. |
+| 27 | `HUY_DON` | Yêu cầu hủy **từng CHI_TIET_DON** (không hủy cả đơn 1 cục). `MA_NHOM_HUY` nhóm nhiều dòng hủy cùng lúc. Quy trình: CAN_XAC_NHAN → DA_DUYET/TU_CHOI → DA_XU_LY. `TIEN_HOAN/TIEN_GIU_LAI` tính từ chính sách. |
+| 28 | `HOAN_TIEN` | Ghi nhận hoàn tiền **trỏ ngược lại THANH_TOAN gốc**. Tách biệt hoàn toàn với THANH_TOAN (1 thanh toán có thể hoàn nhiều lần). `TRANG_THAI ∈ {CHO_HOAN, DA_HOAN, THAT_BAI}`. |
+| 29 | `CHECK_IN` | Check-in đa khu vực: `LOAI_CHECK_IN ∈ {VE, PHONG, AN_UONG}`. CHECK constraint đảm bảo đúng loại FK. Unique trên `MA_VE`, `MA_DAT_PHONG`, `MA_DAT_BAN` → **chống quét trùng QR**. |
 | View | `V_DON_DAT_TONG_HOP` | View read-only đối soát: so sánh `TONG_TIEN` đang lưu vs `TONG_CHI_TIET_HIEU_LUC`, tính `DA_THU`, `DA_HOAN`, `DA_THU_RONG`, `CON_PHAI_THU`, `TRANG_THAI_THANH_TOAN_TINH`. |
 
 ### 2.3. Cơ chế tránh lỗi tiền bạc
@@ -319,7 +303,7 @@ DON_DAT ──1:N──> CHI_TIET_DON ──1:N──> VE
      │                │                                               │
      │                └──0..N──> HUY_DON ──> HOAN_TIEN               │
      │                                                                │
-     ├──1:N──> THANH_TOAN                         LOAI_PHONG ─────────┘
+     ├──1:N──> THANH_TOAN     KHU_LUU_TRU ──1:N──> LOAI_PHONG ─────────┘
      │
      ├──1:N──> CHECK_IN
      │
@@ -489,11 +473,11 @@ Chỉ sử dụng 3 annotation Lombok: `@Getter`, `@Setter`, `@NoArgsConstructor
 │      │ Package: roombooking/                                             │
 │      │ Tham chiếu đọc: LOAI_PHONG, PHONG, NGAY_DAC_BIET, BANG_GIA_VE   │
 ├──────┼────────────────────────────────────────────────────────────────────┤
-│ M3   │ ROOM OPS - Phía Quản trị (3 bảng)                                │
-│      │ Quản lý loại phòng, phòng, phân phòng, Room Map                  │
+│ M3   │ ROOM OPS - Phía Quản trị (4 bảng)                                │
+│      │ Quản lý khu lưu trú, loại phòng, phòng, phân phòng, Room Map     │
 │      │ ─────────────────────────────────────────────────────────────────  │
-│      │ Bảng: LOAI_PHONG, PHONG, PHAN_PHONG                              │
-│      │ Package: room/                                                    │
+│      │ Bảng: KHU_LUU_TRU, LOAI_PHONG, PHONG, PHAN_PHONG                 │
+│      │ Package: controller/room, service/room, repository/room, entity/room│
 │      │ Tham chiếu đọc: DAT_PHONG                                        │
 ├──────┼────────────────────────────────────────────────────────────────────┤
 │ M4   │ DINING (5 bảng)                                                   │
@@ -537,21 +521,22 @@ Chỉ sử dụng 3 annotation Lombok: `@Getter`, `@Setter`, `@NoArgsConstructor
 #### M2 — Đặt phòng (Khách hàng)
 
 **Chức năng chính:**
-- Tìm kiếm phòng trống theo khoảng ngày (check-in/check-out) + loại phòng + số khách
+- Tìm kiếm phòng trống theo khoảng ngày (check-in/check-out) + Khu lưu trú + loại phòng + số khách
 - Hiển thị giá theo đêm (phụ thu ngày lễ tra từ NGAY_DAC_BIET + BANG_GIA_VE)
 - Tạo DAT_PHONG liên kết vào CHI_TIET_DON → thêm vào giỏ hàng session
 - Xem lịch sử đặt phòng của tài khoản
 
 **View Thymeleaf:**
-- Trang tìm kiếm phòng (form: ngày nhận/trả, loại phòng, số khách)
-- Trang kết quả tìm kiếm (danh sách loại phòng còn trống, giá)
-- Trang chi tiết loại phòng
+- Trang tìm kiếm phòng (form: ngày nhận/trả, khu lưu trú, loại phòng, số khách)
+- Trang kết quả tìm kiếm (danh sách loại phòng còn trống theo từng khu, giá)
+- Trang chi tiết loại phòng (kèm hình ảnh, kiểu giường, diện tích, sức chứa người lớn/trẻ em)
 - Trang lịch sử đặt phòng
 
 #### M3 — Vận hành phòng (Quản trị)
 
 **Chức năng chính:**
-- CRUD LOAI_PHONG (tên, mô tả, sức chứa, giá cơ bản, hình ảnh)
+- CRUD KHU_LUU_TRU (tên khu, hạng sao, hotline, email, địa chỉ, ảnh đại diện)
+- CRUD LOAI_PHONG (tên, khu lưu trú, diện tích, kiểu giường, sức chứa người lớn/trẻ em, giá cơ bản, hình ảnh)
 - CRUD PHONG (số phòng, gắn loại, trạng thái SAN_SANG/BAO_TRI)
 - PHAN_PHONG: Gán phòng cụ thể cho booking đã xác nhận
 - **Room Map:** Sơ đồ trạng thái phòng trực quan theo ngày (calendar grid):
@@ -560,6 +545,7 @@ Chỉ sử dụng 3 annotation Lombok: `@Getter`, `@Setter`, `@NoArgsConstructor
   - Nhân viên có thể kéo thả gán phòng
 
 **View Thymeleaf:**
+- Trang quản lý khu lưu trú
 - Trang quản lý loại phòng
 - Trang quản lý phòng
 - Trang Room Map (bảng lưới ngày × phòng)
@@ -1084,7 +1070,7 @@ public class GateCheckinClientApp extends JFrame {
 
 | TC | Tiêu chí | Điểm | Giải pháp |
 |----|----------|------|-----------|
-| 4.1 | CSDL ≥ 5 bảng, ≥ 20 bản ghi/bảng | 0,5 | **28 bảng** trong MySQL. File `02_seed_data.sql` có ≥20 bản ghi cho mỗi bảng chính. |
+| 4.1 | CSDL ≥ 5 bảng, ≥ 20 bản ghi/bảng | 0,5 | **29 bảng** trong MySQL. File `02_seed_data.sql` có ≥20 bản ghi cho mỗi bảng chính. |
 | 4.2 | CRUD đầy đủ | 0,5 | CRUD cho tất cả master data: NGUOI_DUNG, LOAI_VE, BANG_GIA_VE, LOAI_PHONG, PHONG, DICH_VU_AN_UONG, BAN_AN, CA_AN. Soft-delete (đổi TRANG_THAI). |
 | 4.3 | Tìm kiếm, lọc | 0,5 | Tìm phòng trống theo khoảng ngày. Lọc đơn theo trạng thái/ngày. Tìm vé theo mã QR. Lọc bàn trống theo ca/ngày. Full-text search tên dịch vụ. |
 | 4.4 | Phân trang, sắp xếp | 0,5 | `Pageable` + `Page<T>` trên tất cả danh sách admin. Thymeleaf pagination component. Sort by column header click. |
