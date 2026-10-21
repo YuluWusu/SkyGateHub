@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${ticket.tenLoaiVe} + ' — SkyGateHub'"></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/header :: header}"></div>
+    <main class="flex-grow-1">
+        <div class="container my-5">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/tickets}">Vé & Combo</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" th:text="${ticket.tenLoaiVe}">Chi tiết vé</li>
+                </ol>
+            </nav>
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="card p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge" th:classappend="${ticket.loaiVe.name() == 'TRON_GOI'} ? 'bg-warning text-dark' : 'bg-success'" th:text="${ticket.loaiVe.name() == 'TRON_GOI' ? 'Combo trọn gói' : (ticket.loaiVe.name() == 'NGUOI_LON' ? 'Vé người lớn' : (ticket.loaiVe.name() == 'TRE_EM' ? 'Vé trẻ em' : 'Vé dịch vụ'))}"></span>
+                            <span class="text-muted small" th:text="'Mã loại vé: ' + ${ticket.maLoaiVe}"></span>
+                        </div>
+                        <h2 class="fw-bold text-white mb-2" th:text="${ticket.tenLoaiVe}">Tên loại vé</h2>
+                        <p class="text-muted small mb-4">Áp dụng cho khách du lịch tham quan tại Khu du lịch sinh thái Cổng Trời Đông Giang</p>
+                        
+                        <div class="rounded-3 overflow-hidden mb-4" style="height: 240px; position: relative;">
+                            <img th:if="${ticket.loaiVe.name() == 'TRON_GOI'}" src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80" alt="Combo" class="w-100 h-100 object-fit-cover">
+                            <img th:unless="${ticket.loaiVe.name() == 'TRON_GOI'}" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=80" alt="Vé" class="w-100 h-100 object-fit-cover">
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-white mb-3">Mô tả & trải nghiệm</h5>
+                            <p class="text-light" style="line-height: 1.8;" th:text="${ticket.moTa != null ? ticket.moTa : 'Vé tham quan chính thức tại Khu du lịch sinh thái Cổng Trời Đông Giang. Bao gồm quyền ra vào các điểm tham quan thắng cảnh, thác nước và không gian văn hóa bản địa Cơ Tu.'}"></p>
+                        </div>
+
+                        <div th:if="${ticket.loaiVe.name() == 'TRON_GOI'}" class="mb-4">
+                            <h5 class="fw-bold text-warning mb-3">Thành phần dịch vụ bao gồm trong combo:</h5>
+                            <div class="list-group">
+                                <div th:each="c : ${comboItems}" class="list-group-item d-flex justify-content-between align-items-center p-3" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass); margin-bottom: 8px; border-radius: 8px;">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h6 class="mb-0 fw-bold text-white" th:text="${c.thanhPhanDichVu.tenThanhPhan}">Tên dịch vụ</h6>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 mt-2">
+                                            <span class="badge bg-primary" th:text="${c.thanhPhanDichVu.loaiThanhPhan != null ? c.thanhPhanDichVu.loaiThanhPhan.displayName : 'Dịch vụ'}">Phân loại</span>
+                                            <span class="badge bg-secondary" th:if="${c.theoDoiSuDung}">Kiểm soát lượt</span>
+                                            <span class="badge bg-info" th:unless="${c.theoDoiSuDung}">Tự do trong ngày</span>
+                                            <small class="text-muted" th:if="${c.ghiChu != null and !c.ghiChu.isEmpty()}" th:text="'— ' + ${c.ghiChu}"></small>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-success rounded-pill px-3 py-2 fw-semibold" th:text="${c.soLuongMoiCombo} + ' lượt'">1 lượt</span>
+                                </div>
+                                <div th:if="${comboItems == null or comboItems.isEmpty()}" class="empty-state py-3">
+                                    <div class="empty-state-desc text-muted">Chưa có thành phần nào được gán cho combo này.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-top border-secondary border-opacity-25 pt-4">
+                            <h6 class="fw-bold text-muted small mb-2">Quy định & chính sách vé:</h6>
+                            <ul class="text-muted small ps-3 mb-0" style="line-height: 1.7;">
+                                <li th:if="${ticket.loaiVe.name() == 'NGUOI_LON'}">Áp dụng cho khách hàng người lớn hoặc có chiều cao từ 1m4 trở lên.</li>
+                                <li th:if="${ticket.loaiVe.name() == 'TRE_EM'}">Áp dụng cho trẻ em có chiều cao từ 1m đến dưới 1m4. Trẻ em dưới 1m được miễn phí vé vào cổng.</li>
+                                <li th:if="${ticket.loaiVe.name() == 'TRON_GOI'}">Vé combo trọn gói bao gồm tất cả các dịch vụ liệt kê phía trên trong cùng 1 mã QR.</li>
+                                <li>Vé có giá trị sử dụng trong ngày tham quan đã chọn tại Khu du lịch sinh thái Cổng Trời Đông Giang.</li>
+                                <li>Vui lòng lưu giữ mã QR trên vé điện tử để quét tại cổng soát vé Trạm 1 và các điểm trải nghiệm.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card p-4 sticky-top" style="top: 90px; border: 1px solid rgba(52, 211, 153, 0.3) !important; z-index: 5;">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+                            <div>
+                                <span class="text-muted small d-block">Giá niêm yết hôm nay:</span>
+                                <span class="fs-3 fw-bold" style="color: #f59e0b;" th:text="${#numbers.formatDecimal(todayPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">150,000 VNĐ</span>
+                            </div>
+                            <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-50 px-3 py-2">Đang mở bán</span>
+                        </div>
+
+                        <h5 class="fw-bold text-white mb-3">Tra cứu giá & tồn kho theo ngày</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Ngày tham quan (dd/mm/yyyy)</label>
+                            <input type="date" id="quoteDate" class="form-control" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Số lượng vé</label>
+                            <input type="number" id="quoteQty" class="form-control" value="1" min="1" max="50">
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="button" class="btn btn-outline-success fw-bold py-2" onclick="fetchQuote()">Tra cứu báo giá ngày</button>
+                        </div>
+
+                        <div id="quoteResult" class="p-3 rounded-3 mb-3 d-none" style="background: rgba(0,0,0,0.45); border: 1px solid var(--border-glass-strong);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Đơn giá áp dụng:</span>
+                                <span id="unitPriceDisplay" class="fw-bold text-white">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Tình trạng kho vé:</span>
+                                <span id="inventoryDisplay" class="fw-bold">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+                                <span class="fw-bold text-white">Tổng cộng:</span>
+                                <span id="totalPriceDisplay" class="fs-4 fw-bold" style="color: #f59e0b;">-</span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-gold fw-bold py-3" onclick="alert('Đã chọn vé thành công! Tính năng thanh toán được bảo lưu cho phân hệ liên kết.')">Xác nhận đặt vé ngay</button>
+                            <a th:href="@{/tickets}" class="btn btn-outline-secondary text-center small py-2">← Chọn loại vé khác</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr('#quoteDate', {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                locale: "vn",
+                defaultDate: document.getElementById('quoteDate').value || new Date()
+            });
+        });
+
+        function fetchQuote() {
+            const date = document.getElementById('quoteDate').value;
+            const qty = document.getElementById('quoteQty').value;
+            const maLoaiVe = [[${ticket.maLoaiVe}]];
+
+            fetch('/tickets/quote?maLoaiVe=' + encodeURIComponent(maLoaiVe) + '&date=' + date + '&quantity=' + qty)
+                .then(res => res.json())
+                .then(data => {
+                    const box = document.getElementById('quoteResult');
+                    box.classList.remove('d-none');
+
+                    const unitPrice = data.donGia !== undefined ? data.donGia : (data.unitPrice !== undefined ? data.unitPrice : 0);
+                    const totalPrice = data.thanhTien !== undefined ? data.thanhTien : (data.totalPrice !== undefined ? data.totalPrice : 0);
+                    const available = data.conHang !== undefined ? data.conHang : (data.available !== undefined ? data.available : true);
+                    const remaining = data.soLuongConLai !== undefined ? data.soLuongConLai : (data.remaining !== undefined ? data.remaining : 500);
+                    let conditionHtml = '';
+                    if (data.dieuKienGia === 'NGAY_LE') {
+                        conditionHtml = ' <span class="badge bg-danger ms-1">Ngày lễ (+20%)</span>';
+                    } else if (data.dieuKienGia === 'CUOI_TUAN') {
+                        conditionHtml = ' <span class="badge bg-warning text-dark ms-1">Cuối tuần</span>';
+                    }
+                    document.getElementById('unitPriceDisplay').innerHTML = Number(unitPrice).toLocaleString('vi-VN') + ' VNĐ' + conditionHtml;
+                    document.getElementById('totalPriceDisplay').innerText = Number(totalPrice).toLocaleString('vi-VN') + ' VNĐ';
+
+                    const inv = document.getElementById('inventoryDisplay');
+                    if (available) {
+                        inv.innerHTML = '<span class="badge bg-success">Còn chỗ (' + remaining + ' vé)</span>';
+                    } else {
+                        inv.innerHTML = '<span class="badge bg-danger">Hết hạn mức (' + remaining + ' vé)</span>';
+                    }
+                })
+                .catch(err => {
+                    alert('Không thể tải báo giá. Vui lòng thử lại!');
+                });
+        }
+    </script>
+</body>
+</html>

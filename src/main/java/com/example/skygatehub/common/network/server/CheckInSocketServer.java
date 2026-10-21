@@ -100,17 +100,14 @@ public class CheckInSocketServer {
     @PreDestroy
     public void stopServer() {
         running = false;
-        try {
-            if (serverSocket != null && !serverSocket.isClosed()) {
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            try {
                 serverSocket.close();
-            }
-            if (threadPool != null && !threadPool.isShutdown()) {
-                threadPool.shutdownNow();
-            }
-            log.info("CheckInSocketServer đã được dừng an toàn.");
-        } catch (IOException e) {
-            log.error("Lỗi khi đóng CheckInSocketServer: {}", e.getMessage());
+            } catch (IOException ignored) {}
         }
+        if (threadPool != null && !threadPool.isShutdown()) {
+            threadPool.shutdownNow();
+        }
+        log.info("CheckInSocketServer đã dừng an toàn.");
     }
 }
-

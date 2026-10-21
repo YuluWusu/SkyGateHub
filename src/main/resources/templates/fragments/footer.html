@@ -1,0 +1,55 @@
+<footer xmlns:th="http://www.thymeleaf.org" th:fragment="footer" class="skygate-footer">
+    <div class="footer-container">
+        <div>
+            <a th:href="@{/}" class="brand" style="margin-bottom: 1rem; text-decoration: none;">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>Cổng Trời Đông Giang</h1>
+                    <span>EcoGate Resort & Nature Park</span>
+                </div>
+            </a>
+            <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 360px;">
+                Khu du lịch sinh thái Cổng Trời Đông Giang, xã Mà Cooih, huyện Đông Giang, tỉnh Quảng Nam. Điểm đến nghỉ dưỡng kết hợp văn hóa đồng bào Cơ Tu trác tuyệt.
+            </p>
+        </div>
+
+        <div class="footer-col">
+            <h5>Dịch Vụ</h5>
+            <ul>
+                <li><a th:href="@{/tickets}">Vé Vào Cổng & Cáp Treo</a></li>
+                <li><a href="#">Khách Sạn & Bungalow Suối</a></li>
+                <li><a href="#">Buffet & Ẩm Thực Núi Rừng</a></li>
+                <li><a th:href="@{/#booking}">Tra Cứu Mã Đơn Hàng</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h5>Quy Định Đặt Dịch Vụ</h5>
+            <ul>
+                <li><a href="#">Đặt cọc 30% tổng đơn hàng</a></li>
+                <li><a href="#">Trẻ em dưới 1,4m miễn phí vé</a></li>
+                <li><a href="#">Phụ thu 20% thứ 7 & ngày lễ</a></li>
+                <li><a href="#">Chính sách hủy đơn trước check-in</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h5>Hệ Thống Phân Quyền</h5>
+            <ul>
+                <li><a href="#">Lễ Tân Phân Phòng (M3)</a></li>
+                <li><a href="#">Nhà Hàng Xếp Bàn (M4)</a></li>
+                <li><a href="#">Trạm Soát Vé 4 Điểm (M5)</a></li>
+                <li><a href="#">Dashboard Báo Cáo Doanh Thu</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div>© 2026 Cổng Trời Đông Giang (EcoGate) — Dự án SkyGateHub.</div>
+        <div style="color: #34d399;">Hệ Thống Đặt Dịch Vụ & Vận Hành Trọn Gói</div>
+    </div>
+</footer>

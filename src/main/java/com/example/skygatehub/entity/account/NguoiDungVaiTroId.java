@@ -18,12 +18,33 @@ public class NguoiDungVaiTroId implements Serializable {
         this.maVaiTro = maVaiTro;
     }
 
+    public String getMaNguoiDung() {
+        return maNguoiDung;
+    }
+
+    public void setMaNguoiDung(String maNguoiDung) {
+        this.maNguoiDung = maNguoiDung;
+    }
+
+    public String getMaVaiTro() {
+        return maVaiTro;
+    }
+
+    public void setMaVaiTro(String maVaiTro) {
+        this.maVaiTro = maVaiTro;
+    }
+
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NguoiDungVaiTroId that)) return false;
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        NguoiDungVaiTroId that = (NguoiDungVaiTroId) object;
         return Objects.equals(maNguoiDung, that.maNguoiDung)
-            && Objects.equals(maVaiTro, that.maVaiTro);
+                && Objects.equals(maVaiTro, that.maVaiTro);
     }
 
     @Override
@@ -31,4 +52,3 @@ public class NguoiDungVaiTroId implements Serializable {
         return Objects.hash(maNguoiDung, maVaiTro);
     }
 }
-

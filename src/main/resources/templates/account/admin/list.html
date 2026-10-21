@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị người dùng — SkyGateHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/header :: header}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold text-white mb-1" style="letter-spacing: -0.5px;">Quản trị người dùng</h3>
+                    <p class="text-muted mb-0 small">Quản lý danh sách tài khoản, vai trò và phân quyền nhân viên hệ thống</p>
+                </div>
+                <a th:href="@{/admin/users/create}" class="btn btn-gold fw-bold px-4 py-2 shadow-sm">
+                    + Thêm người dùng mới
+                </a>
+            </div>
+
+            <div class="card p-3 mb-4">
+                <form th:action="@{/admin/users}" method="get" class="row g-2 align-items-center">
+                    <div class="col-md-10">
+                        <div class="input-group">
+                            <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo tên đăng nhập, họ tên, email hoặc SĐT...">
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button type="submit" class="btn btn-outline-success fw-bold py-2">Tìm kiếm</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Mã ND</th>
+                                <th>Tên đăng nhập</th>
+                                <th>Họ và tên</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                                <th>Vai trò</th>
+                                <th>Bảo mật MK</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end pe-4">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user : ${usersPage.content}">
+                                <td class="text-muted small fw-semibold" th:text="${user.maNguoiDung}">ND001</td>
+                                <td class="fw-bold text-success" th:text="${user.tenDangNhap}">admin</td>
+                                <td class="fw-semibold text-white">
+                                    <span th:text="${user.hoTen}">Nguyễn Văn A</span>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;" th:if="${user.ngayTao != null}" th:text="'Tạo: ' + ${#temporals.format(user.ngayTao, 'dd/MM/yyyy')}"></small>
+                                </td>
+                                <td class="small" th:text="${user.email != null ? user.email : '-'}">admin@example.com</td>
+                                <td class="small" th:text="${user.soDienThoai != null ? user.soDienThoai : '-'}">0901234567</td>
+                                <td>
+                                    <span th:if="${user.isAdmin()}" class="badge bg-warning text-dark">Quản trị viên</span>
+                                    <span th:if="${!user.isAdmin() and user.isStaff()}" class="badge bg-info text-dark" th:text="${user.tenVaiTroHienThi}">Nhân viên</span>
+                                    <span th:if="${!user.isStaff()}" class="badge bg-secondary">Khách hàng</span>
+                                </td>
+                                <td>
+                                    <span th:if="${user.canDoiMatKhau}" class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50">Cần đổi</span>
+                                    <span th:unless="${user.canDoiMatKhau}" class="badge bg-secondary bg-opacity-25 text-muted">Đã đổi</span>
+                                </td>
+                                <td>
+                                    <span th:if="${user.trangThai}" class="badge bg-success">Hoạt động</span>
+                                    <span th:unless="${user.trangThai}" class="badge bg-secondary">Tạm khóa</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <a th:href="@{'/admin/users/detail/' + ${user.id}}" class="btn btn-sm btn-outline-info" title="Xem chi tiết">Chi tiết</a>
+                                        <a th:href="@{'/admin/users/edit/' + ${user.id}}" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa thông tin">Sửa</a>
+                                        <a th:href="@{'/admin/users/toggle/' + ${user.id}}" class="btn btn-sm btn-outline-warning" title="Đổi trạng thái tài khoản" onclick="return confirm('Bạn có chắc muốn đổi trạng thái tài khoản này?');" th:text="${user.trangThai ? 'Khóa' : 'Mở'}">Khóa</a>
+                                        <a th:href="@{'/admin/users/delete/' + ${user.id}}" class="btn btn-sm btn-outline-danger" title="Xóa tài khoản" onclick="return confirm('Bạn có chắc muốn xóa tài khoản này?');">Xóa</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${usersPage.totalElements == 0}">
+                                <td colspan="9">
+                                    <div class="empty-state py-4">
+                                        <div class="empty-state-title">Không tìm thấy người dùng</div>
+                                        <div class="empty-state-desc">Không có tài khoản nào phù hợp với từ khóa tìm kiếm của bạn.</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer py-3">
+                    <div th:replace="~{fragments/pagination :: nav}"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

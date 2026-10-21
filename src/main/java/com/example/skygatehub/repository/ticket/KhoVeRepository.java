@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,11 +19,15 @@ public interface KhoVeRepository extends JpaRepository<KhoVe, Long> {
 
     Optional<KhoVe> findByLoaiVe_MaLoaiVeAndNgayThamQuan(String maLoaiVe, LocalDate ngayThamQuan);
 
-    /**
-     * Khóa bi quan (SELECT ... FOR UPDATE) chống bán vượt quá số lượng tối đa trong kho vé.
-     */
+    List<KhoVe> findByNgayThamQuan(LocalDate ngayThamQuan);
+
+    List<KhoVe> findByLoaiVe_MaLoaiVe(String maLoaiVe);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT k FROM KhoVe k WHERE k.loaiVe.maLoaiVe = :maLoaiVe AND k.ngayThamQuan = :ngayThamQuan")
-    Optional<KhoVe> findByLoaiVeAndNgayWithLock(@Param("maLoaiVe") String maLoaiVe, @Param("ngayThamQuan") LocalDate ngayThamQuan);
-}
+    Optional<KhoVe> timTheoLoaiVeVaNgayKhoaBiQuan(@Param("maLoaiVe") String maLoaiVe, @Param("ngayThamQuan") LocalDate ngayThamQuan);
 
+    default Optional<KhoVe> findByLoaiVeAndNgayWithLock(String maLoaiVe, LocalDate ngayThamQuan) {
+        return timTheoLoaiVeVaNgayKhoaBiQuan(maLoaiVe, ngayThamQuan);
+    }
+}

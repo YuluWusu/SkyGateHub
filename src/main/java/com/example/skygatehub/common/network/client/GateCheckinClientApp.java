@@ -1,8 +1,26 @@
 package com.example.skygatehub.common.network.client;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -10,6 +28,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Ứng dụng Client Socket đồ họa Java Swing (Tiêu chí 5.4 - 0,4 điểm).
@@ -26,13 +45,20 @@ public class GateCheckinClientApp extends JFrame {
     private JComboBox<String> stationCombo;
     private JButton connectBtn;
     private JButton disconnectBtn;
+    private JLabel connectionStatusLabel;
 
-    private JTextField codeField;
-    private JButton lookupBtn;
-    private JButton checkinVeBtn;
-    private JButton checkinPhongBtn;
-    private JButton checkinAnBtn;
-    private JButton statsBtn;
+    private JTextField ticketCodeField;
+    private JButton checkinTicketBtn;
+    private JButton lookupTicketBtn;
+    private DefaultTableModel ticketTableModel;
+    private JLabel ticketCountLabel;
+    private final AtomicInteger successTicketCount = new AtomicInteger(0);
+
+    private JTextField roomCodeField;
+    private JButton checkinRoomBtn;
+
+    private JTextField diningCodeField;
+    private JButton checkinDiningBtn;
 
     private JTextArea logArea;
 
@@ -49,28 +75,27 @@ public class GateCheckinClientApp extends JFrame {
     }
 
     private void initUI() {
-        setTitle("SkyGateHub - Trạm Check-In Điểm Soát Vé [" + defaultStationName + "]");
-        setSize(800, 600);
-        setMinimumSize(new Dimension(700, 500));
+        setTitle("SkyGateHub - Hệ Thống Soát Vé & Check-in [" + defaultStationName + "]");
+        setSize(900, 680);
+        setMinimumSize(new Dimension(800, 550));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(new EmptyBorder(12, 12, 12, 12));
 
-        // Top Panel: Cấu hình kết nối & trạm
-        JPanel topPanel = new JPanel(new GridLayout(2, 1, 6, 6));
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        topPanel.setBorder(BorderFactory.createTitledBorder("Cấu hình kết nối TCP Socket (Cổng 9090)"));
 
-        JPanel connPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        connPanel.add(new JLabel("Host:"));
+        topPanel.add(new JLabel("Máy chủ:"));
         hostField = new JTextField("localhost", 10);
-        connPanel.add(hostField);
+        topPanel.add(hostField);
 
-        connPanel.add(new JLabel("Port:"));
+        topPanel.add(new JLabel("Cổng:"));
         portField = new JTextField("9090", 5);
-        connPanel.add(portField);
+        topPanel.add(portField);
 
-        connPanel.add(new JLabel("Tên Trạm:"));
+        topPanel.add(new JLabel("Trạm:"));
         stationCombo = new JComboBox<>(new String[]{
                 defaultStationName,
                 "TRAM_01_CONG_VE_VAO",
@@ -78,88 +103,162 @@ public class GateCheckinClientApp extends JFrame {
                 "TRAM_03_NHA_HANG_AM_THUC"
         });
         stationCombo.setEditable(true);
-        connPanel.add(stationCombo);
+        topPanel.add(stationCombo);
 
         connectBtn = new JButton("Kết Nối");
         connectBtn.setBackground(new Color(40, 167, 69));
         connectBtn.setForeground(Color.WHITE);
         connectBtn.addActionListener(e -> connectToServer());
-        connPanel.add(connectBtn);
+        topPanel.add(connectBtn);
 
         disconnectBtn = new JButton("Ngắt Kết Nối");
         disconnectBtn.setBackground(new Color(220, 53, 69));
         disconnectBtn.setForeground(Color.WHITE);
         disconnectBtn.setEnabled(false);
         disconnectBtn.addActionListener(e -> disconnectFromServer());
-        connPanel.add(disconnectBtn);
+        topPanel.add(disconnectBtn);
 
-        // Nút mở đồng thời 3 trạm
-        JButton multiStationBtn = new JButton("🚀 Mở Đồng Thời 3 Trạm Check-in");
-        multiStationBtn.setBackground(new Color(0, 123, 255));
-        multiStationBtn.setForeground(Color.WHITE);
-        multiStationBtn.addActionListener(e -> launchThreeStations());
-        connPanel.add(multiStationBtn);
+        connectionStatusLabel = new JLabel("⚪ Chưa kết nối");
+        connectionStatusLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        topPanel.add(connectionStatusLabel);
 
-        topPanel.add(connPanel);
-
-        // Panel Lệnh Thao Tác
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        actionPanel.add(new JLabel("Mã Barcode / QR / Mã đơn:"));
-        codeField = new JTextField(18);
-        codeField.addActionListener(e -> sendCommand("LOOKUP " + codeField.getText().trim()));
-        actionPanel.add(codeField);
-
-        lookupBtn = new JButton("🔍 Tra Cứu (LOOKUP)");
-        lookupBtn.addActionListener(e -> sendCommand("LOOKUP " + codeField.getText().trim()));
-        actionPanel.add(lookupBtn);
-
-        checkinVeBtn = new JButton("🎟️ Check-in Vé");
-        checkinVeBtn.setBackground(new Color(23, 162, 184));
-        checkinVeBtn.setForeground(Color.WHITE);
-        checkinVeBtn.addActionListener(e -> sendCommand("CHECKIN_VE " + codeField.getText().trim()));
-        actionPanel.add(checkinVeBtn);
-
-        checkinPhongBtn = new JButton("🏨 Check-in Phòng");
-        checkinPhongBtn.setBackground(new Color(108, 117, 125));
-        checkinPhongBtn.setForeground(Color.WHITE);
-        checkinPhongBtn.addActionListener(e -> sendCommand("CHECKIN_PHONG " + codeField.getText().trim()));
-        actionPanel.add(checkinPhongBtn);
-
-        checkinAnBtn = new JButton("🍽️ Check-in Bàn Ăn");
-        checkinAnBtn.setBackground(new Color(255, 193, 7));
-        checkinAnBtn.addActionListener(e -> sendCommand("CHECKIN_AN " + codeField.getText().trim()));
-        actionPanel.add(checkinAnBtn);
-
-        statsBtn = new JButton("📊 Thống Kê (STATS)");
-        statsBtn.addActionListener(e -> sendCommand("STATS"));
-        actionPanel.add(statsBtn);
-
-        topPanel.add(actionPanel);
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
-        // Center Panel: Nhật ký bản tin Socket (Log Area)
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        JPanel ticketTab = createTicketStationTab();
+        tabbedPane.addTab("🎟️ Trạm 1: Cổng Vé", ticketTab);
+
+        JPanel roomTab = createRoomStationTab();
+        tabbedPane.addTab("🏨 Trạm 2: Quầy Lưu Trú", roomTab);
+
+        JPanel diningTab = createDiningStationTab();
+        tabbedPane.addTab("🍽️ Trạm 3: Nhà Hàng", diningTab);
+
+        JPanel centerPanel = new JPanel(new BorderLayout(5, 5));
+        centerPanel.add(tabbedPane, BorderLayout.CENTER);
+
         logArea = new JTextArea();
         logArea.setEditable(false);
-        logArea.setFont(new Font("Consolas", Font.PLAIN, 13));
-        logArea.setBackground(new Color(245, 245, 245));
-        JScrollPane scrollPane = new JScrollPane(logArea);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Nhật ký bản tin giao thức Socket TCP (RFC Text Protocol)"));
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        logArea.setFont(new Font("Consolas", Font.PLAIN, 12));
+        logArea.setBackground(new Color(248, 249, 250));
+        JScrollPane scrollLog = new JScrollPane(logArea);
+        scrollLog.setPreferredSize(new Dimension(860, 180));
+        scrollLog.setBorder(BorderFactory.createTitledBorder("Nhật ký truyền nhận gói tin TCP"));
+        centerPanel.add(scrollLog, BorderLayout.SOUTH);
 
-        // Bottom Panel: Clear log & status bar
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+
         JPanel bottomPanel = new JPanel(new BorderLayout());
-        JLabel statusLbl = new JLabel("Trạng thái: Sẵn sàng kết nối tới CheckInSocketServer (Port 9090)");
-        bottomPanel.add(statusLbl, BorderLayout.WEST);
+        JLabel footerLabel = new JLabel("SkyGateHub Ecosystem — Phân hệ Soát vé Socket Client (RFC Text Protocol)");
+        bottomPanel.add(footerLabel, BorderLayout.WEST);
 
         JButton clearBtn = new JButton("Xóa Nhật Ký");
         clearBtn.addActionListener(e -> logArea.setText(""));
         bottomPanel.add(clearBtn, BorderLayout.EAST);
+
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
+        appendLog("Khởi động ứng dụng Client Swing. Sẵn sàng kết nối tới CheckInSocketServer.");
+    }
 
-        appendLog("=== SkyGateHub Check-In Desktop Client v1.0 ===");
-        appendLog("Sẵn sàng phục vụ. Bấm 'Kết Nối' để kết nối tới cổng 9090.");
+    private JPanel createTicketStationTab() {
+        JPanel panel = new JPanel(new BorderLayout(8, 8));
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        controlPanel.add(new JLabel("Mã vé / Chuỗi QR soát vé:"));
+        ticketCodeField = new JTextField(22);
+        ticketCodeField.setFont(new Font("Consolas", Font.BOLD, 14));
+        ticketCodeField.addActionListener(e -> processTicketCheckin());
+        controlPanel.add(ticketCodeField);
+
+        checkinTicketBtn = new JButton("🎟️ Soát Vé (CHECKIN_VE)");
+        checkinTicketBtn.setBackground(new Color(13, 110, 253));
+        checkinTicketBtn.setForeground(Color.WHITE);
+        checkinTicketBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        checkinTicketBtn.addActionListener(e -> processTicketCheckin());
+        controlPanel.add(checkinTicketBtn);
+
+        lookupTicketBtn = new JButton("🔍 Tra Cứu Vé");
+        lookupTicketBtn.addActionListener(e -> sendCommand("LOOKUP " + ticketCodeField.getText().trim()));
+        controlPanel.add(lookupTicketBtn);
+
+        ticketCountLabel = new JLabel("Số vé đã soát thành công trong ca: 0");
+        ticketCountLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        ticketCountLabel.setForeground(new Color(25, 135, 84));
+        controlPanel.add(ticketCountLabel);
+
+        panel.add(controlPanel, BorderLayout.NORTH);
+
+        String[] columns = {"Thời gian", "Mã Vé / Chuỗi", "Loại Vé", "Mã Check-in", "Kết Quả"};
+        ticketTableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        JTable ticketTable = new JTable(ticketTableModel);
+        ticketTable.setRowHeight(24);
+        ticketTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        JScrollPane tableScroll = new JScrollPane(ticketTable);
+        tableScroll.setBorder(BorderFactory.createTitledBorder("Danh sách vé vừa soát tại Trạm 1: Cổng Vé"));
+        panel.add(tableScroll, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createRoomStationTab() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        panel.add(new JLabel("Mã đặt phòng:"));
+        roomCodeField = new JTextField(20);
+        panel.add(roomCodeField);
+
+        checkinRoomBtn = new JButton("🏨 Check-in Nhận Phòng");
+        checkinRoomBtn.setBackground(new Color(108, 117, 125));
+        checkinRoomBtn.setForeground(Color.WHITE);
+        checkinRoomBtn.addActionListener(e -> sendCommand("CHECKIN_PHONG " + roomCodeField.getText().trim()));
+        panel.add(checkinRoomBtn);
+
+        JButton lookupRoomBtn = new JButton("Tra Cứu Phòng");
+        lookupRoomBtn.addActionListener(e -> sendCommand("LOOKUP " + roomCodeField.getText().trim()));
+        panel.add(lookupRoomBtn);
+
+        return panel;
+    }
+
+    private JPanel createDiningStationTab() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        panel.add(new JLabel("Mã đặt bàn:"));
+        diningCodeField = new JTextField(20);
+        panel.add(diningCodeField);
+
+        checkinDiningBtn = new JButton("🍽️ Check-in Vào Bàn Ăn");
+        checkinDiningBtn.setBackground(new Color(255, 193, 7));
+        checkinDiningBtn.addActionListener(e -> sendCommand("CHECKIN_AN " + diningCodeField.getText().trim()));
+        panel.add(checkinDiningBtn);
+
+        JButton lookupDiningBtn = new JButton("Tra Cứu Bàn");
+        lookupDiningBtn.addActionListener(e -> sendCommand("LOOKUP " + diningCodeField.getText().trim()));
+        panel.add(lookupDiningBtn);
+
+        return panel;
+    }
+
+    private void processTicketCheckin() {
+        String code = ticketCodeField.getText().trim();
+        if (code.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập hoặc quét mã vé!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        sendCommand("CHECKIN_VE " + code);
+        ticketCodeField.setText("");
+        ticketCodeField.requestFocus();
     }
 
     private void connectToServer() {
@@ -168,12 +267,14 @@ public class GateCheckinClientApp extends JFrame {
         try {
             port = Integer.parseInt(portField.getText().trim());
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Port phải là số nguyên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Cổng Port phải là số nguyên hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         String stationName = (String) stationCombo.getSelectedItem();
-        if (stationName == null || stationName.isBlank()) stationName = "TRAM_DEFAULT";
+        if (stationName == null || stationName.trim().isEmpty()) {
+            stationName = "TRAM_01_CONG_VE_VAO";
+        }
 
         final String finalStation = stationName;
 
@@ -191,6 +292,7 @@ public class GateCheckinClientApp extends JFrame {
                     hostField.setEnabled(false);
                     portField.setEnabled(false);
                     stationCombo.setEnabled(false);
+                    connectionStatusLabel.setText("🟢 Đã kết nối (" + finalStation + ")");
                 });
 
                 // Luồng lắng nghe dữ liệu từ Server
@@ -198,26 +300,26 @@ public class GateCheckinClientApp extends JFrame {
                     try {
                         String response;
                         while (connected && (response = reader.readLine()) != null) {
-                            appendLog("<-- [SERVER] " + response);
+                            String finalResp = response;
+                            SwingUtilities.invokeLater(() -> handleServerResponse(finalResp));
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ex) {
                         if (connected) {
-                            appendLog("[LỖI ĐỌC] Mất kết nối tới máy chủ: " + e.getMessage());
+                            appendLog("[SOCKET] Mất kết nối tới server: " + ex.getMessage());
                         }
                     } finally {
                         disconnectFromServer();
                     }
-                }, "SocketListener-" + stationId);
+                });
                 listenerThread.start();
 
                 // Gửi lệnh AUTH tự động sau khi kết nối
-                Thread.sleep(150);
                 sendCommand("AUTH " + finalStation);
 
-            } catch (Exception e) {
-                appendLog("[LỖI KẾT NỐI] Không thể kết nối tới Server: " + e.getMessage());
+            } catch (Exception ex) {
+                appendLog("[SOCKET-ERROR] Kết nối thất bại: " + ex.getMessage());
                 SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
-                        "Không thể kết nối tới Socket Server tại " + host + ":" + port + "\nHãy đảm bảo Spring Boot backend đang chạy!",
+                        "Không thể kết nối tới Socket Server tại " + host + ":" + port + "\nVui lòng đảm bảo Spring Boot đang chạy!",
                         "Lỗi Kết Nối", JOptionPane.ERROR_MESSAGE));
             }
         }).start();
@@ -240,28 +342,56 @@ public class GateCheckinClientApp extends JFrame {
             hostField.setEnabled(true);
             portField.setEnabled(true);
             stationCombo.setEnabled(true);
-            appendLog("[SOCKET] Đã ngắt kết nối an toàn.");
+            connectionStatusLabel.setText("⚪ Chưa kết nối");
+            appendLog("[SOCKET] Đã đóng kết nối với Server.");
         });
     }
 
-    private void sendCommand(String cmd) {
+    private void sendCommand(String command) {
         if (!connected || writer == null) {
-            JOptionPane.showMessageDialog(this, "Chưa kết nối tới máy chủ! Vui lòng bấm 'Kết Nối' trước.", "Chưa Kết Nối", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Chưa kết nối tới máy chủ Socket! Hãy bấm nút 'Kết Nối'.", "Cảnh Báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (cmd == null || cmd.isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã tra cứu / mã vé vào ô nhập liệu!", "Thiếu Dữ Liệu", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        appendLog("--> [CLIENT] " + cmd);
-        writer.println(cmd);
+        appendLog("[CLIENT -> SERVER] " + command);
+        writer.println(command);
     }
 
-    private void appendLog(String msg) {
+    private void handleServerResponse(String response) {
+        appendLog("[SERVER -> CLIENT] " + response);
+
+        String now = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+
+        if (response.startsWith("200 CHECKIN_SUCCESS")) {
+            int count = successTicketCount.incrementAndGet();
+            ticketCountLabel.setText("Số vé đã soát thành công trong ca: " + count);
+
+            String maCheckIn = extractParam(response, "MaCheckIn=");
+            String maVe = extractParam(response, "MaVe=");
+            String loaiVe = extractParam(response, "LoaiVe=");
+
+            ticketTableModel.insertRow(0, new Object[]{now, maVe, loaiVe, maCheckIn, "✅ THÀNH CÔNG"});
+        } else if (response.contains("CONFLICT_ALREADY_USED")) {
+            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "⚠️ VÉ ĐÃ SỬ DỤNG"});
+        } else if (response.contains("GONE")) {
+            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "❌ VÉ ĐÃ BỊ HỦY"});
+        } else if (response.contains("NOT_FOUND")) {
+            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "❓ VÉ KHÔNG TỒN TẠI"});
+        }
+    }
+
+    private String extractParam(String text, String prefix) {
+        int idx = text.indexOf(prefix);
+        if (idx == -1) return "-";
+        int start = idx + prefix.length();
+        int end = text.indexOf(" ", start);
+        if (end == -1) end = text.length();
+        return text.substring(start, end);
+    }
+
+    private void appendLog(String message) {
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         SwingUtilities.invokeLater(() -> {
-            logArea.append("[" + time + "] " + msg + "\n");
+            logArea.append("[" + time + "] " + message + "\n");
             logArea.setCaretPosition(logArea.getDocument().getLength());
         });
     }
@@ -269,33 +399,9 @@ public class GateCheckinClientApp extends JFrame {
     /**
      * Mở đồng thời 3 cửa sổ trạm check-in độc lập trên 3 luồng riêng (Tiêu chí 5.3 & 5.4).
      */
-    public static void launchThreeStations() {
-        SwingUtilities.invokeLater(() -> {
-            GateCheckinClientApp station1 = new GateCheckinClientApp("STATION_1", "TRAM_01_CONG_VE_VAO");
-            station1.setTitle("Trạm 1: Cổng Soát Vé Vào Khu Du Lịch (TCP:9090)");
-            station1.setLocation(50, 100);
-            station1.setVisible(true);
-
-            GateCheckinClientApp station2 = new GateCheckinClientApp("STATION_2", "TRAM_02_QUAY_LE_TAN_PHONG");
-            station2.setTitle("Trạm 2: Quầy Lễ Tân Lưu Trú / Check-in Phòng (TCP:9090)");
-            station2.setLocation(450, 150);
-            station2.setVisible(true);
-
-            GateCheckinClientApp station3 = new GateCheckinClientApp("STATION_3", "TRAM_03_NHA_HANG_AM_THUC");
-            station3.setTitle("Trạm 3: Cổng Nhà Hàng / Check-in Ẩm Thực (TCP:9090)");
-            station3.setLocation(850, 200);
-            station3.setVisible(true);
-        });
-    }
-
     public static void main(String[] args) {
-        // Cấu hình giao diện Look and Feel hệ thống
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ignored) {}
-
         SwingUtilities.invokeLater(() -> {
-            GateCheckinClientApp app = new GateCheckinClientApp("DEFAULT", "TRAM_01_CONG_VE_VAO");
+            GateCheckinClientApp app = new GateCheckinClientApp("TRAM_01", "TRAM_01_CONG_VE_VAO");
             app.setVisible(true);
         });
     }

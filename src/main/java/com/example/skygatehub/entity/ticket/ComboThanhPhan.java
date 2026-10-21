@@ -1,6 +1,16 @@
 package com.example.skygatehub.entity.ticket;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,8 +51,11 @@ public class ComboThanhPhan {
 
     @PrePersist
     public void prePersist() {
-        if (soLuongMoiCombo == null) soLuongMoiCombo = 1;
-        if (theoDoiSuDung == null) theoDoiSuDung = true;
+        if (soLuongMoiCombo == null) {
+            soLuongMoiCombo = 1;
+        }
+        if (theoDoiSuDung == null) {
+            theoDoiSuDung = true;
+        }
     }
 }
-

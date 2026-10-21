@@ -15,5 +15,6 @@ public interface NguoiDungVaiTroRepository extends JpaRepository<NguoiDungVaiTro
     List<NguoiDungVaiTro> findByMaVaiTro(String maVaiTro);
 
     void deleteByMaNguoiDung(String maNguoiDung);
-}
 
+    boolean existsByMaNguoiDungAndMaVaiTro(String maNguoiDung, String maVaiTro);
+}

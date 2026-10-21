@@ -13,4 +13,3 @@ public interface VaiTroRepository extends JpaRepository<VaiTro, Long> {
 
     Optional<VaiTro> findByTenVaiTro(String tenVaiTro);
 }
-

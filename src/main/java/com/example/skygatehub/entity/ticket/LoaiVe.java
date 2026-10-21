@@ -1,7 +1,15 @@
 package com.example.skygatehub.entity.ticket;
 
 import com.example.skygatehub.common.enums.LoaiVeType;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -48,8 +56,27 @@ public class LoaiVe {
 
     @PrePersist
     public void prePersist() {
-        if (trangThai == null) trangThai = false;
-        if (ngayTao == null) ngayTao = LocalDateTime.now();
+        if (trangThai == null) {
+            trangThai = false;
+        }
+        if (ngayTao == null) {
+            ngayTao = LocalDateTime.now();
+        }
+    }
+
+    public boolean isCombo() {
+        return this.loaiVe == LoaiVeType.TRON_GOI;
+    }
+
+    public String getTenPhanLoai() {
+        if (this.loaiVe == null) {
+            return "Khác";
+        }
+        return switch (this.loaiVe) {
+            case NGUOI_LON -> "Vé người lớn";
+            case TRE_EM -> "Vé trẻ em";
+            case TRON_GOI -> "Combo trọn gói";
+            case KHAC -> "Vé dịch vụ";
+        };
     }
 }
-

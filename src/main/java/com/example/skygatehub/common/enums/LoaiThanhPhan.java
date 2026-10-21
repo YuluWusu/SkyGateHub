@@ -1,12 +1,19 @@
 package com.example.skygatehub.common.enums;
 
-/**
- * THANH_PHAN_DICH_VU.LOAI_THANH_PHAN ∈ {'THAM_QUAN','AN_UONG','CAP_TREO','XE_DIEN','KHAC'}
- */
 public enum LoaiThanhPhan {
-    THAM_QUAN,
-    AN_UONG,
-    CAP_TREO,
-    XE_DIEN,
-    KHAC
+    THAM_QUAN("Tham quan"),
+    AN_UONG("Ẩm thực"),
+    CAP_TREO("Cáp treo"),
+    XE_DIEN("Xe điện"),
+    KHAC("Tiện ích khác");
+
+    private final String displayName;
+
+    LoaiThanhPhan(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
 }

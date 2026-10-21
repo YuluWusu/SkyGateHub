@@ -1,0 +1,40 @@
+.ticket-catalog-hero {
+    background: linear-gradient(135deg, rgba(4, 120, 87, 0.45), rgba(7, 23, 17, 0.95));
+    border-bottom: 1px solid var(--border-glass);
+    padding: 3rem 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.ticket-catalog-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.ticket-catalog-hero p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.ticket-card {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-glass) !important;
+    border-radius: var(--radius-xl) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticket-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--border-glass-strong) !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45) !important;
+}
+
+.ticket-price-display {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #34d399;
+}

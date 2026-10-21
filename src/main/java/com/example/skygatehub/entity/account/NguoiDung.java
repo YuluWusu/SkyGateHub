@@ -1,6 +1,13 @@
 package com.example.skygatehub.entity.account;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +19,9 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "NGUOI_DUNG")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class NguoiDung {
 
     @Id
@@ -52,10 +61,18 @@ public class NguoiDung {
 
     @PrePersist
     public void prePersist() {
-        if (trangThai == null) trangThai = true;
-        if (canDoiMatKhau == null) canDoiMatKhau = true;
-        if (ngayTao == null) ngayTao = LocalDateTime.now();
-        if (ngayCapNhat == null) ngayCapNhat = LocalDateTime.now();
+        if (trangThai == null) {
+            trangThai = true;
+        }
+        if (canDoiMatKhau == null) {
+            canDoiMatKhau = true;
+        }
+        if (ngayTao == null) {
+            ngayTao = LocalDateTime.now();
+        }
+        if (ngayCapNhat == null) {
+            ngayCapNhat = LocalDateTime.now();
+        }
     }
 
     @PreUpdate
@@ -63,4 +80,3 @@ public class NguoiDung {
         ngayCapNhat = LocalDateTime.now();
     }
 }
-

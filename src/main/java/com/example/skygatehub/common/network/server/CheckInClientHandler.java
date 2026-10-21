@@ -1,21 +1,21 @@
 package com.example.skygatehub.common.network.server;
 
-import com.example.skygatehub.entity.account.NguoiDung;
-import com.example.skygatehub.repository.account.NguoiDungRepository;
-import com.example.skygatehub.entity.checkin.CheckIn;
-import com.example.skygatehub.repository.checkin.CheckInRepository;
 import com.example.skygatehub.common.enums.LoaiCheckIn;
 import com.example.skygatehub.common.enums.TrangThaiCheckIn;
 import com.example.skygatehub.common.enums.TrangThaiDatBan;
 import com.example.skygatehub.common.enums.TrangThaiDatPhong;
 import com.example.skygatehub.common.enums.TrangThaiVe;
+import com.example.skygatehub.entity.account.NguoiDung;
+import com.example.skygatehub.entity.checkin.CheckIn;
 import com.example.skygatehub.entity.dining.DatBan;
-import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.entity.order.DonDat;
 import com.example.skygatehub.entity.order.Ve;
+import com.example.skygatehub.entity.roombooking.DatPhong;
+import com.example.skygatehub.repository.account.NguoiDungRepository;
+import com.example.skygatehub.repository.checkin.CheckInRepository;
+import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
 import com.example.skygatehub.repository.order.VeRepository;
-import com.example.skygatehub.entity.roombooking.DatPhong;
 import com.example.skygatehub.repository.roombooking.DatPhongRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -127,7 +127,7 @@ public class CheckInClientHandler implements Runnable {
             case "CHECKIN_VE":
                 if (!authenticated) return "401 UNAUTHORIZED Vui lòng AUTH trước khi check-in.";
                 if (parts.length < 2) return "400 ERROR Thiếu mã vé: Cú pháp: CHECKIN_VE <MA_VE_OR_CHUOI>";
-                return processCheckinVe(parts[1]);
+                return xuLyCheckinVe(parts[1]);
 
             case "CHECKIN_PHONG":
                 if (!authenticated) return "401 UNAUTHORIZED Vui lòng AUTH trước khi check-in.";
@@ -198,18 +198,18 @@ public class CheckInClientHandler implements Runnable {
     /**
      * Check-in vé dùng Pessimistic Lock chống quét trùng (Tiêu chí 5.2).
      */
-    private String processCheckinVe(String code) {
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        return tx.execute(status -> {
-            Optional<Ve> veOpt = veRepository.findByMaVeChuoiWithLock(code);
-            if (veOpt.isEmpty()) {
-                veOpt = veRepository.findByMaVe(code);
+    private String xuLyCheckinVe(String maVeHoacChuoi) {
+        TransactionTemplate mauGiaoDich = new TransactionTemplate(transactionManager);
+        return mauGiaoDich.execute(trangThaiGiaoDich -> {
+            Optional<Ve> veOptional = veRepository.findByMaVeChuoiWithLock(maVeHoacChuoi);
+            if (veOptional.isEmpty()) {
+                veOptional = veRepository.findByMaVe(maVeHoacChuoi);
             }
-            if (veOpt.isEmpty()) {
-                return "404 NOT_FOUND Mã vé không tồn tại: " + code;
+            if (veOptional.isEmpty()) {
+                return "404 NOT_FOUND Mã vé không tồn tại: " + maVeHoacChuoi;
             }
 
-            Ve ve = veOpt.get();
+            Ve ve = veOptional.get();
             if (ve.getTrangThai() == TrangThaiVe.DA_SU_DUNG) {
                 return "409 CONFLICT_ALREADY_USED Vé [" + ve.getMaVe() + "] đã được sử dụng lúc " + ve.getThoiGianSuDung();
             }
@@ -223,24 +223,28 @@ public class CheckInClientHandler implements Runnable {
             veRepository.save(ve);
 
             // Tạo bản ghi CheckIn
-            CheckIn ci = new CheckIn();
-            ci.setMaCheckIn("CI-VE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-            ci.setDonDat(ve.getChiTietDon().getDonDat());
-            ci.setLoaiCheckIn(LoaiCheckIn.VE);
-            ci.setVe(ve);
+            CheckIn banGhiCheckIn = new CheckIn();
+            banGhiCheckIn.setMaCheckIn("CI-VE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            banGhiCheckIn.setDonDat(ve.getChiTietDon().getDonDat());
+            banGhiCheckIn.setLoaiCheckIn(LoaiCheckIn.VE);
+            banGhiCheckIn.setVe(ve);
 
             // Gán nhân viên mặc định (User đầu tiên hoặc Quản trị)
-            NguoiDung nv = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
-            ci.setNhanVien(nv);
-            ci.setSoLuong(1);
-            ci.setThoiGianCheckIn(LocalDateTime.now());
-            ci.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
-            ci.setGhiChu("Check-in qua Socket tại trạm: " + stationName);
-            checkInRepository.save(ci);
+            NguoiDung nhanVien = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
+            banGhiCheckIn.setNhanVien(nhanVien);
+            banGhiCheckIn.setSoLuong(1);
+            banGhiCheckIn.setThoiGianCheckIn(LocalDateTime.now());
+            banGhiCheckIn.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
+            banGhiCheckIn.setGhiChu("Check-in qua Socket tại trạm: " + stationName);
+            checkInRepository.save(banGhiCheckIn);
 
             log.info("[CHECKIN-VE-SUCCESS] Trạm {} check-in thành công vé: {}", stationName, ve.getMaVe());
-            return "200 CHECKIN_SUCCESS MaCheckIn=" + ci.getMaCheckIn() + " MaVe=" + ve.getMaVe() + " LoaiVe=" + ve.getLoaiVe().getTenLoaiVe();
+            return "200 CHECKIN_SUCCESS MaCheckIn=" + banGhiCheckIn.getMaCheckIn() + " MaVe=" + ve.getMaVe() + " LoaiVe=" + ve.getLoaiVe().getTenLoaiVe();
         });
+    }
+
+    private String processCheckinVe(String code) {
+        return xuLyCheckinVe(code);
     }
 
     private String processCheckinPhong(String maDatPhong) {
@@ -261,7 +265,7 @@ public class CheckInClientHandler implements Runnable {
             datPhongRepository.save(dp);
 
             CheckIn ci = new CheckIn();
-            ci.setMaCheckIn("CI-PH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            ci.setMaCheckIn("CI-PHONG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
             ci.setDonDat(dp.getChiTietDon().getDonDat());
             ci.setLoaiCheckIn(LoaiCheckIn.PHONG);
             ci.setDatPhong(dp);
@@ -271,11 +275,11 @@ public class CheckInClientHandler implements Runnable {
             ci.setSoLuong(dp.getSoLuongPhong());
             ci.setThoiGianCheckIn(LocalDateTime.now());
             ci.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
-            ci.setGhiChu("Nhận phòng qua Socket tại trạm: " + stationName);
+            ci.setGhiChu("Check-in phòng qua Socket tại trạm: " + stationName);
             checkInRepository.save(ci);
 
-            log.info("[CHECKIN-PHONG-SUCCESS] Trạm {} check-in thành công đặt phòng: {}", stationName, dp.getMaDatPhong());
-            return "200 CHECKIN_SUCCESS MaCheckIn=" + ci.getMaCheckIn() + " MaDatPhong=" + dp.getMaDatPhong() + " LoaiPhong=" + dp.getLoaiPhong().getTenLoaiPhong();
+            log.info("[CHECKIN-PHONG-SUCCESS] Trạm {} check-in phòng thành công: {}", stationName, maDatPhong);
+            return "200 CHECKIN_SUCCESS MaCheckIn=" + ci.getMaCheckIn() + " MaDatPhong=" + maDatPhong + " LoaiPhong=" + dp.getLoaiPhong().getTenLoaiPhong();
         });
     }
 
@@ -286,8 +290,8 @@ public class CheckInClientHandler implements Runnable {
             if (dbOpt.isEmpty()) return "404 NOT_FOUND Mã đặt bàn không tồn tại: " + maDatBan;
 
             DatBan db = dbOpt.get();
-            if (db.getTrangThai() == TrangThaiDatBan.DA_CHECK_IN || db.getTrangThai() == TrangThaiDatBan.DA_HOAN_THANH) {
-                return "409 CONFLICT_ALREADY_CHECKED_IN Đặt bàn [" + maDatBan + "] đã check-in trước đó.";
+            if (db.getTrangThai() == TrangThaiDatBan.DA_CHECK_IN) {
+                return "409 CONFLICT_ALREADY_SEATED Bàn [" + maDatBan + "] đang được sử dụng.";
             }
             if (db.getTrangThai() == TrangThaiDatBan.DA_HUY) {
                 return "410 GONE Đặt bàn [" + maDatBan + "] đã bị hủy.";
@@ -310,9 +314,8 @@ public class CheckInClientHandler implements Runnable {
             ci.setGhiChu("Check-in bàn ăn qua Socket tại trạm: " + stationName);
             checkInRepository.save(ci);
 
-            log.info("[CHECKIN-AN-SUCCESS] Trạm {} check-in thành công bàn ăn: {}", stationName, db.getMaDatBan());
-            return "200 CHECKIN_SUCCESS MaCheckIn=" + ci.getMaCheckIn() + " MaDatBan=" + db.getMaDatBan() + " SoKhach=" + db.getSoKhach();
+            log.info("[CHECKIN-AN-SUCCESS] Trạm {} check-in bàn thành công: {}", stationName, maDatBan);
+            return "200 CHECKIN_SUCCESS MaCheckIn=" + ci.getMaCheckIn() + " MaDatBan=" + maDatBan + " SoKhach=" + db.getSoKhach();
         });
     }
 }
-

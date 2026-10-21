@@ -1,6 +1,11 @@
 package com.example.skygatehub.entity.account;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,7 +15,9 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "VAI_TRO")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class VaiTro {
 
     @Id
@@ -27,4 +34,3 @@ public class VaiTro {
     @Column(name = "MO_TA", length = 255)
     private String moTa;
 }
-
