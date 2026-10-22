@@ -1,55 +1,64 @@
 <footer xmlns:th="http://www.thymeleaf.org" th:fragment="footer" class="skygate-footer">
     <div class="footer-container">
         <div>
-            <a th:href="@{/}" class="brand" style="margin-bottom: 1rem; text-decoration: none;">
-                <div class="brand-logo">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                    </svg>
-                </div>
+            <a th:href="@{/}" class="brand d-flex align-items-center gap-2 mb-3 text-decoration-none">
+                <img th:src="@{/images/logo/images-removebg-preview.png}"
+                     onerror="this.onerror=null; this.src='/images/logo/logo.png';"
+                     alt="Logo Cổng Trời Đông Giang"
+                     style="height: 48px; width: auto; object-fit: contain;">
                 <div class="brand-text">
-                    <h1>Cổng Trời Đông Giang</h1>
-                    <span>EcoGate Resort & Nature Park</span>
+                    <h1 style="color: #ffffff; font-size: 1.15rem; margin: 0; font-weight: 800;">Cổng Trời Đông Giang</h1>
+                    <span style="color: #f59e0b; font-size: 0.72rem; font-weight: 700; display: block;">EcoGate Resort & Nature Park</span>
                 </div>
             </a>
-            <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 360px;">
-                Khu du lịch sinh thái Cổng Trời Đông Giang, xã Mà Cooih, huyện Đông Giang, tỉnh Quảng Nam. Điểm đến nghỉ dưỡng kết hợp văn hóa đồng bào Cơ Tu trác tuyệt.
+            <p style="color: #94a3b8; font-size: 0.88rem; max-width: 380px; line-height: 1.6; margin-bottom: 0.75rem;">
+                <i class="bi bi-geo-alt-fill text-success me-1"></i>Thôn A Sờ, Xã Mà Cooih, Huyện Đông Giang, Tỉnh Quảng Nam.
+            </p>
+            <p style="color: #94a3b8; font-size: 0.88rem; max-width: 380px; line-height: 1.6; margin-bottom: 0.75rem;">
+                <i class="bi bi-building text-info me-1"></i>Văn phòng: 01 Tô Hoài, Q. Cẩm Lệ, TP. Đà Nẵng.
+            </p>
+            <p style="color: #cbd5e1; font-size: 0.88rem; margin-bottom: 0.4rem;">
+                <i class="bi bi-telephone-fill text-warning me-1"></i>Hotline: <strong style="color: #f59e0b;">1900 86 66 44</strong> — <strong style="color: #34d399;">0934 97 3333</strong>
+            </p>
+            <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 0;">
+                <i class="bi bi-envelope-fill text-muted me-1"></i>booking@congtroidonggiang.com
             </p>
         </div>
 
         <div class="footer-col">
-            <h5>Dịch Vụ</h5>
+            <h5>Dịch Vụ Nghỉ Dưỡng</h5>
             <ul>
-                <li><a th:href="@{/tickets}">Vé Vào Cổng & Cáp Treo</a></li>
-                <li><a href="#">Khách Sạn & Bungalow Suối</a></li>
-                <li><a href="#">Buffet & Ẩm Thực Núi Rừng</a></li>
-                <li><a th:href="@{/#booking}">Tra Cứu Mã Đơn Hàng</a></li>
+                <li><a th:href="@{/ve}">Vé Vào Cổng & Cáp Treo</a></li>
+                <li><a th:href="@{/khach-san}">Khách Sạn FIVITEL Sông Ngân</a></li>
+                <li><a th:href="@{/am-thuc}">Ẩm Thực & Buffet Đại Ngàn</a></li>
+                <li><a th:href="@{/dat-dich-vu}">Quy Trình Đặt Dịch Vụ</a></li>
+                <li><a th:href="@{/tra-cuu-don}">Tra Cứu Mã Đơn Hàng</a></li>
             </ul>
         </div>
 
         <div class="footer-col">
-            <h5>Quy Định Đặt Dịch Vụ</h5>
+            <h5>Khám Phá KDL</h5>
             <ul>
-                <li><a href="#">Đặt cọc 30% tổng đơn hàng</a></li>
-                <li><a href="#">Trẻ em dưới 1,4m miễn phí vé</a></li>
-                <li><a href="#">Phụ thu 20% thứ 7 & ngày lễ</a></li>
-                <li><a href="#">Chính sách hủy đơn trước check-in</a></li>
+                <li><a th:href="@{/gioi-thieu}">Giới Thiệu Cổng Trời</a></li>
+                <li><a th:href="@{/diem-tham-quan}">Điểm Tham Quan Nổi Bật</a></li>
+                <li><a th:href="@{/ban-do}">Bản Đồ Toàn Cảnh KDL</a></li>
+                <li><a th:href="@{/lien-he}">Liên Hệ & Hỗ Trợ Du Khách</a></li>
             </ul>
         </div>
 
         <div class="footer-col">
-            <h5>Hệ Thống Phân Quyền</h5>
+            <h5>Cổng Nhân Viên</h5>
             <ul>
-                <li><a href="#">Lễ Tân Phân Phòng (M3)</a></li>
-                <li><a href="#">Nhà Hàng Xếp Bàn (M4)</a></li>
-                <li><a href="#">Trạm Soát Vé 4 Điểm (M5)</a></li>
-                <li><a href="#">Dashboard Báo Cáo Doanh Thu</a></li>
+                <li><a th:href="@{/login}">Đăng Nhập Cán Bộ Quản Trị</a></li>
+                <li><a th:href="@{/login}">Lễ Tân Quản Lý Phòng Nghỉ</a></li>
+                <li><a th:href="@{/login}">Trạm Soát Vé Điện Tử</a></li>
+                <li><a th:href="@{/login}">Nhà Hàng & Bếp Trung Tâm</a></li>
             </ul>
         </div>
     </div>
 
     <div class="footer-bottom">
-        <div>© 2026 Cổng Trời Đông Giang (EcoGate) — Dự án SkyGateHub.</div>
-        <div style="color: #34d399;">Hệ Thống Đặt Dịch Vụ & Vận Hành Trọn Gói</div>
+        <div>© 2026 KDL Sinh Thái Cổng Trời Đông Giang (Official) — Hệ thống SkyGateHub.</div>
+        <div style="color: #34d399; font-weight: 600;">Hệ Thống Đặt Dịch Vụ & Vận Hành Trọn Gói</div>
     </div>
 </footer>

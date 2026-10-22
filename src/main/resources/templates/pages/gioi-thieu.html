@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giới thiệu — Khu Du Lịch Sinh Thái Cổng Trời Đông Giang</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+    <style>
+        .about-hero {
+            position: relative;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.75) 100%),
+                        url('/images/banners/about-hero.jpg') center/cover no-repeat;
+            padding: 5.5rem 1rem 4.5rem;
+            text-align: center;
+            color: #ffffff;
+        }
+        .stat-card-light {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.75rem 1.25rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s ease;
+        }
+        .stat-card-light:hover {
+            transform: translateY(-4px);
+            border-color: #a7f3d0;
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.1);
+        }
+        .feature-img-box {
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .feature-img-box img {
+            width: 100%;
+            height: 380px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .feature-img-box:hover img {
+            transform: scale(1.04);
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100" style="background-color: #f8fafc;">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="flex-grow-1 pb-5">
+        <!-- Hero Header -->
+        <section class="about-hero">
+            <div class="container">
+                <h1 class="display-5 fw-bold mb-3 text-white" style="letter-spacing: -0.5px; text-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                    Kiệt Tác Nghỉ Dưỡng Giữa Đại Ngàn Trường Sơn
+                </h1>
+                <p class="lead mx-auto mb-0" style="max-width: 820px; color: #e2e8f0; font-size: 1.15rem;">
+                    Nằm giữa non ngàn Tây xứ Quảng hùng vĩ, Cổng Trời Đông Giang là tổ hợp du lịch sinh thái, nghỉ dưỡng 4 sao quốc tế và bảo tồn di sản văn hóa truyền thống đồng bào Cơ Tu quy mô bậc nhất miền Trung.
+                </p>
+            </div>
+        </section>
+
+        <!-- Stats Grid (Sáng sủa, hiện đại) -->
+        <div class="container mb-5" style="margin-top: -2.25rem; position: relative; z-index: 5;">
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <div class="stat-card-light">
+                        <div class="fs-2 fw-bold mb-1" style="color: #d97706;">120+</div>
+                        <div class="small fw-bold" style="color: #0f172a;">Hecta diện tích</div>
+                        <small class="text-muted">Rừng nguyên sinh ngút ngàn</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card-light">
+                        <div class="fs-2 fw-bold mb-1" style="color: #059669;">25+</div>
+                        <div class="small fw-bold" style="color: #0f172a;">Thác nước tự nhiên</div>
+                        <small class="text-muted">Thác Tiên & Suối Hoa thanh khiết</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card-light">
+                        <div class="fs-2 fw-bold mb-1" style="color: #0284c7;">800m</div>
+                        <div class="small fw-bold" style="color: #0f172a;">Cầu kính Ngọc Rồng</div>
+                        <small class="text-muted">Độ cao săn mây ngắm hoàng hôn</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card-light">
+                        <div class="fs-2 fw-bold mb-1" style="color: #ea580c;">4 Sao</div>
+                        <div class="small fw-bold" style="color: #0f172a;">FIVITEL Sông Ngân</div>
+                        <small class="text-muted">Tổ hợp khách sạn nghỉ dưỡng cao cấp</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Section 1: Thiên Nhiên Kỳ Vĩ -->
+            <div class="row g-4 align-items-center mb-5 pb-3">
+                <div class="col-12 col-lg-6">
+                    <h2 class="fw-bold mb-3" style="color: #0f172a; letter-spacing: -0.5px;">
+                        Bản Hòa Ca Của Khí Hậu Bốn Mùa Trong Một Ngày
+                    </h2>
+                    <p class="leading-relaxed" style="color: #475569;">
+                        Đến với Cổng Trời Đông Giang, Quý du khách sẽ được tận hưởng sự kỳ diệu của đất trời khi trải nghiệm trọn vẹn 4 mùa chỉ trong một ngày: buổi sáng se lạnh như mùa xuân sương mờ bảng lảng, buổi trưa ấm áp nắng vàng mùa hạ, buổi chiều êm dịu gió thu man mác và đêm về lành lạnh như tiết trời mùa đông vùng cao.
+                    </p>
+                    <p class="leading-relaxed" style="color: #64748b;">
+                        Được bao bọc bởi tán rừng lim xanh cổ thụ hàng trăm năm tuổi cùng hệ thống hơn 25 thác nước tự nhiên bắt nguồn từ đại ngàn Trường Sơn, bầu không khí nơi đây mang nồng độ ion âm cao vượt trội, mang đến liệu pháp "tắm rừng" diệu kỳ giúp thanh lọc tâm hồn và tái tạo năng lượng sống tươi mới.
+                    </p>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="feature-img-box">
+                        <img th:src="@{/images/attractions/thac-tien.jpg}"
+                             onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                             alt="Thác Tiên - Cổng Trời Đông Giang">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Bản Sắc Văn Hóa Cơ Tu -->
+            <div class="row g-4 align-items-center mb-5 pb-3 flex-lg-row-reverse">
+                <div class="col-12 col-lg-6">
+                    <h2 class="fw-bold mb-3" style="color: #0f172a; letter-spacing: -0.5px;">
+                        Nơi Gìn Giữ Hồn Thiêng Văn Hóa Đồng Bào Cơ Tu
+                    </h2>
+                    <p class="leading-relaxed" style="color: #475569;">
+                        Không chỉ sở hữu danh thắng say đắm lòng người, Cổng Trời Đông Giang tự hào là không gian sống động gìn giữ và tôn vinh những giá trị văn hóa độc đáo của đồng bào dân tộc Cơ Tu. Làng văn hóa Cơ Tu tại khu nghỉ dưỡng tái hiện trọn vẹn kiến trúc nhà Gươl, nhà Moong nguyên bản.
+                    </p>
+                    <p class="leading-relaxed" style="color: #64748b;">
+                        Du khách có thể tận mắt trải nghiệm nghề dệt thổ cẩm cổ truyền, đan lát mây tre, thưởng thức ẩm thực cơm lam, thịt nướng ống tre, rượu cần Ba Kích, và hòa mình cùng show diễn nghệ thuật "Vũ Điệu Đại Ngàn" với điệu múa Tung tung Da dá rộn rã bên ánh lửa bập bùng cùng tiếng cồng chiêng ngân vang giữa thung lũng.
+                    </p>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="feature-img-box">
+                        <img th:src="@{/images/attractions/lang-co-tu.jpg}"
+                             onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                             alt="Làng Văn Hóa Cơ Tu">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Cáp Treo & Cầu Kính Ngọc Rồng -->
+            <div class="row g-4 align-items-center mb-5 pb-3">
+                <div class="col-12 col-lg-6">
+                    <h2 class="fw-bold mb-3" style="color: #0f172a; letter-spacing: -0.5px;">
+                        Cáp Treo Vượt Rừng & Cầu Kính Ngọc Rồng Đỉnh Núi
+                    </h2>
+                    <p class="leading-relaxed" style="color: #475569;">
+                        Hệ thống Cáp treo Cổng Trời Đông Giang đưa du khách lướt nhẹ trên tầng mây ngàn từ độ cao 400m đến 800m so với mực nước biển, ngắm nhìn toàn cảnh cánh rừng nguyên sinh bạt ngàn và thung lũng Sông Ngân thơ mộng dưới chân.
+                    </p>
+                    <p class="leading-relaxed" style="color: #64748b;">
+                        Tại đỉnh núi, tổ hợp Cầu Kính Ngọc Rồng vươn mình ra vách đá sừng sững là địa điểm check-in săn mây ngoạn mục, nơi du khách thỏa sức chiêm ngưỡng biển mây bồng bềnh và hoàng hôn tráng lệ buông xuống dãy Trường Sơn.
+                    </p>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="feature-img-box">
+                        <img th:src="@{/images/attractions/cau-kinh.jpg}"
+                             onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                             alt="Cầu Kính Ngọc Rồng">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action Banner -->
+            <div class="card p-4 p-md-5 text-center border-0 shadow-sm mb-4"
+                 style="background: linear-gradient(135deg, #064e3b, #059669); border-radius: 20px;">
+                <h3 class="fw-bold text-white mb-2">Bạn Đã Sẵn Sàng Khám Phá Cổng Trời Đông Giang?</h3>
+                <p class="text-white-50 mx-auto mb-4" style="max-width: 650px;">
+                    Hãy lên kế hoạch cho chuyến đi kỳ thú và đặt vé tham quan, phòng khách sạn Fivitel cùng thực đơn ẩm thực trực tuyến dễ dàng ngay hôm nay.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a th:href="@{/dat-dich-vu}" class="btn btn-gold btn-lg fw-bold px-4 py-3 shadow">
+                        <i class="bi bi-calendar2-check-fill me-2"></i>Đặt Dịch Vụ Ngay
+                    </a>
+                    <a th:href="@{/khach-san}" class="btn btn-outline-light btn-lg fw-semibold px-4 py-3">
+                        <i class="bi bi-building me-2"></i>Khách Sạn Fivitel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

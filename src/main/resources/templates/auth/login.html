@@ -3,48 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập — SkyGateHub</title>
+    <title>Đăng nhập hệ thống quản trị — SkyGateHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/base.css}">
-    <link rel="stylesheet" th:href="@{/css/customer.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .auth-split-wrapper {
+            min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
+            background-color: #f8fafc;
+        }
+        .auth-form-side {
+            min-height: 100vh;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 2rem;
+            position: relative;
+        }
+        .auth-banner-side {
+            min-height: 100vh;
+            height: 100vh;
+            position: relative;
+            background: #022c22;
+            overflow: hidden;
+        }
+        .auth-banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            filter: brightness(0.9);
+            transition: transform 10s ease;
+        }
+        .auth-banner-side:hover .auth-banner-img {
+            transform: scale(1.05);
+        }
+        .auth-banner-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(7, 23, 17, 0.2) 0%, rgba(7, 23, 17, 0.65) 60%, rgba(7, 23, 17, 0.9) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 4rem 3.5rem;
+            z-index: 2;
+        }
+        /* Ô input sáng rõ ràng, hiển thị chuột chính xác 100% */
+        .auth-form-side {
+            cursor: default;
+        }
+        .auth-input,
+        .auth-input:hover,
+        .auth-input:focus,
+        .auth-input:active {
+            cursor: default !important;
+            caret-color: #059669 !important;
+            font-size: 1.02rem !important;
+            font-size: 16px !important;
+            min-height: 50px !important;
+            line-height: 1.5 !important;
+            padding: 0.85rem 1.1rem !important;
+            background-color: #ffffff !important;
+            border: 1.5px solid #cbd5e1 !important;
+            color: #0f172a !important;
+            border-radius: 10px !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+            letter-spacing: normal !important;
+        }
+        .auth-input:hover {
+            cursor: default !important;
+            background-color: #f0fdf4 !important;
+            border-color: #059669 !important;
+        }
+        .auth-input:focus {
+            cursor: default !important;
+            border-color: #059669 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+            background-color: #ffffff !important;
+        }
+        .input-group .auth-input {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+        #togglePasswordBtn {
+            cursor: pointer !important;
+            border-top-right-radius: 10px !important;
+            border-bottom-right-radius: 10px !important;
+            min-height: 50px !important;
+            padding: 0 16px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-left: none !important;
+            background: #f8fafc !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #togglePasswordBtn:hover {
+            background: #e2e8f0 !important;
+        }
+        .auth-input::placeholder {
+            font-size: 0.95rem !important;
+            color: #94a3b8 !important;
+            opacity: 1 !important;
+            letter-spacing: normal !important;
+        }
+        /* Ngăn trình duyệt đổi màu nền thành đen khi autofill */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+            -webkit-text-fill-color: #0f172a !important;
+            font-size: 1.02rem !important;
+            font-size: 16px !important;
+            line-height: 1.5 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 540px;
+        }
+        .feature-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+    </style>
 </head>
-<body class="d-flex flex-column min-vh-100 justify-content-center align-items-center py-5">
-    <div class="container" style="max-width: 440px;">
-        <div class="text-center mb-4">
-            <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, #10b981, #064e3b); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); border: 1px solid rgba(255, 255, 255, 0.2);">
-                <span style="font-size: 26px; font-weight: 900; color: #f59e0b; letter-spacing: -1px;">SG</span>
-            </div>
-            <h3 class="fw-bold text-white mb-1" style="letter-spacing: -0.5px;">Cổng Trời Đông Giang</h3>
-            <p class="text-muted small">Hệ sinh thái Quản trị & Đặt vé du lịch SkyGateHub</p>
-        </div>
+<body>
+    <div class="auth-split-wrapper">
+        <div class="row g-0 min-vh-100">
+            <!-- 50% BÊN TRÁI: FORM ĐĂNG NHẬP SÁNG SỦA, CAO CẤP -->
+            <div class="col-12 col-lg-6 auth-form-side">
+                <div class="auth-card">
+                    <!-- Brand Header -->
+                    <div class="text-center mb-4">
+                        <a th:href="@{/}" class="d-inline-flex align-items-center justify-content-center mb-2 text-decoration-none">
+                            <img th:src="@{/images/logo/images-removebg-preview.png}"
+                                 onerror="this.onerror=null; this.src='/images/logo/logo.png';"
+                                 alt="Logo Cổng Trời Đông Giang"
+                                 style="height: 60px; width: auto; object-fit: contain;">
+                        </a>
+                        <h3 class="fw-bold mb-1" style="color: #0f172a; letter-spacing: -0.5px;">Cổng Trời Đông Giang</h3>
+                        <p class="fw-semibold small mb-0" style="color: #059669; letter-spacing: 0.5px;">HỆ THỐNG QUẢN TRỊ NỘI BỘ — SKYGATEHUB</p>
+                    </div>
 
-        <div th:replace="~{fragments/flash-messages :: div}"></div>
+                    <div th:replace="~{fragments/flash-messages :: div}"></div>
 
-        <div class="card p-4 p-md-5" style="border: 1px solid rgba(52, 211, 153, 0.25) !important;">
-            <h4 class="fw-bold text-center text-white mb-4" style="font-size: 1.35rem;">Đăng nhập hệ thống</h4>
-            <form th:action="@{/login}" method="post">
-                <input type="hidden" name="redirect" th:value="${redirect}" />
-                <div class="mb-3">
-                    <label for="usernameInput" class="form-label fw-semibold">Tên đăng nhập</label>
-                    <input type="text" class="form-control form-control-lg" id="usernameInput" name="tenDangNhap" required autofocus placeholder="Tên đăng nhập">
+                    <!-- Login Card Rộng rãi, Sang trọng -->
+                    <div class="card p-4 p-md-5 shadow-sm" style="background: #ffffff; border: 1px solid #e2e8f0 !important; border-radius: 20px;">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                            <h5 class="fw-bold mb-0" style="color: #0f172a;">Đăng nhập tài khoản</h5>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small">
+                                <i class="bi bi-person-badge me-1"></i>Nhân viên
+                            </span>
+                        </div>
+
+                        <form th:action="@{/login}" method="post" autocomplete="off">
+                            <input type="hidden" name="redirect" th:value="${redirect}" />
+
+                            <div class="mb-3">
+                                <label for="usernameInput" class="form-label fw-semibold small" style="color: #0f172a;">
+                                    <i class="bi bi-person-fill text-warning me-1"></i>Tên đăng nhập
+                                </label>
+                                <input type="text"
+                                       class="form-control auth-input"
+                                       id="usernameInput"
+                                       name="tenDangNhap"
+                                       required
+                                       autocomplete="off"
+                                       autofocus
+                                       placeholder="Nhập tên đăng nhập nhân viên">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="passwordInput" class="form-label fw-semibold small" style="color: #0f172a;">
+                                    <i class="bi bi-key-fill text-warning me-1"></i>Mật khẩu
+                                </label>
+                                <div class="input-group">
+                                    <input type="password"
+                                           class="form-control auth-input"
+                                           id="passwordInput"
+                                           name="matKhau"
+                                           required
+                                           autocomplete="new-password"
+                                           placeholder="Nhập mật khẩu truy cập">
+                                    <button class="btn btn-outline-secondary border-start-0"
+                                            type="button"
+                                            id="togglePasswordBtn"
+                                            style="background: #f8fafc; border-color: #cbd5e1;"
+                                            onclick="togglePasswordVisibility()">
+                                        <i class="bi bi-eye text-muted" id="togglePasswordIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-gold fw-bold py-3 shadow-sm fs-6">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập làm việc
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="alert alert-success bg-opacity-10 border border-success border-opacity-25 py-2 px-3 mt-4 mb-0 small" style="color: #065f46;">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Tài khoản nhân viên được cấp trực tiếp bởi Ban Quản Trị. Quý du khách không cần đăng nhập khi mua vé & đặt dịch vụ.
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a th:href="@{/}" class="text-muted text-decoration-none small hover-underline">
+                            <i class="bi bi-arrow-left me-1"></i>Quay về Website Khách hàng
+                        </a>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label for="passwordInput" class="form-label fw-semibold">Mật khẩu</label>
-                    <input type="password" class="form-control form-control-lg" id="passwordInput" name="matKhau" required placeholder="Nhập mật khẩu">
-                </div>
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-gold btn-lg fw-bold py-3">Đăng nhập ngay</button>
-                </div>
-            </form>
-            <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25">
-                <span class="text-muted small">Chưa có tài khoản khách hàng? </span>
-                <a th:href="@{/register}" class="text-success fw-bold text-decoration-none small">Đăng ký ngay</a>
             </div>
-            <div class="text-center mt-2">
-                <a th:href="@{/}" class="text-muted text-decoration-none small">Trở về trang chủ</a>
+
+            <!-- 50% BÊN PHẢI: BANNER NGHỆ THUẬT TOÀN KHUNG CỔNG TRỜI ĐÔNG GIANG -->
+            <div class="col-12 col-lg-6 d-none d-lg-block auth-banner-side">
+                <img th:src="@{/images/auth/login-banner.jpg}"
+                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80';"
+                     alt="KDL Cổng Trời Đông Giang"
+                     class="auth-banner-img">
+
+                <div class="auth-banner-overlay">
+                    <div class="mb-3">
+                        <span class="badge bg-gold text-dark px-3 py-2 fw-bold text-uppercase" style="letter-spacing: 1px;">
+                            EcoGate Resort & Nature Park
+                        </span>
+                    </div>
+
+                    <h1 class="text-white fw-bold mb-3" style="font-size: 2.3rem; letter-spacing: -0.5px; text-shadow: 0 4px 15px rgba(0,0,0,0.6);">
+                        Kiệt tác nghỉ dưỡng & du lịch sinh thái giữa đại ngàn Tây xứ Quảng
+                    </h1>
+
+                    <p class="text-light mb-4" style="font-size: 1.05rem; line-height: 1.6; max-width: 580px; text-shadow: 0 2px 8px rgba(0,0,0,0.7);">
+                        Hệ sinh thái rừng nguyên sinh, Cầu kính Ngọc Rồng, Cáp treo thung lũng mây ngàn cùng tổ hợp khách sạn FIVITEL tiêu chuẩn 4 sao và nét đẹp văn hóa truyền thống đồng bào Cơ Tu.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="feature-pill">
+                            <i class="bi bi-badge-hd text-warning"></i> Cáp treo & Cầu kính Ngọc Rồng
+                        </div>
+                        <div class="feature-pill">
+                            <i class="bi bi-building text-info"></i> Khách sạn FIVITEL Sông Ngân
+                        </div>
+                        <div class="feature-pill">
+                            <i class="bi bi-flower1 text-success"></i> Ẩm thực đại ngàn & Làng Moong
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePasswordVisibility() {
+            const pwd = document.getElementById('passwordInput');
+            const icon = document.getElementById('togglePasswordIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                pwd.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+
+        // Không can thiệp xóa ô input định kỳ để đảm bảo thao tác chuột và gõ phím mượt mà
+    </script>
 </body>
 </html>

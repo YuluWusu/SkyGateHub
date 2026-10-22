@@ -69,4 +69,6 @@ public interface BangGiaVeService {
     default void deleteSpecialDay(Long id) {
         xoaNgayDacBiet(id);
     }
+
+    String generateNextMaBangGia();
 }

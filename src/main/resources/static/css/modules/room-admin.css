@@ -1,0 +1,304 @@
+/* ==========================================================================
+   Room Admin & Visual Room Map Stylesheet — SkyGateHub Module 3
+   Theme: EcoGate Modern Clean Light SaaS Theme (Đồng bộ toàn diện)
+   ========================================================================== */
+
+/* === KPI Summary Cards === */
+.room-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.room-kpi-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: var(--radius-lg, 12px);
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.room-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.room-kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+
+.kpi-total .room-kpi-icon {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.kpi-available .room-kpi-icon {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.kpi-assigned .room-kpi-icon {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.kpi-occupied .room-kpi-icon {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.kpi-maintenance .room-kpi-icon {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+}
+
+.room-kpi-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #0f172a !important;
+}
+
+.room-kpi-label {
+    font-size: 0.78rem;
+    color: #64748b !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-top: 3px;
+}
+
+/* === Room Map Filter Bar === */
+.room-filter-bar {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: var(--radius-lg, 12px);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* === Room Map Grid === */
+.khu-section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #065f46 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #a7f3d0;
+}
+
+.room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+    gap: 1.15rem;
+    margin-bottom: 2rem;
+}
+
+.room-card {
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: var(--radius-lg, 12px);
+    padding: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 220px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.room-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* State borders and indicators */
+.room-card.state-available {
+    border-color: #a7f3d0 !important;
+}
+.room-card.state-available:hover {
+    border-color: #10b981 !important;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+}
+
+.room-card.state-assigned {
+    border-color: #fde68a !important;
+    background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%) !important;
+}
+.room-card.state-assigned:hover {
+    border-color: #f59e0b !important;
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);
+}
+
+.room-card.state-occupied {
+    border-color: #fecaca !important;
+    background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%) !important;
+}
+.room-card.state-occupied:hover {
+    border-color: #ef4444 !important;
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.15);
+}
+
+.room-card.state-maintenance {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+    opacity: 0.85;
+}
+.room-card.state-maintenance:hover {
+    opacity: 1;
+    border-color: #94a3b8 !important;
+}
+
+.room-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 0.65rem;
+}
+
+.room-number {
+    font-size: 1.28rem;
+    font-weight: 800;
+    color: #0f172a !important;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+.room-type-subtitle {
+    font-size: 0.8rem;
+    color: #64748b !important;
+    margin-top: 2px;
+}
+
+.room-price-tag {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #b45309 !important;
+    white-space: nowrap;
+}
+
+.room-card-body {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: var(--radius-sm, 8px);
+    padding: 0.65rem 0.85rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.82rem;
+    flex-grow: 1;
+}
+
+.guest-info-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    color: #0f172a !important;
+}
+
+.guest-info-row:last-child {
+    margin-bottom: 0;
+}
+
+.guest-info-label {
+    color: #64748b !important;
+    font-size: 0.75rem;
+    min-width: 60px;
+}
+
+.room-card-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.room-card-actions .btn {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm, 6px);
+}
+
+/* === Pending Booking Queue Sidebar === */
+.pending-bookings-box {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: var(--radius-lg, 12px);
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pending-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: var(--radius-md, 8px);
+    padding: 0.95rem;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.pending-card:hover {
+    border-color: #f59e0b !important;
+    background: #fffbeb !important;
+    transform: translateY(-2px);
+}
+
+.pending-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.pending-code {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #059669 !important;
+}
+
+.pending-guest {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #0f172a !important;
+}
+
+.pending-meta {
+    font-size: 0.78rem;
+    color: #64748b !important;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.pending-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.76rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #0f172a !important;
+}

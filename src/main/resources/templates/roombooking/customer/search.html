@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khách sạn & Khu nghỉ dưỡng FIVITEL — Cổng Trời Đông Giang</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+    <style>
+        .hotel-hero {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.8) 100%),
+                        url('/images/rooms/fivitel-song-ngan.jpg') center/cover no-repeat;
+            padding: 5rem 1rem 3.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        .hotel-search-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            margin-top: -2.5rem;
+            position: relative;
+            z-index: 10;
+        }
+        .resort-area-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .resort-area-card:hover {
+            transform: translateY(-5px);
+            border-color: #10b981;
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15);
+        }
+        .room-card-customer {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .room-card-customer:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            border-color: #10b981;
+        }
+        .room-img-wrapper {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+        }
+        .room-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .room-card-customer:hover .room-img-wrapper img {
+            transform: scale(1.08);
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- 1. Thanh điều hướng Khách hàng chuẩn 9 mục -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="flex-grow-1 pb-5">
+        <!-- Hero Section -->
+        <section class="hotel-hero">
+            <div class="container">
+                <span class="badge bg-gold text-dark px-3 py-2 fw-bold text-uppercase mb-3" style="letter-spacing: 1px;">
+                    EcoGate Luxury Hospitality
+                </span>
+                <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -1px; text-shadow: 0 4px 15px rgba(0,0,0,0.6);">
+                    Hệ Thống Khách Sạn & Nghỉ Dưỡng FIVITEL
+                </h1>
+                <p class="lead text-light mx-auto mb-4" style="max-width: 750px;">
+                    Trải nghiệm không gian lưu trú đẳng cấp 5 sao giữa thiên nhiên hùng vĩ của đại ngàn Cổng Trời Đông Giang. Thư thái đón mây ngàn và lắng nghe thanh âm suối reo.
+                </p>
+            </div>
+        </section>
+
+        <!-- Search Bar -->
+        <div class="container mb-5">
+            <div class="hotel-search-card p-4 p-md-4">
+                <form th:action="@{/khach-san}" method="get" class="row g-3 align-items-end">
+                    <div class="col-12 col-md-3">
+                        <label class="form-label text-muted small fw-semibold mb-1">
+                            <i class="bi bi-calendar-check text-gold me-1"></i>Ngày nhận phòng
+                        </label>
+                        <input type="text" id="checkInInput" name="ngayNhan" th:value="${ngayNhan}" class="form-control fw-bold" placeholder="Chọn ngày đến">
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label text-muted small fw-semibold mb-1">
+                            <i class="bi bi-calendar-x text-gold me-1"></i>Ngày trả phòng
+                        </label>
+                        <input type="text" id="checkOutInput" name="ngayTra" th:value="${ngayTra}" class="form-control fw-bold" placeholder="Chọn ngày đi">
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label text-muted small fw-semibold mb-1">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>Phân khu nghỉ dưỡng
+                        </label>
+                        <select name="maKhu" class="form-select">
+                            <option value="">-- Tất cả phân khu FIVITEL --</option>
+                            <option th:each="khu : ${khuList}"
+                                    th:value="${khu.maKhu}"
+                                    th:text="${khu.tenKhu} + ' (' + ${khu.hangSao} + ' Sao)'"
+                                    th:selected="${selectedMaKhu != null and selectedMaKhu == khu.maKhu}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-gold fw-bold py-2 flex-grow-1 shadow-sm">
+                            <i class="bi bi-search me-1"></i>Tìm phòng trống
+                        </button>
+                        <a th:href="@{/khach-san}" class="btn btn-outline-secondary py-2" title="Đặt lại bộ lọc">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- BƯỚC 1: CHỌN PHÂN KHU LƯU TRÚ (Hiển thị khi chưa chọn khu) -->
+            <div th:if="${selectedMaKhu == null}" class="mb-5">
+                <div class="text-center mb-4">
+                    <span class="text-success fw-bold text-uppercase small" style="letter-spacing: 1px;">Bước 1 / 2</span>
+                    <h3 class="fw-bold text-dark mb-2" style="letter-spacing: -0.5px;">Chọn Phân Khu Nghỉ Dưỡng</h3>
+                    <p class="text-muted small">Cổng Trời Đông Giang gồm 4 phân khu lưu trú riêng biệt. Quý khách vui lòng chọn phân khu mong muốn để xem các hạng phòng:</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-md-6 col-lg-3" th:each="khu : ${khuList}">
+                        <div class="resort-area-card h-100 p-3 d-flex flex-column shadow-sm">
+                            <img th:src="${khu.maKhu == 1 ? '/images/rooms/fivitel-song-ngan.jpg' : (khu.maKhu == 2 ? '/images/rooms/cau-kieu.jpg' : (khu.maKhu == 3 ? '/images/rooms/o-thuoc.jpg' : '/images/rooms/nha-moong.jpg'))}"
+                                 style="height: 160px; object-fit: cover; width: 100%; border-radius: 12px; margin-bottom: 0.85rem;" th:alt="${khu.tenKhu}">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-gold text-dark fw-bold font-monospace small" th:text="${khu.hangSao} + ' SAO ★★★★★'">5 SAO</span>
+                                <small class="text-muted"><i class="bi bi-shield-check text-success me-1"></i>Chuẩn Quốc Tế</small>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2" th:text="${khu.tenKhu}">FIVITEL Sông Ngân</h5>
+                            <p class="text-muted small flex-grow-1 mb-3" th:text="${khu.diaChi != null ? khu.diaChi : 'Khu vực cảnh quan thiên nhiên nguyên sinh Cổng Trời Đông Giang'}"></p>
+                            <div class="pt-2 border-top border-light">
+                                <a th:href="@{/khach-san(maKhu=${khu.maKhu}, ngayNhan=${ngayNhan}, ngayTra=${ngayTra})}" class="btn btn-gold w-100 fw-bold py-2 shadow-sm text-center">
+                                    <i class="bi bi-door-open-fill me-1"></i>Chọn khu này để xem phòng
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BƯỚC 2: CHỌN HẠNG PHÒNG NGHỈ DƯỠNG (Chỉ hiển thị khi đã chọn khu) -->
+            <div th:if="${selectedMaKhu != null}">
+                <!-- Thanh điều hướng quay lại chọn khu -->
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white border rounded-4 shadow-sm flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <a th:href="@{/khach-san(ngayNhan=${ngayNhan}, ngayTra=${ngayTra})}" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold" style="border-radius: 9999px;">
+                            <i class="bi bi-arrow-left me-1"></i>Chọn khu lưu trú khác
+                        </a>
+                        <div>
+                            <span class="text-muted small d-block">Phân khu đang chọn:</span>
+                            <span th:each="khu : ${khuList}" th:if="${khu.maKhu == selectedMaKhu}">
+                                <strong class="fs-5 text-success" th:text="${khu.tenKhu}">FIVITEL Sông Ngân</strong>
+                                <span class="badge bg-gold text-dark ms-2 fw-bold" th:text="${khu.hangSao} + ' SAO'">5 SAO</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-muted small">
+                        Thời gian: <strong class="text-dark" th:text="${displayNgayNhan}">22/10/2026</strong> → <strong class="text-dark" th:text="${displayNgayTra}">23/10/2026</strong>
+                        (<strong class="text-dark" th:text="${roomTypes.size()}">0</strong> loại phòng)
+                    </div>
+                </div>
+
+                <div class="row g-4" th:if="${!roomTypes.empty}">
+                    <div class="col-12 col-md-6 col-lg-4" th:each="lp : ${roomTypes}">
+                        <div class="room-card-customer h-100">
+                            <!-- Image with Badges -->
+                            <div class="room-img-wrapper">
+                                <img th:src="${lp.khuLuuTru != null and lp.khuLuuTru.maKhu == 1 ? '/images/rooms/fivitel-song-ngan.jpg' : (lp.khuLuuTru != null and lp.khuLuuTru.maKhu == 2 ? '/images/rooms/cau-kieu.jpg' : (lp.khuLuuTru != null and lp.khuLuuTru.maKhu == 3 ? '/images/rooms/o-thuoc.jpg' : '/images/rooms/nha-moong.jpg'))}"
+                                     th:alt="${lp.tenLoaiPhong}">
+                                <div class="position-absolute top-0 start-0 m-3">
+                                    <span class="badge bg-dark bg-opacity-75 text-gold border border-gold border-opacity-50 px-2 py-1"
+                                          th:text="${lp.khuLuuTru != null ? lp.khuLuuTru.tenKhu : 'FIVITEL'}">
+                                        FIVITEL Sông Ngân
+                                    </span>
+                                </div>
+                                <div class="position-absolute bottom-0 end-0 m-3">
+                                    <span th:if="${availableCountMap.get(lp.maLoaiPhong) != null and availableCountMap.get(lp.maLoaiPhong) > 0}"
+                                          class="badge bg-success px-2 py-1">
+                                        <i class="bi bi-door-open me-1"></i>Còn <span th:text="${availableCountMap.get(lp.maLoaiPhong)}">5</span> phòng
+                                    </span>
+                                    <span th:unless="${availableCountMap.get(lp.maLoaiPhong) != null and availableCountMap.get(lp.maLoaiPhong) > 0}"
+                                          class="badge bg-danger px-2 py-1">
+                                        <i class="bi bi-clock-history me-1"></i>Tạm hết phòng
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Room Details Body -->
+                            <div class="p-4 d-flex flex-column flex-grow-1">
+                                <h4 class="fw-bold text-dark mb-2 fs-5" th:text="${lp.tenLoaiPhong}">Superior Double</h4>
+
+                                <div class="d-flex flex-wrap gap-3 my-2 text-muted small">
+                                    <div>
+                                        <i class="bi bi-arrows-fullscreen text-info me-1"></i>
+                                        <span th:text="${lp.dienTich != null ? lp.dienTich + ' m²' : '35 m²'}">35 m²</span>
+                                    </div>
+                                    <div>
+                                        <i class="bi bi-lamp text-warning me-1"></i>
+                                        <span th:text="${lp.loaiGiuong != null ? lp.loaiGiuong : '1 Giường King'}">King Size</span>
+                                    </div>
+                                    <div>
+                                        <i class="bi bi-people-fill text-success me-1"></i>
+                                        <span th:text="${lp.sucChuaNguoiLon} + ' Lớn, ' + ${lp.sucChuaTreEm} + ' Trẻ'">2 Lớn, 1 Trẻ</span>
+                                    </div>
+                                </div>
+
+                                <p class="text-muted small flex-grow-1 mt-2 mb-3"
+                                   th:text="${lp.moTa != null and !lp.moTa.isEmpty() ? lp.moTa : 'Không gian nghỉ dưỡng sang trọng, ban công hướng thung lũng đón mây ngàn trong lành.'}">
+                                </p>
+
+                                <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light mt-auto">
+                                    <div>
+                                        <span class="text-muted small d-block">Giá chỉ từ</span>
+                                        <span class="fs-5 fw-bold" style="color: #f59e0b;"
+                                              th:text="${lp.giaCoBan != null ? #numbers.formatDecimal(lp.giaCoBan, 0, 'COMMA', 0, 'POINT') + ' đ' : 'Liên hệ'}">
+                                            1,500,000 đ
+                                        </span>
+                                        <small class="text-muted">/đêm</small>
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn btn-gold btn-sm fw-bold px-3 py-2 shadow-sm"
+                                                onclick="openBookingDirectModal(this)"
+                                                th:data-name="${lp.tenLoaiPhong}"
+                                                th:data-price="${lp.giaCoBan}"
+                                                th:data-khu="${lp.khuLuuTru != null ? lp.khuLuuTru.tenKhu : 'FIVITEL'}">
+                                            <i class="bi bi-calendar-plus me-1"></i>Đặt phòng
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="text-center py-5 my-4" th:if="${roomTypes.empty}">
+                    <i class="bi bi-building-exclamation fs-1 text-muted d-block mb-3"></i>
+                    <h5 class="text-dark fw-bold">Không tìm thấy hạng phòng nào phù hợp với bộ lọc</h5>
+                    <p class="text-muted small">Quý khách vui lòng thử chọn ngày khác hoặc chọn phân khu khác.</p>
+                    <a th:href="@{/khach-san}" class="btn btn-outline-success mt-2">Xem tất cả các phòng</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Hỗ Trợ Đặt Phòng Nhanh -->
+    <div class="modal fade" id="directBookingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg" style="background: #ffffff; border: 1px solid #e2e8f0; color: #0f172a;">
+                <div class="modal-header border-bottom border-light">
+                    <h5 class="modal-title text-dark fw-bold">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>Đăng Ký Đặt Phòng Nghỉ
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-dark">
+                    <div class="p-3 mb-3 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <div class="fw-bold fs-6 text-success mb-1" id="modalRoomName">Superior King</div>
+                        <div class="small text-muted mb-1" id="modalRoomKhu">FIVITEL Sông Ngân</div>
+                        <div class="small text-dark">Giá niêm yết: <strong id="modalRoomPrice" class="text-warning fw-bold">1,500,000 đ</strong>/đêm</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-dark">Họ và tên người đại diện (*)</label>
+                        <input type="text" class="form-control" id="guestName" placeholder="Nguyễn Văn A" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-dark">Số điện thoại liên hệ (*)</label>
+                        <input type="tel" class="form-control" id="guestPhone" placeholder="0905xxxxxx" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-dark">Ghi chú yêu cầu đặc biệt</label>
+                        <textarea class="form-control" id="guestNote" rows="2" placeholder="Tầng cao, view hướng suối, kê thêm giường phụ..."></textarea>
+                    </div>
+
+                    <div class="alert alert-success py-2 px-3 small mb-0">
+                        <i class="bi bi-telephone-inbound-fill me-1"></i>
+                        Nhân viên lễ tân FIVITEL sẽ liên hệ xác nhận và giữ phòng trong vòng 15 phút. Hotline hỗ trợ 24/7: <strong>1900 86 66 44</strong>.
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-gold fw-bold px-4" onclick="submitDirectBooking()">
+                        Gửi Yêu Cầu Đặt Phòng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr('#checkInInput', {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                locale: 'vn',
+                minDate: 'today'
+            });
+            flatpickr('#checkOutInput', {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                locale: 'vn',
+                minDate: 'today'
+            });
+        });
+
+        let directModal = null;
+        function openBookingDirectModal(btn) {
+            const name = btn.getAttribute('data-name');
+            const price = btn.getAttribute('data-price');
+            const khu = btn.getAttribute('data-khu');
+
+            document.getElementById('modalRoomName').textContent = name;
+            document.getElementById('modalRoomKhu').textContent = khu;
+            document.getElementById('modalRoomPrice').textContent = Number(price || 0).toLocaleString('vi-VN') + ' đ';
+
+            directModal = new bootstrap.Modal(document.getElementById('directBookingModal'));
+            directModal.show();
+        }
+
+        function submitDirectBooking() {
+            const name = document.getElementById('guestName').value.trim();
+            const phone = document.getElementById('guestPhone').value.trim();
+            if (!name || !phone) {
+                alert('Vui lòng nhập họ tên và số điện thoại liên hệ!');
+                return;
+            }
+            alert('Cảm ơn Quý khách ' + name + '! Yêu cầu đặt phòng đã được tiếp nhận thành công. Nhân viên lễ tân FIVITEL sẽ liên hệ hotline xác nhận ngay!');
+            if (directModal) {
+                directModal.hide();
+            }
+        }
+    </script>
+</body>
+</html>

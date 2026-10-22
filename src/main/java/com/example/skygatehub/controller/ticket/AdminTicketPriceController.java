@@ -68,7 +68,9 @@ public class AdminTicketPriceController {
     @GetMapping("/create")
     public String hienThiFormTao(Model moHinh) {
         List<LoaiVe> danhSachLoaiVe = sanPhamVeService.layDanhSachVeDangBan();
-        moHinh.addAttribute("priceRequest", new BangGiaVeRequest());
+        BangGiaVeRequest request = new BangGiaVeRequest();
+        request.setMaBangGia(bangGiaVeService.generateNextMaBangGia());
+        moHinh.addAttribute("priceRequest", request);
         moHinh.addAttribute("tickets", danhSachLoaiVe);
         moHinh.addAttribute("isEdit", false);
         return "ticket/admin/price-form";

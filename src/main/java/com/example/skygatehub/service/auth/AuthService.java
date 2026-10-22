@@ -13,6 +13,8 @@ public interface AuthService {
 
     boolean doiMatKhau(String maNguoiDung, String matKhauCu, String matKhauMoi);
 
+    boolean capNhatThongTinVaDoiMatKhau(String maNguoiDung, String hoTen, String email, String soDienThoai, String matKhauCu, String matKhauMoi);
+
     default CurrentUser login(LoginRequest request) {
         return dangNhap(request);
     }

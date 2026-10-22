@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Ứng dụng Client Socket đồ họa Java Swing (Tiêu chí 5.4 - 0,4 điểm).
- * Dùng tại các quầy / cổng soát vé KDL Cổng Trời Đông Giang.
+ * Dùng tại các quầy / cổng soát vé & lễ tân KDL Cổng Trời Đông Giang.
  * Có nút mở đồng thời 3 trạm Check-in độc lập để kiểm chứng khả năng phục vụ đồng thời của Server.
  */
 public class GateCheckinClientApp extends JFrame {
@@ -56,9 +56,13 @@ public class GateCheckinClientApp extends JFrame {
 
     private JTextField roomCodeField;
     private JButton checkinRoomBtn;
+    private DefaultTableModel roomTableModel;
+    private JLabel roomCountLabel;
+    private final AtomicInteger successRoomCount = new AtomicInteger(0);
 
     private JTextField diningCodeField;
     private JButton checkinDiningBtn;
+    private DefaultTableModel diningTableModel;
 
     private JTextArea logArea;
 
@@ -76,8 +80,8 @@ public class GateCheckinClientApp extends JFrame {
 
     private void initUI() {
         setTitle("SkyGateHub - Hệ Thống Soát Vé & Check-in [" + defaultStationName + "]");
-        setSize(900, 680);
-        setMinimumSize(new Dimension(800, 550));
+        setSize(920, 700);
+        setMinimumSize(new Dimension(820, 560));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -118,6 +122,12 @@ public class GateCheckinClientApp extends JFrame {
         disconnectBtn.addActionListener(e -> disconnectFromServer());
         topPanel.add(disconnectBtn);
 
+        JButton openAllStationsBtn = new JButton("⚡ Mở 3 Trạm Đồng Thời");
+        openAllStationsBtn.setBackground(new Color(13, 110, 253));
+        openAllStationsBtn.setForeground(Color.WHITE);
+        openAllStationsBtn.addActionListener(e -> openThreeIndependentStations());
+        topPanel.add(openAllStationsBtn);
+
         connectionStatusLabel = new JLabel("⚪ Chưa kết nối");
         connectionStatusLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
         topPanel.add(connectionStatusLabel);
@@ -143,7 +153,7 @@ public class GateCheckinClientApp extends JFrame {
         logArea.setFont(new Font("Consolas", Font.PLAIN, 12));
         logArea.setBackground(new Color(248, 249, 250));
         JScrollPane scrollLog = new JScrollPane(logArea);
-        scrollLog.setPreferredSize(new Dimension(860, 180));
+        scrollLog.setPreferredSize(new Dimension(880, 180));
         scrollLog.setBorder(BorderFactory.createTitledBorder("Nhật ký truyền nhận gói tin TCP"));
         centerPanel.add(scrollLog, BorderLayout.SOUTH);
 
@@ -210,42 +220,86 @@ public class GateCheckinClientApp extends JFrame {
     }
 
     private JPanel createRoomStationTab() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        panel.add(new JLabel("Mã đặt phòng:"));
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        controlPanel.add(new JLabel("Mã đặt phòng / Mã đơn hàng:"));
         roomCodeField = new JTextField(20);
-        panel.add(roomCodeField);
+        roomCodeField.setFont(new Font("Consolas", Font.BOLD, 14));
+        roomCodeField.addActionListener(e -> processRoomCheckin());
+        controlPanel.add(roomCodeField);
 
         checkinRoomBtn = new JButton("🏨 Check-in Nhận Phòng");
-        checkinRoomBtn.setBackground(new Color(108, 117, 125));
+        checkinRoomBtn.setBackground(new Color(25, 135, 84));
         checkinRoomBtn.setForeground(Color.WHITE);
-        checkinRoomBtn.addActionListener(e -> sendCommand("CHECKIN_PHONG " + roomCodeField.getText().trim()));
-        panel.add(checkinRoomBtn);
+        checkinRoomBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        checkinRoomBtn.addActionListener(e -> processRoomCheckin());
+        controlPanel.add(checkinRoomBtn);
 
         JButton lookupRoomBtn = new JButton("Tra Cứu Phòng");
         lookupRoomBtn.addActionListener(e -> sendCommand("LOOKUP " + roomCodeField.getText().trim()));
-        panel.add(lookupRoomBtn);
+        controlPanel.add(lookupRoomBtn);
+
+        roomCountLabel = new JLabel("Số lượt nhận phòng thành công: 0");
+        roomCountLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        roomCountLabel.setForeground(new Color(25, 135, 84));
+        controlPanel.add(roomCountLabel);
+
+        panel.add(controlPanel, BorderLayout.NORTH);
+
+        String[] columns = {"Thời gian", "Mã Đặt Phòng", "Loại Phòng", "Số Phòng Nhận", "Kết Quả"};
+        roomTableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        JTable roomTable = new JTable(roomTableModel);
+        roomTable.setRowHeight(24);
+        roomTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        JScrollPane tableScroll = new JScrollPane(roomTable);
+        tableScroll.setBorder(BorderFactory.createTitledBorder("Lịch sử nhận phòng Trạm 2: Quầy Lưu Trú"));
+        panel.add(tableScroll, BorderLayout.CENTER);
 
         return panel;
     }
 
     private JPanel createDiningStationTab() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        panel.add(new JLabel("Mã đặt bàn:"));
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        controlPanel.add(new JLabel("Mã đặt bàn:"));
         diningCodeField = new JTextField(20);
-        panel.add(diningCodeField);
+        diningCodeField.setFont(new Font("Consolas", Font.BOLD, 14));
+        controlPanel.add(diningCodeField);
 
         checkinDiningBtn = new JButton("🍽️ Check-in Vào Bàn Ăn");
         checkinDiningBtn.setBackground(new Color(255, 193, 7));
+        checkinDiningBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
         checkinDiningBtn.addActionListener(e -> sendCommand("CHECKIN_AN " + diningCodeField.getText().trim()));
-        panel.add(checkinDiningBtn);
+        controlPanel.add(checkinDiningBtn);
 
         JButton lookupDiningBtn = new JButton("Tra Cứu Bàn");
         lookupDiningBtn.addActionListener(e -> sendCommand("LOOKUP " + diningCodeField.getText().trim()));
-        panel.add(lookupDiningBtn);
+        controlPanel.add(lookupDiningBtn);
+
+        panel.add(controlPanel, BorderLayout.NORTH);
+
+        String[] columns = {"Thời gian", "Mã Đặt Bàn", "Số Khách", "Mã Check-in", "Kết Quả"};
+        diningTableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        JTable diningTable = new JTable(diningTableModel);
+        diningTable.setRowHeight(24);
+        diningTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        JScrollPane tableScroll = new JScrollPane(diningTable);
+        tableScroll.setBorder(BorderFactory.createTitledBorder("Lịch sử check-in Trạm 3: Nhà Hàng Ẩm Thực"));
+        panel.add(tableScroll, BorderLayout.CENTER);
 
         return panel;
     }
@@ -259,6 +313,17 @@ public class GateCheckinClientApp extends JFrame {
         sendCommand("CHECKIN_VE " + code);
         ticketCodeField.setText("");
         ticketCodeField.requestFocus();
+    }
+
+    private void processRoomCheckin() {
+        String code = roomCodeField.getText().trim();
+        if (code.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã đặt phòng (ví dụ DP002) hoặc mã đơn hàng!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        sendCommand("CHECKIN_PHONG|" + code + "|ND004");
+        roomCodeField.setText("");
+        roomCodeField.requestFocus();
     }
 
     private void connectToServer() {
@@ -361,7 +426,7 @@ public class GateCheckinClientApp extends JFrame {
 
         String now = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-        if (response.startsWith("200 CHECKIN_SUCCESS")) {
+        if (response.contains("CHECKIN_SUCCESS") && response.contains("MaVe=")) {
             int count = successTicketCount.incrementAndGet();
             ticketCountLabel.setText("Số vé đã soát thành công trong ca: " + count);
 
@@ -370,12 +435,23 @@ public class GateCheckinClientApp extends JFrame {
             String loaiVe = extractParam(response, "LoaiVe=");
 
             ticketTableModel.insertRow(0, new Object[]{now, maVe, loaiVe, maCheckIn, "✅ THÀNH CÔNG"});
+        } else if (response.contains("CHECKIN_PHONG_OK")) {
+            int count = successRoomCount.incrementAndGet();
+            roomCountLabel.setText("Số lượt nhận phòng thành công: " + count);
+
+            String maDatPhong = extractParam(response, "MaDatPhong=");
+            String soPhong = extractParam(response, "SoPhong=");
+            String loaiPhong = extractParam(response, "LoaiPhong=");
+
+            roomTableModel.insertRow(0, new Object[]{now, maDatPhong, loaiPhong, soPhong, "✅ CHECK-IN THÀNH CÔNG"});
         } else if (response.contains("CONFLICT_ALREADY_USED")) {
             ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "⚠️ VÉ ĐÃ SỬ DỤNG"});
+        } else if (response.contains("CONFLICT")) {
+            roomTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "⚠️ " + response});
         } else if (response.contains("GONE")) {
-            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "❌ VÉ ĐÃ BỊ HỦY"});
+            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "❌ ĐÃ BỊ HỦY"});
         } else if (response.contains("NOT_FOUND")) {
-            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "❓ VÉ KHÔNG TỒN TẠI"});
+            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "❓ KHÔNG TỒN TẠI"});
         }
     }
 
@@ -396,8 +472,24 @@ public class GateCheckinClientApp extends JFrame {
         });
     }
 
+    private void openThreeIndependentStations() {
+        SwingUtilities.invokeLater(() -> {
+            GateCheckinClientApp app1 = new GateCheckinClientApp("TRAM_01", "TRAM_01_CONG_VE_VAO");
+            app1.setLocation(50, 50);
+            app1.setVisible(true);
+
+            GateCheckinClientApp app2 = new GateCheckinClientApp("TRAM_02", "TRAM_02_QUAY_LE_TAN_PHONG");
+            app2.setLocation(250, 100);
+            app2.setVisible(true);
+
+            GateCheckinClientApp app3 = new GateCheckinClientApp("TRAM_03", "TRAM_03_NHA_HANG_AM_THUC");
+            app3.setLocation(450, 150);
+            app3.setVisible(true);
+        });
+    }
+
     /**
-     * Mở đồng thời 3 cửa sổ trạm check-in độc lập trên 3 luồng riêng (Tiêu chí 5.3 & 5.4).
+     * Mở ứng dụng kiểm thử trạm soát vé & lễ tân check-in.
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

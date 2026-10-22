@@ -63,7 +63,9 @@ public class AdminTicketController {
 
     @GetMapping("/create")
     public String hienThiFormTao(Model moHinh) {
-        moHinh.addAttribute("ticketRequest", new SanPhamVeRequest());
+        SanPhamVeRequest request = new SanPhamVeRequest();
+        request.setMaLoaiVe(sanPhamVeService.generateNextMaLoaiVe());
+        moHinh.addAttribute("ticketRequest", request);
         moHinh.addAttribute("loaiVeTypes", LoaiVeType.values());
         moHinh.addAttribute("isEdit", false);
         return "ticket/admin/form";

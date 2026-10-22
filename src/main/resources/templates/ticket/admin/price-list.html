@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cấu hình giá vé theo ngày & dịp lễ — SkyGateHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" th:href="@{/css/base.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <div th:replace="~{fragments/header :: header}"></div>
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
     <div class="d-flex flex-grow-1">
         <div th:replace="~{fragments/admin-sidebar :: div}"></div>
         <main class="flex-grow-1 p-4">
@@ -18,7 +19,7 @@
 
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                 <div>
-                    <h3 class="fw-bold text-white mb-1" style="letter-spacing: -0.5px;">Cấu hình giá vé theo ngày & dịp lễ</h3>
+                    <h3 class="fw-bold mb-1" style="color: #0f172a; letter-spacing: -0.5px;">Cấu hình giá vé theo ngày &amp; dịp lễ</h3>
                     <p class="text-muted mb-0 small">Thiết lập đơn giá linh hoạt: Ngày thường (mặc định), Cuối tuần (thứ Bảy / Chủ nhật) và Ngày lễ đặc biệt (phụ thu +20%)</p>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
@@ -32,28 +33,28 @@
                 <div class="col-sm-6 col-xl-3">
                     <div class="stat-metric-card">
                         <div class="stat-metric-label">Cấu hình bảng giá</div>
-                        <div class="stat-metric-val" style="color: #34d399;" th:text="${pricesPage.totalElements}">25</div>
+                        <div class="stat-metric-val" style="color: #059669;" th:text="${pricesPage.totalElements}">25</div>
                         <div class="stat-metric-sub">Áp dụng cho vé & combo</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="stat-metric-card">
                         <div class="stat-metric-label">Ngày lễ đặc biệt (+20%)</div>
-                        <div class="stat-metric-val" style="color: #f87171;" th:text="${specialDays.size()}">8</div>
+                        <div class="stat-metric-val" style="color: #dc2626;" th:text="${specialDays.size()}">8</div>
                         <div class="stat-metric-sub">Phụ thu tự động hệ thống</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="stat-metric-card">
                         <div class="stat-metric-label">Chính sách cuối tuần</div>
-                        <div class="stat-metric-val" style="color: #f59e0b;">T7 & Chủ Nhật</div>
+                        <div class="stat-metric-val" style="color: #d97706;">T7 &amp; Chủ Nhật</div>
                         <div class="stat-metric-sub">Kích hoạt đơn giá CUOI_TUAN</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="stat-metric-card">
                         <div class="stat-metric-label">Thứ tự ưu tiên giá</div>
-                        <div class="stat-metric-val" style="color: #60a5fa; font-size: 1.15rem; margin-top: 4px;">Lễ &gt; Cuối tuần &gt; Thường</div>
+                        <div class="stat-metric-val" style="color: #0284c7; font-size: 1.15rem; margin-top: 4px;">Lễ &gt; Cuối tuần &gt; Thường</div>
                         <div class="stat-metric-sub">Thuật toán đối soát tự động</div>
                     </div>
                 </div>
@@ -75,7 +76,7 @@
                 <div class="card overflow-hidden">
                     <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div class="d-flex align-items-center gap-2">
-                            <h5 class="fw-bold mb-0 text-white" style="font-size: 1.05rem;">Bảng giá áp dụng cho từng loại vé</h5>
+                            <h5 class="fw-bold mb-0" style="color: #0f172a; font-size: 1.05rem;">Bảng giá áp dụng cho từng loại vé</h5>
                             <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" th:text="${pricesPage.totalElements} + ' cấu hình'"></span>
                         </div>
                         <div class="d-flex gap-2 align-items-center flex-wrap">
@@ -113,22 +114,22 @@
                                         <small class="text-muted" th:text="${bg.loaiVe.maLoaiVe}">VE01</small>
                                     </td>
                                     <td>
-                                        <div class="fw-semibold text-white" th:text="${bg.tenBangGia}">Giá mùa hè</div>
+                                        <div class="fw-semibold" style="color: #0f172a;" th:text="${bg.tenBangGia}">Giá mùa hè</div>
                                         <small class="text-muted d-block" th:if="${bg.ghiChu != null and !bg.ghiChu.isEmpty()}" th:text="${bg.ghiChu}"></small>
                                     </td>
                                     <td>
-                                        <span th:if="${bg.dieuKienGia == 'NGAY_LE'}" class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">Ngày lễ (+20%)</span>
-                                        <span th:if="${bg.dieuKienGia == 'CUOI_TUAN'}" class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">Cuối tuần (T7/CN)</span>
-                                        <span th:if="${bg.dieuKienGia == 'MAC_DINH'}" class="badge" style="background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4);">Ngày thường</span>
+                                        <span th:if="${bg.dieuKienGia == 'NGAY_LE'}" class="badge bg-danger text-danger bg-opacity-10 border border-danger border-opacity-25">Ngày lễ (+20%)</span>
+                                        <span th:if="${bg.dieuKienGia == 'CUOI_TUAN'}" class="badge bg-warning text-dark bg-opacity-20 border border-warning">Cuối tuần (T7/CN)</span>
+                                        <span th:if="${bg.dieuKienGia == 'MAC_DINH'}" class="badge bg-success text-success bg-opacity-10 border border-success border-opacity-25">Ngày thường</span>
                                     </td>
                                     <td class="small">
-                                        <span class="text-white" th:text="${#temporals.format(bg.hieuLucTu, 'dd/MM/yyyy')}"></span>
+                                        <span style="color: #0f172a;" th:text="${#temporals.format(bg.hieuLucTu, 'dd/MM/yyyy')}"></span>
                                         <span class="text-muted"> - </span>
-                                        <span class="text-white" th:text="${bg.hieuLucDen != null ? #temporals.format(bg.hieuLucDen, 'dd/MM/yyyy') : 'Vô thời hạn'}"></span>
+                                        <span style="color: #0f172a;" th:text="${bg.hieuLucDen != null ? #temporals.format(bg.hieuLucDen, 'dd/MM/yyyy') : 'Vô thời hạn'}"></span>
                                     </td>
-                                    <td class="fw-bold" style="color: #f59e0b; font-size: 1.02rem;" th:text="${#numbers.formatDecimal(bg.donGia, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">180,000 VNĐ</td>
+                                    <td class="fw-bold" style="color: #ea580c; font-size: 1.02rem;" th:text="${#numbers.formatDecimal(bg.donGia, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">180,000 VNĐ</td>
                                     <td class="text-center">
-                                        <span class="badge bg-secondary bg-opacity-50 text-white" th:text="${bg.uuTien}">10</span>
+                                        <span class="badge bg-secondary" th:text="${bg.uuTien}">10</span>
                                     </td>
                                     <td>
                                         <span th:if="${bg.trangThai}" class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">Đang áp dụng</span>
@@ -144,7 +145,7 @@
                                 <tr th:if="${pricesPage.totalElements == 0}">
                                     <td colspan="8">
                                         <div class="empty-state py-5 text-center">
-                                            <div class="empty-state-title fs-5 fw-bold text-white mb-2">Chưa có bảng giá nào</div>
+                                            <div class="empty-state-title fs-5 fw-bold text-dark mb-2">Chưa có bảng giá nào</div>
                                             <div class="empty-state-desc text-muted mb-3">Hãy thêm cấu hình giá vé mới để áp dụng cho khách tham quan.</div>
                                             <a th:href="@{/admin/ticket-prices/create}" class="btn btn-gold fw-bold">+ Thêm cấu hình mới</a>
                                         </div>
@@ -165,10 +166,10 @@
                         <div class="card p-4 h-100">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div>
-                                    <h5 class="fw-bold text-white mb-1" style="font-size: 1.05rem;">Lịch ngày lễ & sự kiện đặc biệt (Năm 2026)</h5>
+                                    <h5 class="fw-bold mb-1" style="color: #0f172a; font-size: 1.05rem;">Lịch ngày lễ &amp; sự kiện đặc biệt (Năm 2026)</h5>
                                     <p class="text-muted small mb-0">Hệ thống tự động kích hoạt giá NGAY_LE (+20%) khi ngày tham quan trùng với danh sách này.</p>
                                 </div>
-                                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50" th:text="${specialDays.size()} + ' ngày đã lưu'"></span>
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" th:text="${specialDays.size()} + ' ngày đã lưu'"></span>
                             </div>
 
                             <div style="max-height: 520px; overflow-y: auto; padding-right: 4px;">
@@ -179,10 +180,10 @@
                                             <div class="holiday-date-month" th:text="${#temporals.format(sd.ngayApDung, 'MM/yyyy')}">01/2026</div>
                                         </div>
                                         <div>
-                                            <h6 class="fw-bold text-white mb-1" th:text="${sd.tenNgay}">Tết Dương Lịch 2026</h6>
+                                            <h6 class="fw-bold mb-1" style="color: #0f172a;" th:text="${sd.tenNgay}">Tết Dương Lịch 2026</h6>
                                             <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                <span th:if="${sd.loaiNgay == 'LE_TET'}" class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">Lễ Tết (+20%)</span>
-                                                <span th:unless="${sd.loaiNgay == 'LE_TET'}" class="badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">Sự kiện đặc biệt (+20%)</span>
+                                                <span th:if="${sd.loaiNgay == 'LE_TET'}" class="badge bg-danger text-danger bg-opacity-10 border border-danger border-opacity-25">Lễ Tết (+20%)</span>
+                                                <span th:unless="${sd.loaiNgay == 'LE_TET'}" class="badge bg-warning text-dark bg-opacity-20 border border-warning">Sự kiện đặc biệt (+20%)</span>
                                                 <span class="small text-muted" th:if="${sd.ghiChu != null and !sd.ghiChu.isEmpty()}" th:text="${sd.ghiChu}"></span>
                                             </div>
                                         </div>
@@ -193,7 +194,7 @@
                                 </div>
 
                                 <div th:if="${specialDays.isEmpty()}" class="empty-state py-5 text-center">
-                                    <div class="empty-state-title fs-6 fw-bold text-white mb-1">Chưa có ngày lễ nào</div>
+                                    <div class="empty-state-title fs-6 fw-bold mb-1" style="color: #0f172a;">Chưa có ngày lễ nào</div>
                                     <div class="empty-state-desc text-muted small">Hãy thêm ngày lễ bằng biểu mẫu bên cạnh để kích hoạt chính sách phụ thu.</div>
                                 </div>
                             </div>
@@ -201,31 +202,31 @@
                     </div>
 
                     <div class="col-lg-5">
-                        <div class="card p-4" style="border: 1px solid rgba(245, 158, 11, 0.35) !important;">
+                        <div class="card p-4" style="border: 1px solid #fde68a !important;">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold text-white mb-0" style="font-size: 1.05rem;">Thêm ngày lễ / sự kiện mới</h5>
-                                <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50">Phụ thu +20%</span>
+                                <h5 class="fw-bold mb-0" style="color: #0f172a; font-size: 1.05rem;">Thêm ngày lễ / sự kiện mới</h5>
+                                <span class="badge bg-warning text-dark border border-warning">Phụ thu +20%</span>
                             </div>
                             <p class="text-muted small mb-3">Nhập thông tin ngày đặc biệt. Đơn đặt vé vào ngày này sẽ tự động được áp dụng mức giá ngày lễ theo độ ưu tiên cao nhất.</p>
 
                             <form th:action="@{/admin/ticket-prices/special-day/create}" th:object="${newSpecialDay}" method="post">
                                 <div class="mb-3">
-                                    <label class="form-label small fw-semibold text-white">Ngày áp dụng (*)</label>
+                                    <label class="form-label small fw-semibold" style="color: #0f172a;">Ngày áp dụng (*)</label>
                                     <input type="date" id="specialDateInput" class="form-control" th:field="*{ngayApDung}" required placeholder="dd/mm/yyyy">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label small fw-semibold text-white">Tên dịp lễ / sự kiện (*)</label>
+                                    <label class="form-label small fw-semibold" style="color: #0f172a;">Tên dịp lễ / sự kiện (*)</label>
                                     <input type="text" class="form-control" th:field="*{tenNgay}" placeholder="Ví dụ: Giỗ Tổ Hùng Vương, Quốc Khánh 2/9..." required>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label small fw-semibold text-white">Phân loại dịp đặc biệt</label>
+                                    <label class="form-label small fw-semibold" style="color: #0f172a;">Phân loại dịp đặc biệt</label>
                                     <select class="form-select" th:field="*{loaiNgay}">
                                         <option value="LE_TET">Lễ Tết toàn quốc (Phụ thu 20%)</option>
                                         <option value="SU_KIEN_DAC_BIET">Sự kiện lễ hội du lịch (Phụ thu 20%)</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label small fw-semibold text-white">Ghi chú sự kiện</label>
+                                    <label class="form-label small fw-semibold" style="color: #0f172a;">Ghi chú sự kiện</label>
                                     <input type="text" class="form-control" th:field="*{ghiChu}" placeholder="Ví dụ: Nghỉ lễ 30/4 - 1/5 theo lịch nhà nước">
                                 </div>
                                 <div class="d-grid mt-4">
@@ -240,17 +241,17 @@
             <div class="admin-tab-pane" id="paneSimulator">
                 <div class="card p-4">
                     <div class="mb-4">
-                        <h5 class="fw-bold text-white mb-1" style="font-size: 1.05rem;">Công cụ kiểm tra & tính giá vé tự động (Ticket Pricing Simulator)</h5>
+                        <h5 class="fw-bold mb-1" style="color: #0f172a; font-size: 1.05rem;">Công cụ kiểm tra &amp; tính giá vé tự động (Ticket Pricing Simulator)</h5>
                         <p class="text-muted small mb-0">Mô phỏng thuật toán đối soát giá vé của TicketPricingService: Tự động phân loại ngày thường, cuối tuần (T7/CN) hoặc ngày lễ đặc biệt (+20%).</p>
                     </div>
 
                     <div class="row g-3 mb-4 align-items-end">
                         <div class="col-md-4">
-                            <label class="form-label small fw-semibold text-white">Ngày tham quan mô phỏng</label>
+                            <label class="form-label small fw-semibold" style="color: #0f172a;">Ngày tham quan mô phỏng</label>
                             <input type="date" id="simDate" class="form-control">
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label small fw-semibold text-white">Chọn gói vé hoặc combo trải nghiệm</label>
+                            <label class="form-label small fw-semibold" style="color: #0f172a;">Chọn gói vé hoặc combo trải nghiệm</label>
                             <select id="simTicket" class="form-select">
                                 <option th:each="t : ${tickets}" th:value="${t.maLoaiVe}" th:text="${t.tenLoaiVe + ' (' + t.maLoaiVe + ')'}"></option>
                             </select>
@@ -260,19 +261,19 @@
                         </div>
                     </div>
 
-                    <div id="simResultBox" style="display: none; background: rgba(0,0,0,0.4); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.5rem;">
+                    <div id="simResultBox" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md, 10px); padding: 1.5rem;">
                         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                            <h6 class="fw-bold text-white mb-0" style="font-size: 1rem;">Kết quả đối soát chính sách giá</h6>
+                            <h6 class="fw-bold mb-0" style="color: #0f172a; font-size: 1rem;">Kết quả đối soát chính sách giá</h6>
                             <span id="simPolicyBadge" class="badge bg-success">Ngày thường</span>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <div class="small text-muted">Ngày áp dụng:</div>
-                                <div class="fw-bold text-white" id="simDateDisplay">--</div>
+                                <div class="fw-bold" style="color: #0f172a;" id="simDateDisplay">--</div>
                             </div>
                             <div class="col-md-4">
                                 <div class="small text-muted">Đơn giá áp dụng:</div>
-                                <div class="fw-bold" style="color: #34d399; font-size: 1.25rem;" id="simUnitPriceDisplay">--</div>
+                                <div class="fw-bold" style="color: #059669; font-size: 1.25rem;" id="simUnitPriceDisplay">--</div>
                             </div>
                             <div class="col-md-4">
                                 <div class="small text-muted">Tồn kho khả dụng (KHO_VE):</div>

@@ -28,4 +28,7 @@ public interface LoaiVeRepository extends JpaRepository<LoaiVe, Long> {
     List<LoaiVe> findByTenLoaiVeContainingIgnoreCase(String keyword);
 
     boolean existsByMaLoaiVe(String maLoaiVe);
+
+    @org.springframework.data.jpa.repository.Query("SELECT v.maLoaiVe FROM LoaiVe v")
+    List<String> findAllMaLoaiVe();
 }

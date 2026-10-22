@@ -102,4 +102,6 @@ public interface SanPhamVeService {
     default List<ThanhPhanDichVu> getAllServiceComponents() {
         return layTatCaDichVuThanhPhan();
     }
+
+    String generateNextMaLoaiVe();
 }

@@ -62,6 +62,25 @@ public class BangGiaVeServiceImpl implements BangGiaVeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public String generateNextMaBangGia() {
+        List<String> codes = bangGiaVeRepository.findAllMaBangGia();
+        int maxNumber = 0;
+        for (String code : codes) {
+            if (code != null && code.toUpperCase().startsWith("BG")) {
+                try {
+                    int num = Integer.parseInt(code.substring(2).trim());
+                    if (num > maxNumber) {
+                        maxNumber = num;
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        int nextNumber = maxNumber + 1;
+        return String.format("BG%02d", nextNumber);
+    }
+
+    @Override
     public BangGiaVe taoBangGia(BangGiaVeRequest yeuCau) {
         Optional<LoaiVe> timThayLoaiVe = loaiVeRepository.findByMaLoaiVe(yeuCau.getMaLoaiVe());
         if (!timThayLoaiVe.isPresent()) {
@@ -70,8 +89,8 @@ public class BangGiaVeServiceImpl implements BangGiaVeService {
         LoaiVe loaiVe = timThayLoaiVe.get();
 
         String maBangGia = yeuCau.getMaBangGia();
-        if (maBangGia == null || maBangGia.trim().isEmpty()) {
-            maBangGia = "BG" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        if (maBangGia == null || maBangGia.trim().isEmpty() || maBangGia.startsWith("BG-UUID")) {
+            maBangGia = generateNextMaBangGia();
         }
 
         BangGiaVe bangGia = new BangGiaVe();

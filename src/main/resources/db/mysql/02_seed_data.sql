@@ -202,10 +202,10 @@ INSERT INTO `KHO_VE` (`MA_KHO_VE`, `MA_LOAI_VE`, `NGAY_THAM_QUAN`, `SO_LUONG_TOI
 
 -- 8. KHU_LUU_TRU (4 khu luu tru)
 INSERT INTO `KHU_LUU_TRU` (`MA_KHU`, `TEN_KHU`, `HANG_SAO`, `DIA_CHI`, `EMAIL`, `HOTLINE`, `HINH_ANH`) VALUES
-  (1, 'FIVITEL Sông Ngân', 5, 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng', 'booking@congtroidonggiang.com', '1900 866644', 'song_ngan.jpg'),
-  (2, 'FIVITEL Cầu Kiều', 5, 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng', 'booking@congtroidonggiang.com', '1900 866644', 'cau_kieu.jpg'),
-  (3, 'FIVITEL Ô Thước', 5, 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng', 'booking@congtroidonggiang.com', '1900 866644', 'o_thuoc.jpg'),
-  (4, 'Nhà Moong', 5, 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng', 'booking@congtroidonggiang.com', '1900 866644', 'nha_moong.jpg');
+  (1, 'FIVITEL Sông Ngân', 5, 'Thôn A Sờ, Xã Mà Cooih, Đông Giang, Quảng Nam', 'booking@congtroidonggiang.com', '1900 86 66 44', 'song_ngan.jpg'),
+  (2, 'FIVITEL Cầu Kiều', 5, 'Thôn A Sờ, Xã Mà Cooih, Đông Giang, Quảng Nam', 'booking@congtroidonggiang.com', '1900 86 66 44', 'cau_kieu.jpg'),
+  (3, 'FIVITEL Ô Thước', 5, 'Thôn A Sờ, Xã Mà Cooih, Đông Giang, Quảng Nam', 'booking@congtroidonggiang.com', '1900 86 66 44', 'o_thuoc.jpg'),
+  (4, 'Nhà Moong', 5, 'Thôn A Sờ, Xã Mà Cooih, Đông Giang, Quảng Nam', 'booking@congtroidonggiang.com', '1900 86 66 44', 'nha_moong.jpg');
 
 -- 8.1. LOAI_PHONG (15 loai phong dung tung khu, dien tich va gia tu anh thuc te)
 INSERT INTO `LOAI_PHONG` (`MA_LOAI_PHONG`, `MA_KHU`, `TEN_LOAI_PHONG`, `DIEN_TICH`, `LOAI_GIUONG`, `SUC_CHUA_NGUOI_LON`, `SUC_CHUA_TRE_EM`, `GIA_CO_BAN`, `HINH_ANH`) VALUES

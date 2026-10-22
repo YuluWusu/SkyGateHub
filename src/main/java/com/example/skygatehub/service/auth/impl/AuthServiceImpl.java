@@ -150,6 +150,35 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public boolean capNhatThongTinVaDoiMatKhau(String maNguoiDung, String hoTen, String email, String soDienThoai, String matKhauCu, String matKhauMoi) {
+        Optional<NguoiDung> nguoiDungOptional = nguoiDungRepository.findByMaNguoiDung(maNguoiDung);
+        if (nguoiDungOptional.isEmpty()) {
+            return false;
+        }
+
+        NguoiDung nguoiDung = nguoiDungOptional.get();
+        if (!passwordHasher.matches(matKhauCu, nguoiDung.getMatKhauHash())) {
+            return false;
+        }
+
+        if (hoTen != null && !hoTen.trim().isEmpty()) {
+            nguoiDung.setHoTen(hoTen.trim());
+        }
+        if (email != null && !email.trim().isEmpty()) {
+            nguoiDung.setEmail(email.trim());
+        }
+        if (soDienThoai != null && !soDienThoai.trim().isEmpty()) {
+            nguoiDung.setSoDienThoai(soDienThoai.trim());
+        }
+
+        nguoiDung.setMatKhauHash(passwordHasher.encode(matKhauMoi));
+        nguoiDung.setCanDoiMatKhau(false);
+        nguoiDung.setNgayCapNhat(LocalDateTime.now());
+        nguoiDungRepository.save(nguoiDung);
+        return true;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public CurrentUser login(LoginRequest request) {
         return dangNhap(request);

@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Quy Trình Đặt Dịch Vụ — Cổng Trời Đông Giang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <style>
+        /* FUNNEL HEADER CHUYÊN BIỆT (KHÔNG DÙNG NAVBAR CHUNG) */
+        .funnel-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.85rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+        .funnel-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+        .funnel-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        .funnel-brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        }
+        .funnel-brand-text h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin: 0;
+            color: #064e3b;
+            letter-spacing: -0.3px;
+        }
+        .funnel-brand-text span {
+            font-size: 0.72rem;
+            color: #d97706;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+        }
+        
+        /* 4-STEP PROGRESS TRACKER */
+        .funnel-steps {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .step-node {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            padding: 6px 14px;
+            border-radius: 9999px;
+        }
+        .step-node.active {
+            color: #047857;
+            background: #ecfdf5;
+            font-weight: 700;
+        }
+        .step-node.completed {
+            color: #10b981;
+        }
+        .step-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .step-node.active .step-num {
+            background: #059669;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+        }
+        .step-node.completed .step-num {
+            background: #10b981;
+            color: #ffffff;
+        }
+        .step-divider {
+            width: 24px;
+            height: 2px;
+            background: #e2e8f0;
+        }
+        .step-divider.active {
+            background: #10b981;
+        }
+
+        /* FUNNEL LAYOUT */
+        .funnel-body {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .step-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+            padding: 2.25rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .step-card.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* SIDEBAR TÓM TẮT */
+        .summary-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
+            padding: 1.75rem;
+            position: sticky;
+            top: 5.5rem;
+        }
+        .summary-header {
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* CARD SẢN PHẨM TRONG BƯỚC */
+        .item-select-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1.25rem;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+        .item-select-card:hover {
+            border-color: #10b981;
+            box-shadow: 0 10px 20px -3px rgba(16, 185, 129, 0.12);
+            transform: translateY(-2px);
+        }
+        .item-select-card.selected {
+            border-color: #059669;
+            background: #f0fdf4;
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+        }
+
+        .qty-control {
+            display: inline-flex;
+            align-items: center;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        .qty-btn {
+            background: #f8fafc;
+            border: none;
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qty-btn:hover {
+            background: #059669;
+            color: #ffffff;
+        }
+        .qty-input {
+            width: 48px;
+            height: 36px;
+            border: none;
+            text-align: center;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .skip-choice-banner {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.75rem;
+            transition: all 0.2s ease;
+        }
+        .skip-choice-banner:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .price-highlight {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #059669;
+        }
+        .deposit-highlight {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #ea580c;
+        }
+
+        .funnel-btn-primary {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 6px 18px rgba(5, 150, 105, 0.3);
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .funnel-btn-primary:hover {
+            background: linear-gradient(135deg, #047857, #064e3b);
+            color: #ffffff;
+            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.45);
+            transform: translateY(-2px);
+        }
+
+        .funnel-btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1.5px solid #cbd5e1;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .funnel-btn-secondary:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .funnel-btn-skip {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1.5px solid #fed7aa;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .funnel-btn-skip:hover {
+            background: #ffedd5;
+            color: #9a3412;
+            border-color: #fdba74;
+        }
+    </style>
+</head>
+<body style="background: #f8fafc; color: #0f172a; min-height: 100vh;">
+
+    <!-- ============================================================== -->
+    <!-- DEDICATED FUNNEL HEADER (KHÔNG DÙNG NAVBAR CHUNG CỦA WEBSITE) -->
+    <!-- ============================================================== -->
+    <header class="funnel-header">
+        <div class="funnel-container">
+            <!-- Brand Logo & Home Link -->
+            <a th:href="@{/}" class="funnel-brand text-decoration-none" title="Quay về trang chủ Cổng Trời Đông Giang">
+                <img th:src="@{/images/logo/images-removebg-preview.png}"
+                     onerror="this.onerror=null; this.src='/images/logo/logo.png';"
+                     alt="Cổng Trời Đông Giang"
+                     style="height: 44px; width: auto; object-fit: contain;">
+                <div class="funnel-brand-text">
+                    <h1>CỔNG TRỜI ĐÔNG GIANG</h1>
+                    <span>HỆ THỐNG ĐẶT DỊCH VỤ TRỌN GÓI</span>
+                </div>
+            </a>
+
+            <!-- 4-Step Pipeline Indicators -->
+            <nav class="funnel-steps d-none d-lg-flex" aria-label="Tiến trình đặt dịch vụ">
+                <div class="step-node active" id="indicator-step-1" onclick="jumpToStep(1)">
+                    <span class="step-num">1</span>
+                    <span>Chọn Vé</span>
+                </div>
+                <div class="step-divider" id="divider-1"></div>
+
+                <div class="step-node" id="indicator-step-2" onclick="jumpToStep(2)">
+                    <span class="step-num">2</span>
+                    <span>Khách Sạn</span>
+                </div>
+                <div class="step-divider" id="divider-2"></div>
+
+                <div class="step-node" id="indicator-step-3" onclick="jumpToStep(3)">
+                    <span class="step-num">3</span>
+                    <span>Ẩm Thực</span>
+                </div>
+                <div class="step-divider" id="divider-3"></div>
+
+                <div class="step-node" id="indicator-step-4" onclick="jumpToStep(4)">
+                    <span class="step-num">4</span>
+                    <span>Thanh Toán & Cọc</span>
+                </div>
+            </nav>
+
+            <!-- Hotline & Exit Button -->
+            <div class="d-flex align-items-center gap-3">
+                <a href="tel:1900866644" class="text-decoration-none d-none d-md-flex align-items-center gap-2 text-dark">
+                    <i class="bi bi-telephone-fill text-warning"></i>
+                    <div>
+                        <span class="d-block small text-muted" style="font-size: 0.7rem; line-height: 1;">Hotline 24/7</span>
+                        <strong class="text-success" style="font-size: 0.95rem;">1900 866644</strong>
+                    </div>
+                </a>
+                <a th:href="@{/}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" onclick="return confirm('Bạn có muốn tạm dừng quá trình đặt dịch vụ để quay về trang chủ?')">
+                    <i class="bi bi-x-lg me-1"></i> Thoát
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="funnel-body">
+
+        <!-- Thông báo lỗi nếu có -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show rounded-4 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${errorMessage}">Đã xảy ra lỗi</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <form id="pipelineBookingForm" th:action="@{/dat-dich-vu/submit}" method="post">
+            <div class="row g-4">
+                
+                <!-- CỘT TRÁI: CÁC BƯỚC WIZARD PIPELINE (8/12) -->
+                <div class="col-lg-8">
+
+                    <!-- ========================================== -->
+                    <!-- BƯỚC 1: CHỌN VÉ THAM QUAN                  -->
+                    <!-- ========================================== -->
+                    <div class="step-card active" id="step-pane-1">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+                            <div>
+                                <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill mb-2">BƯỚC 1 / 4</span>
+                                <h3 class="fw-bold mb-1" style="color: #064e3b; font-family: 'Playfair Display', serif;">Chọn Vé Tham Quan KDL</h3>
+                                <p class="text-muted small mb-0">Chọn ngày tham quan và số lượng vé vào cổng, cáp treo hoặc combo trải nghiệm.</p>
+                            </div>
+                            <i class="bi bi-ticket-perforated fs-1 text-success opacity-75"></i>
+                        </div>
+
+                        <!-- Chọn ngày tham quan với Custom Date Picker Mockup -->
+                        <div class="p-3 bg-light rounded-4 mb-4 border d-flex flex-wrap align-items-center gap-3">
+                            <label class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                <i class="bi bi-calendar-event text-success"></i> Ngày sử dụng vé:
+                            </label>
+                            <div class="d-inline-flex align-items-center justify-content-between p-2 px-3 shadow-sm bg-white"
+                                 style="cursor: pointer; border: 1.5px solid #059669; border-radius: 9999px; min-width: 220px;"
+                                 onclick="window.SkygatePicker.open({targetInputId: 'ngayThamQuanInput', displayElementId: 'ngayThamQuanDisplay', onConfirm: updateSummary})">
+                                <span id="ngayThamQuanDisplay" class="fw-bold text-success me-3">
+                                    <i class="bi bi-calendar2-week-fill me-1"></i><span th:text="${todayDisplay != null ? todayDisplay : '23/10/2026'}">23/10/2026</span>
+                                </span>
+                                <i class="bi bi-pencil-square text-muted small"></i>
+                            </div>
+                            <input type="hidden" name="ngayThamQuan" id="ngayThamQuanInput" th:value="${today}" onchange="updateSummary()">
+                            <small class="text-muted ms-auto"><i class="bi bi-info-circle me-1"></i>Bấm vào ô ngày để chọn lịch trực quan.</small>
+                        </div>
+
+                        <!-- Danh sách vé -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6" th:each="lv, iter : ${tickets}">
+                                <div class="item-select-card" th:id="'ticket-card-' + ${lv.maLoaiVe}">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold" th:text="${lv.loaiVe}">VÉ TIÊU CHUẨN</span>
+                                            <span class="badge bg-light text-muted border font-monospace small" th:text="${lv.maLoaiVe}">VE01</span>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-1" th:text="${lv.tenLoaiVe}">Vé Tham Quan Người Lớn</h5>
+                                        <p class="text-muted small mb-3" style="min-height: 2.8em;" th:text="${lv.moTa != null ? lv.moTa : 'Vé vào cổng tham quan toàn cảnh KDL Cổng Trời Đông Giang.'}">Mô tả loại vé...</p>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <div>
+                                            <span class="text-muted small d-block">Giá niêm yết:</span>
+                                            <span class="price-highlight" th:text="${#numbers.formatDecimal(ticketPrices[lv.maLoaiVe], 0, 'COMMA', 0, 'POINT')} + ' đ'">300,000 đ</span>
+                                        </div>
+                                        <div class="qty-control">
+                                            <button type="button" class="qty-btn" onclick="changeQty('ticket', '[[${lv.maLoaiVe}]]', -1)">-</button>
+                                            <input type="hidden" name="ticketCode" th:value="${lv.maLoaiVe}">
+                                            <input type="text" name="ticketQty" th:id="'qty-ticket-' + ${lv.maLoaiVe}" value="0" readonly class="qty-input"
+                                                   th:data-price="${ticketPrices[lv.maLoaiVe]}"
+                                                   th:data-name="${lv.tenLoaiVe}">
+                                            <button type="button" class="qty-btn" onclick="changeQty('ticket', '[[${lv.maLoaiVe}]]', 1)">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nút điều hướng bước 1 -->
+                        <div class="d-flex justify-content-end pt-3 border-top">
+                            <button type="button" class="funnel-btn-primary" onclick="goToStep(2)">
+                                <span>Tiếp tục: Chọn Khách Sạn</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- ========================================== -->
+                    <!-- BƯỚC 2: CHỌN KHÁCH SẠN (LƯU TRÚ)           -->
+                    <!-- ========================================== -->
+                    <div class="step-card" id="step-pane-2">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+                            <div>
+                                <span class="badge bg-warning bg-opacity-25 text-warning-emphasis fw-bold px-3 py-2 rounded-pill mb-2">BƯỚC 2 / 4</span>
+                                <h3 class="fw-bold mb-1" style="color: #064e3b; font-family: 'Playfair Display', serif;">Chọn Phòng Nghỉ Dưỡng (Tuỳ Chọn)</h3>
+                                <p class="text-muted small mb-0">Trải nghiệm hệ sinh thái 4 phân khu lưu trú 5 sao giữa mây ngàn Đông Giang.</p>
+                            </div>
+                            <i class="bi bi-buildings fs-1 text-warning opacity-75"></i>
+                        </div>
+
+                        <!-- Nút lựa chọn Bỏ qua nếu đi về trong ngày -->
+                        <div class="skip-choice-banner">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 text-start">
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-1"><i class="bi bi-sun text-warning me-1"></i> Quý khách chỉ tham quan trong ngày?</h6>
+                                    <p class="text-muted small mb-0">Nếu không có nhu cầu ở lại qua đêm, quý khách có thể bỏ qua bước này để sang phần Ẩm thực.</p>
+                                </div>
+                                <button type="button" class="funnel-btn-skip" onclick="skipHotel()">
+                                    <span>Tôi đi về trong ngày (Bỏ qua)</span>
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="bookHotel" id="bookHotelFlag" value="false">
+
+                        <!-- Bộ chọn ngày nhận & trả phòng -->
+                        <div class="p-3 bg-light rounded-4 mb-4 border">
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold small text-dark mb-1">Ngày nhận phòng (Check-in 14:00):</label>
+                                    <input type="date" name="ngayNhanPhong" id="ngayNhanInput" th:value="${today}" class="form-control rounded-pill" onchange="calculateNights(); updateSummary();">
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold small text-dark mb-1">Ngày trả phòng (Check-out 12:00):</label>
+                                    <input type="date" name="ngayTraPhong" id="ngayTraInput" th:value="${tomorrow}" class="form-control rounded-pill" onchange="calculateNights(); updateSummary();">
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <span class="d-block small text-muted">Thời gian:</span>
+                                    <span class="badge bg-success rounded-pill px-3 py-2 fw-bold" id="badgeNights">1 đêm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lựa chọn phân khu lưu trú trước khi chọn phòng -->
+                        <div class="p-3 bg-white rounded-4 mb-3 border shadow-sm">
+                            <label class="fw-bold small text-dark d-block mb-2">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i>Chọn Phân Khu Lưu Trú Trước:
+                            </label>
+                            <div class="d-flex flex-wrap gap-2" id="resortAreaFilterTabs">
+                                <button type="button" class="btn btn-sm btn-success fw-bold px-3 py-2 rounded-pill area-tab-btn active" data-khu="all" onclick="filterRoomByArea('all', this)">
+                                    Tất cả phân khu
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2 rounded-pill area-tab-btn" data-khu="FIVITEL Sông Ngân" onclick="filterRoomByArea('FIVITEL Sông Ngân', this)">
+                                    FIVITEL Sông Ngân
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2 rounded-pill area-tab-btn" data-khu="Cầu Kiều" onclick="filterRoomByArea('Cầu Kiều', this)">
+                                    Khách Sạn Cầu Kiều
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2 rounded-pill area-tab-btn" data-khu="Ô Thước" onclick="filterRoomByArea('Ô Thước', this)">
+                                    Khách Sạn Ô Thước
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2 rounded-pill area-tab-btn" data-khu="Moong" onclick="filterRoomByArea('Moong', this)">
+                                    Làng Moong Cơ Tu
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách các hạng phòng -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6 room-card-col" th:each="lp : ${roomTypes}" th:data-area="${lp.khuLuuTru != null ? lp.khuLuuTru.tenKhu : ''}">
+                                <div class="item-select-card" th:id="'room-card-' + ${lp.maLoaiPhong}">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="badge bg-info bg-opacity-10 text-info-emphasis fw-bold" th:text="${lp.khuLuuTru != null ? lp.khuLuuTru.tenKhu : 'Khu nghỉ dưỡng'}">FIVITEL Sông Ngân</span>
+                                            <span class="badge bg-light text-muted border font-monospace small" th:text="${lp.loaiGiuong}">DBL</span>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-1" th:text="${lp.tenLoaiPhong}">Superior DBL</h5>
+                                        <div class="small text-muted mb-2">
+                                            <span><i class="bi bi-people me-1"></i><span th:text="${lp.sucChuaNguoiLon} + ' NL'">2 NL</span> + <span th:text="${lp.sucChuaTreEm} + ' TE'">1 TE</span></span>
+                                            <span class="mx-2">•</span>
+                                            <span><i class="bi bi-aspect-ratio me-1"></i><span th:text="${lp.dienTich} + ' m²'">27 m²</span></span>
+                                        </div>
+                                        <p class="text-muted small mb-3" style="min-height: 2.2em;" th:text="${lp.moTa != null ? lp.moTa : 'Tiện nghi 5 sao, ban công ngắm trọn thung lũng sương mù.'}">Mô tả phòng...</p>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <div>
+                                            <span class="text-muted small d-block">Giá 1 đêm:</span>
+                                            <span class="price-highlight" th:text="${#numbers.formatDecimal(lp.giaCoBan, 0, 'COMMA', 0, 'POINT')} + ' đ'">900,000 đ</span>
+                                        </div>
+                                        <div class="qty-control">
+                                            <button type="button" class="qty-btn" onclick="changeQty('room', '[[${lp.maLoaiPhong}]]', -1)">-</button>
+                                            <input type="hidden" name="roomTypeCode" th:value="${lp.maLoaiPhong}">
+                                            <input type="text" name="roomQty" th:id="'qty-room-' + ${lp.maLoaiPhong}" value="0" readonly class="qty-input"
+                                                   th:data-price="${lp.giaCoBan}"
+                                                   th:data-name="${lp.tenLoaiPhong}">
+                                            <button type="button" class="qty-btn" onclick="changeQty('room', '[[${lp.maLoaiPhong}]]', 1)">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nút điều hướng bước 2 -->
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <button type="button" class="funnel-btn-secondary" onclick="goToStep(1)">
+                                <i class="bi bi-arrow-left"></i>
+                                <span>Quay lại Chọn Vé</span>
+                            </button>
+                            <button type="button" class="funnel-btn-primary" onclick="goToStep(3)">
+                                <span>Tiếp tục: Chọn Ẩm Thực</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- ========================================== -->
+                    <!-- BƯỚC 3: CHỌN ẨM THỰC & NHÀ HÀNG            -->
+                    <!-- ========================================== -->
+                    <div class="step-card" id="step-pane-3">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+                            <div>
+                                <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-3 py-2 rounded-pill mb-2">BƯỚC 3 / 4</span>
+                                <h3 class="fw-bold mb-1" style="color: #064e3b; font-family: 'Playfair Display', serif;">Chọn Ẩm Thực & Suất Ăn (Tuỳ Chọn)</h3>
+                                <p class="text-muted small mb-0">Thưởng thức hương vị ẩm thực Cơ Tu đậm đà, tiệc nướng BBQ thung lũng hoặc set menu đặc sản.</p>
+                            </div>
+                            <i class="bi bi-cup-hot fs-1 text-danger opacity-75"></i>
+                        </div>
+
+                        <!-- Nút lựa chọn Bỏ qua nếu tự túc ăn uống -->
+                        <div class="skip-choice-banner">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 text-start">
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-1"><i class="bi bi-egg-fried text-danger me-1"></i> Quý khách tự túc ẩm thực?</h6>
+                                    <p class="text-muted small mb-0">Nếu không muốn đặt trước suất ăn, quý khách có thể bỏ qua bước này để tới phần Thanh toán.</p>
+                                </div>
+                                <button type="button" class="funnel-btn-skip" onclick="skipDining()">
+                                    <span>Không đặt ăn (Bỏ qua)</span>
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="bookDining" id="bookDiningFlag" value="false">
+
+                        <!-- Bộ chọn ca ăn và ngày ăn -->
+                        <div class="p-3 bg-light rounded-4 mb-4 border">
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark mb-1">Ngày dùng bữa:</label>
+                                    <input type="date" name="ngayAn" id="ngayAnInput" th:value="${today}" class="form-control rounded-pill" onchange="updateSummary();">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark mb-1">Ca ăn mong muốn:</label>
+                                    <select name="maCaAn" id="maCaAnSelect" class="form-select rounded-pill">
+                                        <option th:each="ca : ${caAnList}" th:value="${ca.maCaAn}" th:text="${ca.tenCaAn} + ' (' + ${ca.gioBatDau} + ' - ' + ${ca.gioKetThuc} + ')'">
+                                            Bữa Trưa Thung Lũng (11:00 - 14:00)
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách suất ăn -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6" th:each="dva : ${diningServices}">
+                                <div class="item-select-card" th:id="'dining-card-' + ${dva.maDichVu}">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="badge bg-warning bg-opacity-25 text-warning-emphasis fw-bold" th:text="${dva.loaiDichVu}">BUFFET</span>
+                                            <span class="badge bg-light text-muted border font-monospace small" th:text="${dva.maDichVu}">DV01</span>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-1" th:text="${dva.tenDichVu}">Buffet Trưa Ẩm Thực Cơ Tu</h5>
+                                        <p class="text-muted small mb-3" style="min-height: 2.5em;" th:text="${dva.moTa != null ? dva.moTa : 'Đặc sản núi rừng tươi ngon, chuẩn vị truyền thống.'}">Mô tả món ăn...</p>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                        <div>
+                                            <span class="text-muted small d-block">Giá 1 suất:</span>
+                                            <span class="price-highlight" th:text="${#numbers.formatDecimal(dva.giaDichVu, 0, 'COMMA', 0, 'POINT')} + ' đ'">250,000 đ</span>
+                                        </div>
+                                        <div class="qty-control">
+                                            <button type="button" class="qty-btn" onclick="changeQty('dining', '[[${dva.maDichVu}]]', -1)">-</button>
+                                            <input type="hidden" name="diningCode" th:value="${dva.maDichVu}">
+                                            <input type="text" name="diningQty" th:id="'qty-dining-' + ${dva.maDichVu}" value="0" readonly class="qty-input"
+                                                   th:data-price="${dva.giaDichVu}"
+                                                   th:data-name="${dva.tenDichVu}">
+                                            <button type="button" class="qty-btn" onclick="changeQty('dining', '[[${dva.maDichVu}]]', 1)">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nút điều hướng bước 3 -->
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <button type="button" class="funnel-btn-secondary" onclick="goToStep(2)">
+                                <i class="bi bi-arrow-left"></i>
+                                <span>Quay lại Khách Sạn</span>
+                            </button>
+                            <button type="button" class="funnel-btn-primary" onclick="goToStep(4)">
+                                <span>Tiếp tục: Thanh Toán & Cọc</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- ========================================== -->
+                    <!-- BƯỚC 4: THÔNG TIN KHÁCH HÀNG & CỌC 30%    -->
+                    <!-- ========================================== -->
+                    <div class="step-card" id="step-pane-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+                            <div>
+                                <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2 rounded-pill mb-2">BƯỚC 4 / 4</span>
+                                <h3 class="fw-bold mb-1" style="color: #064e3b; font-family: 'Playfair Display', serif;">Thông Tin Liên Hệ & Đặt Cọc 30%</h3>
+                                <p class="text-muted small mb-0">Điền thông tin để nhận mã đơn hàng, vé điện tử QR và hoàn tất xác nhận giữ chỗ.</p>
+                            </div>
+                            <i class="bi bi-shield-check fs-1 text-primary opacity-75"></i>
+                        </div>
+
+                        <!-- Thông tin cá nhân -->
+                        <div class="bg-light p-4 rounded-4 mb-4 border">
+                            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-person-lines-fill text-success me-2"></i>Thông tin người đặt dịch vụ</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark">Họ và tên quý khách <span class="text-danger">*</span></label>
+                                    <input type="text" name="hoTenKhach" id="inputHoTen" required class="form-control rounded-pill px-3 py-2" placeholder="Ví dụ: Nguyễn Văn An" oninput="validateStep4()">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark">Số điện thoại di động <span class="text-danger">*</span></label>
+                                    <input type="tel" name="sdtKhach" id="inputSdt" required class="form-control rounded-pill px-3 py-2" placeholder="Ví dụ: 0905123456" oninput="validateStep4()">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark">Email nhận vé & hóa đơn</label>
+                                    <input type="email" name="emailKhach" class="form-control rounded-pill px-3 py-2" placeholder="email@example.com">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark">Ghi chú đặc biệt (nếu có)</label>
+                                    <input type="text" name="ghiChu" class="form-control rounded-pill px-3 py-2" placeholder="Yêu cầu giờ đến, ăn kiêng, v.v.">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phương thức thanh toán -->
+                        <div class="bg-light p-4 rounded-4 mb-4 border">
+                            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-credit-card-2-front text-success me-2"></i>Phương thức thanh toán cọc</h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="p-3 border rounded-4 bg-white d-flex align-items-center gap-3 w-100 cursor-pointer shadow-sm">
+                                        <input type="radio" name="phuongThucThanhToan" value="CHUYEN_KHOAN" checked class="form-check-input mt-0">
+                                        <div>
+                                            <strong class="d-block text-dark">Chuyển khoản QR Napas247</strong>
+                                            <small class="text-muted">Quét VietQR qua app ngân hàng bất kỳ, kích hoạt đơn tức thì</small>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="p-3 border rounded-4 bg-white d-flex align-items-center gap-3 w-100 cursor-pointer shadow-sm">
+                                        <input type="radio" name="phuongThucThanhToan" value="TIEN_MAT" class="form-check-input mt-0">
+                                        <div>
+                                            <strong class="d-block text-dark">Thanh toán tại quầy lễ tân</strong>
+                                            <small class="text-muted">Áp dụng thanh toán khi check-in tại quầy vé KDL</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Cam kết chính sách cọc 30% -->
+                            <div class="alert alert-warning border-warning bg-warning bg-opacity-10 mt-3 mb-0 rounded-4 p-3">
+                                <div class="d-flex gap-2">
+                                    <i class="bi bi-info-circle-fill text-warning fs-5"></i>
+                                    <div class="small">
+                                        <strong>Chính sách đặt cọc KDL Cổng Trời Đông Giang:</strong> Quý khách thanh toán trước <strong class="text-danger">30% tiền đặt cọc</strong> để hệ thống khóa phòng và xuất vé điện tử. 70% giá trị dịch vụ còn lại sẽ được thanh toán trực tiếp tại quầy lễ tân khi quý khách đến trải nghiệm.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nút hoàn tất đặt dịch vụ -->
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <button type="button" class="funnel-btn-secondary" onclick="goToStep(3)">
+                                <i class="bi bi-arrow-left"></i>
+                                <span>Quay lại Ẩm Thực</span>
+                            </button>
+                            <button type="submit" id="btnSubmitOrder" class="funnel-btn-primary px-4 py-3" style="font-size: 1.05rem;" disabled>
+                                <i class="bi bi-check2-circle fs-5"></i>
+                                <span>XÁC NHẬN & ĐẶT DỊCH VỤ (CỌC 30%)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CỘT PHẢI: STICKY LIVE SUMMARY (4/12) -->
+                <div class="col-lg-4">
+                    <div class="summary-card">
+                        <div class="summary-header">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-receipt text-success me-2"></i>Tóm Tắt Dịch Vụ</h5>
+                                <span class="small text-muted" id="summaryDateBadge">Ngày: Hôm nay</span>
+                            </div>
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold">Live</span>
+                        </div>
+
+                        <!-- Danh sách dịch vụ tóm tắt -->
+                        <div id="summaryItemsContainer" style="max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                            <div class="text-center py-4 text-muted" id="summaryEmptyState">
+                                <i class="bi bi-cart3 fs-1 opacity-50 d-block mb-2"></i>
+                                <span>Chưa có dịch vụ nào được chọn. Vui lòng chọn vé ở Bước 1.</span>
+                            </div>
+                            
+                            <!-- Nhóm vé -->
+                            <div id="summaryTicketGroup" class="mb-3" style="display: none;">
+                                <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom text-success fw-bold small">
+                                    <i class="bi bi-ticket-perforated"></i> <span>VÉ THAM QUAN</span>
+                                </div>
+                                <div id="summaryTicketList"></div>
+                            </div>
+
+                            <!-- Nhóm khách sạn -->
+                            <div id="summaryHotelGroup" class="mb-3" style="display: none;">
+                                <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom text-warning-emphasis fw-bold small">
+                                    <i class="bi bi-buildings"></i> <span>PHÒNG KHÁCH SẠN</span>
+                                </div>
+                                <div id="summaryHotelList"></div>
+                            </div>
+
+                            <!-- Nhóm ẩm thực -->
+                            <div id="summaryDiningGroup" class="mb-3" style="display: none;">
+                                <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom text-danger fw-bold small">
+                                    <i class="bi bi-cup-hot"></i> <span>ẨM THỰC & SUẤT ĂN</span>
+                                </div>
+                                <div id="summaryDiningList"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tổng tiền & Tiền cọc -->
+                        <div class="border-top pt-3 mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Tổng giá trị dịch vụ:</span>
+                                <strong class="fs-6 text-dark" id="displayTotal">0 đ</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-warning bg-opacity-10 rounded-3 border border-warning border-opacity-25">
+                                <div>
+                                    <span class="d-block text-danger fw-bold small">TIỀN CỌC CẦN THANH TOÁN (30%):</span>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Giữ phòng & vé điện tử ngay</small>
+                                </div>
+                                <strong class="deposit-highlight" id="displayDeposit">0 đ</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span>Còn lại thanh toán khi đến (70%):</span>
+                                <span class="fw-semibold text-secondary" id="displayRemaining">0 đ</span>
+                            </div>
+                        </div>
+
+                        <!-- Cam kết bảo mật -->
+                        <div class="mt-4 pt-3 border-top text-center text-muted small">
+                            <i class="bi bi-shield-lock-fill text-success me-1"></i>
+                            <span>Bảo mật 100% — Xác nhận giữ chỗ trực tiếp từ KDL Cổng Trời Đông Giang.</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </main>
+
+    <!-- Script tương tác Pipeline -->
+    <script>
+        let currentStep = 1;
+        let nightsCount = 1;
+
+        function jumpToStep(targetStep) {
+            if (targetStep < currentStep || validateCurrentStep()) {
+                goToStep(targetStep);
+            }
+        }
+
+        function validateCurrentStep() {
+            // Bước 1 có thể chuyển sang bước 2 tự do (người dùng có thể xem trước khách sạn)
+            return true;
+        }
+
+        function goToStep(step) {
+            // Ẩn tất cả panes
+            for (let i = 1; i <= 4; i++) {
+                const pane = document.getElementById('step-pane-' + i);
+                const node = document.getElementById('indicator-step-' + i);
+                const divider = document.getElementById('divider-' + i);
+
+                if (pane) pane.classList.remove('active');
+                if (node) {
+                    node.classList.remove('active');
+                    if (i < step) {
+                        node.classList.add('completed');
+                    } else {
+                        node.classList.remove('completed');
+                    }
+                }
+                if (divider) {
+                    if (i < step) divider.classList.add('active');
+                    else divider.classList.remove('active');
+                }
+            }
+
+            // Hiện pane mục tiêu
+            const targetPane = document.getElementById('step-pane-' + step);
+            const targetNode = document.getElementById('indicator-step-' + step);
+            if (targetPane) targetPane.classList.add('active');
+            if (targetNode) targetNode.classList.add('active');
+
+            currentStep = step;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            validateStep4();
+        }
+
+        function skipHotel() {
+            // Reset all room quantities to 0
+            document.querySelectorAll('input[name="roomQty"]').forEach(input => {
+                input.value = 0;
+            });
+            document.querySelectorAll('.item-select-card[id^="room-card-"]').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById('bookHotelFlag').value = 'false';
+            updateSummary();
+            goToStep(3);
+        }
+
+        function skipDining() {
+            // Reset all dining quantities to 0
+            document.querySelectorAll('input[name="diningQty"]').forEach(input => {
+                input.value = 0;
+            });
+            document.querySelectorAll('.item-select-card[id^="dining-card-"]').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById('bookDiningFlag').value = 'false';
+            updateSummary();
+            goToStep(4);
+        }
+
+        function changeQty(type, code, delta) {
+            const input = document.getElementById(`qty-${type}-${code}`);
+            if (!input) return;
+
+            let val = parseInt(input.value) || 0;
+            val = Math.max(0, val + delta);
+            input.value = val;
+
+            const card = document.getElementById(`${type}-card-${code}`);
+            if (card) {
+                if (val > 0) card.classList.add('selected');
+                else card.classList.remove('selected');
+            }
+
+            if (type === 'room' && val > 0) {
+                document.getElementById('bookHotelFlag').value = 'true';
+            }
+            if (type === 'dining' && val > 0) {
+                document.getElementById('bookDiningFlag').value = 'true';
+            }
+
+            updateSummary();
+        }
+
+        function calculateNights() {
+            const inDate = new Date(document.getElementById('ngayNhanInput').value);
+            const outDate = new Date(document.getElementById('ngayTraInput').value);
+            if (!isNaN(inDate) && !isNaN(outDate) && outDate > inDate) {
+                const diffTime = Math.abs(outDate - inDate);
+                nightsCount = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            } else {
+                nightsCount = 1;
+            }
+            const badge = document.getElementById('badgeNights');
+            if (badge) badge.innerText = `${nightsCount} đêm`;
+        }
+
+        function updateSummary() {
+            calculateNights();
+
+            let grandTotal = 0;
+            let hasAnyItem = false;
+
+            // 1. Process Tickets
+            const ticketList = document.getElementById('summaryTicketList');
+            ticketList.innerHTML = '';
+            let hasTicket = false;
+
+            document.querySelectorAll('input[name="ticketQty"]').forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    hasTicket = true;
+                    hasAnyItem = true;
+                    const price = parseFloat(input.dataset.price) || 0;
+                    const name = input.dataset.name || 'Vé';
+                    const subtotal = price * qty;
+                    grandTotal += subtotal;
+
+                    ticketList.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <span class="text-dark">${name} x${qty}</span>
+                            <strong class="text-success">${subtotal.toLocaleString('vi-VN')} đ</strong>
+                        </div>
+                    `;
+                }
+            });
+            document.getElementById('summaryTicketGroup').style.display = hasTicket ? 'block' : 'none';
+
+            // 2. Process Hotel Rooms
+            const hotelList = document.getElementById('summaryHotelList');
+            hotelList.innerHTML = '';
+            let hasHotel = false;
+
+            document.querySelectorAll('input[name="roomQty"]').forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    hasHotel = true;
+                    hasAnyItem = true;
+                    const price = parseFloat(input.dataset.price) || 0;
+                    const name = input.dataset.name || 'Phòng';
+                    const subtotal = price * qty * nightsCount;
+                    grandTotal += subtotal;
+
+                    hotelList.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <span class="text-dark">${name} (${nightsCount}đ) x${qty}</span>
+                            <strong class="text-success">${subtotal.toLocaleString('vi-VN')} đ</strong>
+                        </div>
+                    `;
+                }
+            });
+            document.getElementById('summaryHotelGroup').style.display = hasHotel ? 'block' : 'none';
+            document.getElementById('bookHotelFlag').value = hasHotel ? 'true' : 'false';
+
+            // 3. Process Dining
+            const diningList = document.getElementById('summaryDiningList');
+            diningList.innerHTML = '';
+            let hasDining = false;
+
+            document.querySelectorAll('input[name="diningQty"]').forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    hasDining = true;
+                    hasAnyItem = true;
+                    const price = parseFloat(input.dataset.price) || 0;
+                    const name = input.dataset.name || 'Suất ăn';
+                    const subtotal = price * qty;
+                    grandTotal += subtotal;
+
+                    diningList.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <span class="text-dark">${name} x${qty}</span>
+                            <strong class="text-success">${subtotal.toLocaleString('vi-VN')} đ</strong>
+                        </div>
+                    `;
+                }
+            });
+            document.getElementById('summaryDiningGroup').style.display = hasDining ? 'block' : 'none';
+            document.getElementById('bookDiningFlag').value = hasDining ? 'true' : 'false';
+
+            // Empty state toggle
+            document.getElementById('summaryEmptyState').style.display = hasAnyItem ? 'none' : 'block';
+
+            // Calculate deposit & remaining
+            const deposit = Math.round(grandTotal * 0.30);
+            const remaining = grandTotal - deposit;
+
+            document.getElementById('displayTotal').innerText = grandTotal.toLocaleString('vi-VN') + ' đ';
+            document.getElementById('displayDeposit').innerText = deposit.toLocaleString('vi-VN') + ' đ';
+            document.getElementById('displayRemaining').innerText = remaining.toLocaleString('vi-VN') + ' đ';
+
+            validateStep4();
+        }
+
+        function validateStep4() {
+            const hoTen = document.getElementById('inputHoTen').value.trim();
+            const sdt = document.getElementById('inputSdt').value.trim();
+            const btn = document.getElementById('btnSubmitOrder');
+
+            let hasItems = false;
+            document.querySelectorAll('input[name="ticketQty"], input[name="roomQty"], input[name="diningQty"]').forEach(input => {
+                if ((parseInt(input.value) || 0) > 0) hasItems = true;
+            });
+
+            if (hoTen.length >= 2 && sdt.length >= 9 && hasItems) {
+                btn.removeAttribute('disabled');
+            } else {
+                btn.setAttribute('disabled', 'disabled');
+            }
+        }
+
+        function filterRoomByArea(areaName, btn) {
+            document.querySelectorAll('.area-tab-btn').forEach(b => {
+                b.classList.remove('btn-success', 'active');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-success', 'active');
+
+            document.querySelectorAll('.room-card-col').forEach(col => {
+                const area = col.getAttribute('data-area') || '';
+                if (areaName === 'all' || area.includes(areaName) || areaName.includes(area)) {
+                    col.style.display = '';
+                } else {
+                    col.style.display = 'none';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateNights();
+            updateSummary();
+        });
+    </script>
+    <div th:replace="~{fragments/date-picker-modal :: datePickerModal}"></div>
+    <div th:replace="~{fragments/date-picker-modal :: datePickerScript}"></div>
+</body>
+</html>

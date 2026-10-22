@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liên hệ & Chăm sóc khách hàng — KDL Cổng Trời Đông Giang</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+    <style>
+        .contact-hero {
+            position: relative;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.8) 100%),
+                        url('/images/banners/contact-hero.jpg') center/cover no-repeat;
+            padding: 5.5rem 1rem 4.5rem;
+            text-align: center;
+            color: #ffffff;
+        }
+        .contact-info-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            height: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s ease;
+        }
+        .contact-info-card:hover {
+            transform: translateY(-4px);
+            border-color: #a7f3d0;
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.1);
+        }
+        .contact-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: #ecfdf5;
+            color: #059669;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .contact-form-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+        .faq-accordion .accordion-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px !important;
+            margin-bottom: 0.85rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+        .faq-accordion .accordion-button {
+            background: #ffffff;
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 1.1rem 1.4rem;
+        }
+        .faq-accordion .accordion-button:not(.collapsed) {
+            background: #ecfdf5;
+            color: #047857;
+            box-shadow: none;
+        }
+        .faq-accordion .accordion-button::after {
+            filter: none;
+        }
+        .faq-accordion .accordion-body {
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            padding: 1.25rem 1.4rem;
+            background: #ffffff;
+            border-top: 1px solid #f1f5f9;
+        }
+        .faq-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #059669;
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 800;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100" style="background-color: #f8fafc;">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="flex-grow-1 pb-5">
+        <!-- Hero Header -->
+        <section class="contact-hero">
+            <div class="container">
+                <span class="badge bg-gold text-dark px-3 py-2 fw-bold text-uppercase mb-3" style="letter-spacing: 1px;">
+                    KDL Sinh Thái Cổng Trời Đông Giang (Official)
+                </span>
+                <h1 class="display-5 fw-bold mb-3 text-white" style="letter-spacing: -0.5px; text-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                    Liên Hệ & Đăng Ký Tư Vấn
+                </h1>
+                <p class="lead mx-auto mb-0" style="max-width: 760px; color: #e2e8f0; font-size: 1.1rem;">
+                    Điểm đến sinh thái, văn hóa và tâm linh nổi bật giữa đại ngàn Trường Sơn. Chúng tôi luôn sẵn sàng hỗ trợ Quý khách 24/7.
+                </p>
+            </div>
+        </section>
+
+        <div class="container my-5">
+            <!-- 3 Info Columns (Chính thống) -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="contact-info-card">
+                        <div class="contact-icon-box">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="color: #0f172a;">Địa Chỉ & Vị Trí</h5>
+                        <p class="small mb-2 fw-semibold" style="color: #059669;">Khu Du Lịch Sinh Thái Cổng Trời Đông Giang</p>
+                        <p class="small text-muted mb-2">
+                            Thôn A Sờ, Xã Mà Cooih, Huyện Đông Giang, Tỉnh Quảng Nam.
+                        </p>
+                        <hr class="my-3" style="border-color: #f1f5f9;">
+                        <p class="small text-muted mb-0">
+                            <strong>Văn phòng Đà Nẵng:</strong> 01 Tô Hoài, Q. Cẩm Lệ, TP. Đà Nẵng
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="contact-info-card">
+                        <div class="contact-icon-box" style="background: #fffbeb; color: #d97706;">
+                            <i class="bi bi-telephone-inbound-fill"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="color: #0f172a;">Hotline Đặt Dịch Vụ</h5>
+                        <p class="small text-muted mb-2">Tư vấn vé tham quan, khách sạn & ẩm thực:</p>
+                        <div class="fs-4 fw-bold mb-1" style="color: #ea580c;">
+                            <i class="bi bi-headset me-1"></i>1900 86 66 44
+                        </div>
+                        <div class="small fw-semibold" style="color: #0f172a;">
+                            Di động / Zalo: <span style="color: #059669;">0934 97 3333</span>
+                        </div>
+                        <hr class="my-3" style="border-color: #f1f5f9;">
+                        <p class="small text-muted mb-0">
+                            <strong>Email:</strong> booking@congtroidonggiang.com
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="contact-info-card">
+                        <div class="contact-icon-box" style="background: #f0f9ff; color: #0284c7;">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="color: #0f172a;">Thời Gian Hoạt Động</h5>
+                        <ul class="list-unstyled small mb-0">
+                            <li class="mb-2" style="color: #334155;">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <strong>Tham quan KDL:</strong> 08:00 - 17:30 (T2 - CN)
+                            </li>
+                            <li class="mb-2" style="color: #334155;">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <strong>Nhận phòng (Check-in):</strong> từ 14:00
+                            </li>
+                            <li class="mb-2" style="color: #334155;">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <strong>Trả phòng (Check-out):</strong> trước 12:00
+                            </li>
+                            <li style="color: #334155;">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <strong>Nhà hàng & Buffet:</strong> 06:30 - 21:30
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Đăng Ký Tư Vấn & Bản Đồ Google Maps -->
+            <div class="row g-4 mb-5 align-items-stretch">
+                <div class="col-lg-6">
+                    <div class="contact-form-card h-100">
+                        <div class="mb-4">
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 mb-2 fw-semibold">
+                                Gửi Yêu Cầu
+                            </span>
+                            <h3 class="fw-bold mb-2" style="color: #0f172a;">Đăng Ký Tư Vấn Lịch Trình</h3>
+                            <p class="text-muted small mb-0">Chúng tôi sẽ gọi lại cho Quý khách ngay sau khi nhận được thông tin!</p>
+                        </div>
+
+                        <form id="contactForm" onsubmit="event.preventDefault(); alert('Cảm ơn Quý khách! Đội ngũ tư vấn Cổng Trời Đông Giang sẽ liên hệ lại trong ít phút.'); this.reset();">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small" style="color: #0f172a;">Họ và tên (*)</label>
+                                <input type="text" class="form-control" placeholder="Nhập họ và tên của Quý khách..." required>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small" style="color: #0f172a;">Số điện thoại (*)</label>
+                                    <input type="tel" class="form-control" placeholder="Số điện thoại liên hệ..." required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small" style="color: #0f172a;">Email</label>
+                                    <input type="email" class="form-control" placeholder="Địa chỉ email...">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold small" style="color: #0f172a;">Dịch vụ quan tâm / Ghi chú</label>
+                                <textarea class="form-control" rows="3" placeholder="Quý khách cần tư vấn vé tham quan, đặt phòng Fivitel Sông Ngân hay thực đơn ẩm thực Cơ Tu..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-gold w-100 py-3 fw-bold shadow-sm">
+                                <i class="bi bi-send-fill me-2"></i>Gửi Thông Tin Tư Vấn
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="contact-form-card h-100 p-0 overflow-hidden d-flex flex-column">
+                        <div class="p-4 border-bottom bg-white">
+                            <h5 class="fw-bold mb-1" style="color: #0f172a;">Lộ Trình Di Chuyển Đến KDL</h5>
+                            <p class="text-muted small mb-0">Cách trung tâm TP. Đà Nẵng khoảng 1 tiếng 40 phút đi ô tô theo tuyến QL14G</p>
+                        </div>
+                        <div class="flex-grow-1" style="min-height: 380px;">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3837.755030310705!2d107.82885917499996!3d15.869446284782298!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3141f92e4beeb2b1%3A0x6bfe86290802aaef!2zS2h1IGR1IGzhu4tjaCBzaW5oIHRow6FpIEPhu5VuZyBUcuG7nWkgxJDDtG5nIEdpYW5n!5e0!3m2!1svi!2svn!4v1714000000000!5m2!1svi!2svn"
+                                    width="100%" height="100%" style="border:0; min-height: 380px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Câu Hỏi Thường Gặp (Chính thống từ web Cổng Trời Đông Giang) -->
+            <div class="mt-5">
+                <div class="text-center mb-4">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 mb-2 fw-semibold">
+                        Giải Đáp Thắc Mắc
+                    </span>
+                    <h3 class="fw-bold mb-2" style="color: #0f172a;">Câu Hỏi Thường Gặp</h3>
+                    <p class="text-muted small">Những thắc mắc phổ biến của du khách trước chuyến đi</p>
+                </div>
+
+                <div class="accordion faq-accordion mx-auto" id="faqAccordion" style="max-width: 900px;">
+                    <!-- FAQ 1 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeading1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse1" aria-expanded="true" aria-controls="faqCollapse1">
+                                <span class="faq-num">1</span>
+                                <span>Tôi có thể đặt vé qua đâu? Chính sách hoàn huỷ như thế nào?</span>
+                            </button>
+                        </h2>
+                        <div id="faqCollapse1" class="accordion-collapse collapse show" aria-labelledby="faqHeading1" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Quý khách có thể đặt trực tiếp qua hệ thống website chính thức của KDL, lựa chọn ngày sử dụng và tiến hành đặt vé trực tuyến. Vé đã mua không hoàn trả hoặc thay đổi theo quy định bảo toàn số lượng vé và công suất khu du lịch.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 2 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeading2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse2" aria-expanded="false" aria-controls="faqCollapse2">
+                                <span class="faq-num">2</span>
+                                <span>Thời gian tham quan lý tưởng nhất trong năm?</span>
+                            </button>
+                        </h2>
+                        <div id="faqCollapse2" class="accordion-collapse collapse" aria-labelledby="faqHeading2" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Từ tháng 1 đến tháng 9 là thời điểm lý tưởng nhất để tham quan Cổng Trời Đông Giang với thời tiết nắng ấm, nước suối trong xanh mát lành và hệ thống 25 ngọn thác đạt độ hùng vĩ nhất. Tuy nhiên, mỗi mùa trong năm đều mang đến những sắc thái riêng biệt đáng để trải nghiệm.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 3 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeading3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse3" aria-expanded="false" aria-controls="faqCollapse3">
+                                <span class="faq-num">3</span>
+                                <span>Khu du lịch có giới hạn thời gian tham quan không?</span>
+                            </button>
+                        </h2>
+                        <div id="faqCollapse3" class="accordion-collapse collapse" aria-labelledby="faqHeading3" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Khu du lịch Cổng Trời Đông Giang mở cửa đón khách tham quan từ 08:00 đến 17:30 mỗi ngày (từ thứ Hai đến Chủ Nhật). Đối với du khách có nhu cầu lưu trú tại các khách sạn trong khu du lịch, thời gian nhận phòng (check-in) là từ 14:00, và trả phòng (check-out) trước 12:00.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 4 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeading4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse4" aria-expanded="false" aria-controls="faqCollapse4">
+                                <span class="faq-num">4</span>
+                                <span>Di chuyển từ thành phố Đà Nẵng tới Cổng Trời Đông Giang mất bao lâu?</span>
+                            </button>
+                        </h2>
+                        <div id="faqCollapse4" class="accordion-collapse collapse" aria-labelledby="faqHeading4" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Nếu di chuyển bằng xe ô tô theo hướng Quốc lộ 14G, Quý khách sẽ mất khoảng 1 tiếng 40 phút từ trung tâm TP. Đà Nẵng đến Cổng Trời Đông Giang. Cung đường trải nhựa rộng rãi, phong cảnh núi rừng hai bên đường rất thoáng đãng và trong lành.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 5 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeading5">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse5" aria-expanded="false" aria-controls="faqCollapse5">
+                                <span class="faq-num">5</span>
+                                <span>KDL có cho mang đồ ăn, thức uống hoặc thú cưng vào không?</span>
+                            </button>
+                        </h2>
+                        <div id="faqCollapse5" class="accordion-collapse collapse" aria-labelledby="faqHeading5" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Khu du lịch Cổng Trời Đông Giang quy định <strong>"KHÔNG mang đồ ăn, thức uống từ bên ngoài vào"</strong>. Quy định này nhằm giữ gìn cảnh quan thiên nhiên và bảo vệ môi trường sinh thái rừng nguyên sinh luôn xanh - sạch - đẹp. Bên trong KDL có hệ thống nhà hàng buffet và nhà hàng gọi món phục vụ đầy đủ ẩm thực đặc sản địa phương.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 6 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeading6">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse6" aria-expanded="false" aria-controls="faqCollapse6">
+                                <span class="faq-num">6</span>
+                                <span>Chính sách tính giá vé cho trẻ em như thế nào?</span>
+                            </button>
+                        </h2>
+                        <div id="faqCollapse6" class="accordion-collapse collapse" aria-labelledby="faqHeading6" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Khu du lịch tính vé trẻ em theo chiều cao thực tế: Trẻ em dưới 1m được miễn phí 100%; trẻ em có chiều cao từ 1m đến 1m4 áp dụng vé trẻ em; trẻ em cao trên 1m4 tính vé như người lớn.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

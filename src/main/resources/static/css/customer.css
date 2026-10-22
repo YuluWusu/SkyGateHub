@@ -1,40 +1,41 @@
 .ticket-catalog-hero {
-    background: linear-gradient(135deg, rgba(4, 120, 87, 0.45), rgba(7, 23, 17, 0.95));
-    border-bottom: 1px solid var(--border-glass);
-    padding: 3rem 1.5rem;
-    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #ecfdf5, #fef3c7);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 3.5rem 1.5rem;
+    margin-bottom: 2.5rem;
     text-align: center;
 }
 
 .ticket-catalog-hero h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 2.4rem;
+    font-size: 2.5rem;
     font-weight: 700;
-    color: #fff;
+    color: #064e3b;
     margin-bottom: 0.5rem;
 }
 
 .ticket-catalog-hero p {
-    color: var(--text-muted);
+    color: #475569;
     font-size: 1.1rem;
     margin-bottom: 0;
 }
 
 .ticket-card {
-    background: var(--bg-surface) !important;
-    border: 1px solid var(--border-glass) !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
     border-radius: var(--radius-xl) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ticket-card:hover {
     transform: translateY(-5px);
-    border-color: var(--border-glass-strong) !important;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45) !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 16px 36px rgba(5, 150, 105, 0.15) !important;
 }
 
 .ticket-price-display {
     font-size: 1.4rem;
     font-weight: 800;
-    color: #34d399;
+    color: #059669;
 }

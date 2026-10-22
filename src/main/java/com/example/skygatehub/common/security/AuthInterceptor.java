@@ -34,6 +34,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        if (Boolean.TRUE.equals(user.getCanDoiMatKhau())) {
+            response.sendRedirect(request.getContextPath() + "/doi-mat-khau-lan-dau");
+            return false;
+        }
+
         String[] allowedRoles = requireRole.value();
         if (allowedRoles.length == 0) {
             return true;

@@ -11,10 +11,10 @@
 <body class="d-flex flex-column min-vh-100">
     <div th:replace="~{fragments/header :: header}"></div>
     <main class="flex-grow-1">
-        <div class="ticket-catalog-hero py-5 text-center" style="background: radial-gradient(circle at 50% 30%, rgba(4, 120, 87, 0.45) 0%, transparent 70%); border-bottom: 1px solid var(--border-glass);">
+        <div class="ticket-catalog-hero py-5 text-center" style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-bottom: 1px solid #a7f3d0;">
             <div class="container">
-                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-3 py-2 mb-3">Khám phá Cổng Trời Đông Giang</span>
-                <h1 class="fw-bold mb-2 text-white" style="letter-spacing: -0.5px;">Vé tham quan & combo trọn gói</h1>
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-3 py-2 mb-3 fw-bold">Khám phá Cổng Trời Đông Giang</span>
+                <h1 class="fw-bold mb-2" style="color: #0f172a; letter-spacing: -0.5px;">Vé Tham Quan &amp; Combo Trọn Gói</h1>
                 <p class="text-muted mx-auto" style="max-width: 650px;">Trải nghiệm tuyệt tác thiên nhiên đại ngàn, hệ thống cáp treo hiện đại và tinh hoa ẩm thực bản địa</p>
             </div>
         </div>
@@ -41,14 +41,13 @@
 
             <div class="row g-4">
                 <div class="col-md-6 col-lg-4" th:each="t : ${tickets}">
-                    <div class="card h-100 overflow-hidden d-flex flex-column" style="border: 1px solid rgba(255, 255, 255, 0.12); transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    <div class="card h-100 overflow-hidden d-flex flex-column" style="border: 1px solid #e2e8f0; transition: transform 0.3s ease, box-shadow 0.3s ease;">
                         <div style="height: 190px; width: 100%; position: relative; overflow: hidden;">
-                            <img th:if="${t.loaiVe.name() == 'TRON_GOI'}" src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Combo" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
-                            <img th:if="${t.loaiVe.name() == 'NGUOI_LON' and #strings.contains(t.tenLoaiVe, 'Cap Treo')}" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80" alt="Cáp Treo" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
-                            <img th:if="${t.loaiVe.name() == 'NGUOI_LON' and !#strings.contains(t.tenLoaiVe, 'Cap Treo')}" src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Vé Người Lớn" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
-                            <img th:if="${t.loaiVe.name() == 'TRE_EM'}" src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80" alt="Vé Trẻ Em" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
-                            <img th:if="${t.loaiVe.name() != 'TRON_GOI' and t.loaiVe.name() != 'NGUOI_LON' and t.loaiVe.name() != 'TRE_EM'}" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80" alt="Vé Tham Quan" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
-                            <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to top, rgba(12, 34, 25, 0.95), transparent);"></div>
+                            <img th:if="${t.loaiVe.name() == 'TRON_GOI'}" th:src="@{/images/banners/hero-banner.jpg}" alt="Combo" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
+                            <img th:if="${t.loaiVe.name() == 'NGUOI_LON' and #strings.contains(t.tenLoaiVe, 'Cap Treo')}" th:src="@{/images/attractions/cap-treo.jpg}" alt="Cáp Treo" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
+                            <img th:if="${t.loaiVe.name() == 'NGUOI_LON' and !#strings.contains(t.tenLoaiVe, 'Cap Treo')}" th:src="@{/images/attractions/cau-kinh.jpg}" alt="Vé Người Lớn" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
+                            <img th:if="${t.loaiVe.name() == 'TRE_EM'}" th:src="@{/images/attractions/thac-tien.jpg}" alt="Vé Trẻ Em" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
+                            <img th:if="${t.loaiVe.name() != 'TRON_GOI' and t.loaiVe.name() != 'NGUOI_LON' and t.loaiVe.name() != 'TRE_EM'}" th:src="@{/images/attractions/dong-tien-cung.jpg}" alt="Vé Tham Quan" class="w-100 h-100 object-fit-cover" style="transition: transform 0.5s ease;">
                             <span class="badge ticket-date-badge position-absolute top-0 end-0 m-3 px-3 py-2 fw-bold" style="font-size: 0.78rem;" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span>
                         </div>
                         <div class="card-body d-flex flex-column p-4 flex-grow-1">
@@ -56,7 +55,7 @@
                                 <span class="badge" th:classappend="${t.loaiVe.name() == 'TRON_GOI'} ? 'bg-warning text-dark' : 'bg-success'" th:text="${t.loaiVe.name() == 'TRON_GOI' ? 'Combo trọn gói' : (t.loaiVe.name() == 'TRE_EM' ? 'Vé trẻ em' : 'Vé người lớn')}"></span>
                                 <span class="text-muted small" th:text="'Mã: ' + ${t.maLoaiVe}"></span>
                             </div>
-                            <h5 class="card-title fw-bold text-white mb-2" th:text="${t.tenLoaiVe}">Vé Tham Quan</h5>
+                            <h5 class="card-title fw-bold mb-2" style="color: #0f172a;" th:text="${t.tenLoaiVe}">Vé Tham Quan</h5>
                             <p class="card-text text-muted small mb-4" th:text="${t.moTa}">Mô tả chi tiết vé</p>
                             
                             <div class="mt-auto pt-3 border-top border-secondary border-opacity-25">

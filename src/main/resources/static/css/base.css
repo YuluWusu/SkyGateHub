@@ -1,20 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
 
 :root {
-    --primary: #047857;
-    --primary-dark: #064e3b;
+    --primary: #059669;
+    --primary-dark: #047857;
     --primary-light: #10b981;
     --accent-gold: #f59e0b;
     --accent-amber: #d97706;
-    --bg-dark: #071711;
-    --bg-surface: rgba(12, 34, 25, 0.88);
-    --bg-card: rgba(255, 255, 255, 0.04);
-    --bg-card-hover: rgba(255, 255, 255, 0.08);
-    --border-glass: rgba(255, 255, 255, 0.12);
-    --border-glass-strong: rgba(16, 185, 129, 0.28);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --text-light: #cbd5e1;
+    --accent-orange: #ea580c;
+    --bg-dark: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #ffffff;
+    --border-glass: rgba(226, 232, 240, 0.9);
+    --border-glass-strong: rgba(16, 185, 129, 0.45);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #334155;
     --radius-xl: 20px;
     --radius-lg: 14px;
     --radius-md: 10px;
@@ -27,30 +29,32 @@
 
 body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-    background-color: var(--bg-dark) !important;
-    color: var(--text-main) !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
     min-height: 100vh;
     line-height: 1.6;
     background-image: 
-        radial-gradient(circle at 10% 15%, rgba(4, 120, 87, 0.35) 0%, transparent 45%),
-        radial-gradient(circle at 90% 40%, rgba(245, 158, 11, 0.18) 0%, transparent 45%),
-        radial-gradient(circle at 50% 85%, rgba(6, 78, 59, 0.4) 0%, transparent 50%) !important;
+        radial-gradient(circle at 10% 10%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 90% 25%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 85%, rgba(5, 150, 105, 0.06) 0%, transparent 50%) !important;
     background-attachment: fixed !important;
 }
 
+/* NAVBAR SÁNG & SANG TRỌNG */
 .skygate-navbar {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    background: rgba(7, 23, 17, 0.90) !important;
-    border-bottom: 1px solid var(--border-glass) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.85) !important;
     padding: 0.85rem 1.5rem;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
 }
 
 .skygate-navbar .navbar-brand {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: var(--text-main) !important;
+    color: #0f172a !important;
     text-decoration: none;
 }
 
@@ -63,6 +67,7 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    color: #ffffff;
 }
 
 .skygate-brand-text h1 {
@@ -70,22 +75,22 @@ body {
     font-weight: 800;
     margin: 0;
     letter-spacing: -0.5px;
-    background: linear-gradient(to right, #fff, #a7f3d0);
+    background: linear-gradient(135deg, #064e3b, #059669);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .skygate-brand-text span {
     font-size: 0.72rem;
-    color: var(--accent-gold);
-    font-weight: 600;
+    color: var(--accent-amber);
+    font-weight: 700;
     letter-spacing: 0.5px;
     display: block;
 }
 
 .skygate-navbar .nav-link {
-    color: var(--text-muted) !important;
-    font-weight: 500;
+    color: #334155 !important;
+    font-weight: 600;
     font-size: 0.92rem;
     transition: color 0.2s ease;
     padding: 0.5rem 0.9rem;
@@ -93,105 +98,109 @@ body {
 
 .skygate-navbar .nav-link:hover,
 .skygate-navbar .nav-link.active {
-    color: #fff !important;
+    color: var(--primary) !important;
 }
 
+/* CARDS NỀN TRẮNG SÁNG & TINH TẾ */
 .card {
-    background: rgba(12, 34, 25, 0.85) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
     border-radius: var(--radius-xl) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
-    color: var(--text-main) !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03) !important;
+    color: #0f172a !important;
 }
 
 .card-header {
-    background: rgba(0, 0, 0, 0.25) !important;
-    border-bottom: 1px solid var(--border-glass) !important;
-    color: var(--text-main) !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+    color: #0f172a !important;
+    font-weight: 700;
 }
 
 .card-footer {
-    background: rgba(0, 0, 0, 0.25) !important;
-    border-top: 1px solid var(--border-glass) !important;
+    background: #f8fafc !important;
+    border-top: 1px solid rgba(226, 232, 240, 0.9) !important;
 }
 
+/* FORM CONTROLS SÁNG & RÕ RÀNG */
 .form-control, .form-select {
-    background-color: rgba(0, 0, 0, 0.45) !important;
-    border: 1px solid var(--border-glass) !important;
-    color: #fff !important;
+    background-color: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
     border-radius: var(--radius-md) !important;
     padding: 0.65rem 0.95rem;
     transition: all 0.2s ease;
 }
 
 .form-control:focus, .form-select:focus {
-    background-color: rgba(0, 0, 0, 0.65) !important;
-    border-color: #10b981 !important;
-    color: #fff !important;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important;
+    background-color: #ffffff !important;
+    border-color: #059669 !important;
+    color: #0f172a !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
     outline: none !important;
 }
 
 .form-control::placeholder {
-    color: #64748b !important;
+    color: #94a3b8 !important;
 }
 
 select.form-control option, select.form-select option {
-    background-color: #0d281e !important;
-    color: #fff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
 }
 
 .form-label {
-    color: var(--text-light) !important;
+    color: #334155 !important;
     font-size: 0.85rem;
     font-weight: 600;
 }
 
+/* BẢNG BIỂU SÁNG & TƯƠNG PHẢN CAO */
 .table {
-    color: var(--text-light) !important;
-    border-color: var(--border-glass) !important;
+    color: #334155 !important;
+    border-color: #e2e8f0 !important;
     margin-bottom: 0;
 }
 
 .table > :not(caption) > * > * {
     background-color: transparent !important;
-    color: var(--text-light) !important;
-    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    color: #334155 !important;
+    border-bottom-color: #e2e8f0 !important;
     padding: 0.85rem 1rem !important;
     vertical-align: middle !important;
 }
 
 .table thead th {
-    background-color: #062e20 !important;
-    color: #a7f3d0 !important;
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.25px;
-    border-bottom: 2px solid rgba(16, 185, 129, 0.28) !important;
+    border-bottom: 2px solid #cbd5e1 !important;
     white-space: nowrap !important;
 }
 
 .table tbody tr:hover td {
-    background-color: rgba(16, 185, 129, 0.06) !important;
-    color: #fff !important;
+    background-color: rgba(16, 185, 129, 0.05) !important;
+    color: #0f172a !important;
 }
 
 .table-light {
-    background-color: #062e20 !important;
-    color: #a7f3d0 !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
 }
 
+/* SIDEBAR ADMIN SANG TRỌNG LIGHT THEME */
 .skygate-sidebar {
-    background: rgba(7, 23, 17, 0.92) !important;
+    background: #ffffff !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-right: 1px solid var(--border-glass) !important;
+    border-right: 1px solid #e2e8f0 !important;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.02) !important;
 }
 
 .skygate-sidebar .nav-link {
-    color: var(--text-muted) !important;
+    color: #475569 !important;
     border-radius: var(--radius-md);
     padding: 0.65rem 1rem;
     font-weight: 500;
@@ -200,28 +209,33 @@ select.form-control option, select.form-select option {
 
 .skygate-sidebar .nav-link:hover,
 .skygate-sidebar .nav-link.active {
-    color: #34d399 !important;
-    background: rgba(16, 185, 129, 0.12) !important;
+    color: #047857 !important;
+    background: #ecfdf5 !important;
+    font-weight: 600;
 }
 
+/* DROPDOWN MENU */
 .dropdown-menu {
     display: none;
-    position: absolute !important;
-    top: 100% !important;
-    right: 0 !important;
-    left: auto !important;
-    z-index: 1050 !important;
-    background: rgba(10, 28, 21, 0.98) !important;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: auto;
+    z-index: 1050;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
     border-radius: var(--radius-lg) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
     padding: 0.5rem 0 !important;
-    min-width: 250px !important;
+    min-width: 210px !important;
     margin-top: 0.5rem !important;
     list-style: none !important;
     flex-direction: column !important;
+}
+
+.dropdown-menu.dropdown-menu-end {
+    right: 0 !important;
+    left: auto !important;
 }
 
 .dropdown-menu.show {
@@ -240,7 +254,7 @@ select.form-control option, select.form-select option {
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
-    color: var(--text-light) !important;
+    color: #334155 !important;
     padding: 0.65rem 1.25rem !important;
     font-size: 0.88rem !important;
     font-weight: 500 !important;
@@ -250,33 +264,34 @@ select.form-control option, select.form-select option {
 }
 
 .dropdown-item:hover {
-    background: rgba(16, 185, 129, 0.18) !important;
-    color: #34d399 !important;
+    background: #ecfdf5 !important;
+    color: #047857 !important;
     padding-left: 1.5rem !important;
 }
 
 .dropdown-divider {
-    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid #e2e8f0 !important;
     margin: 0.4rem 0 !important;
 }
 
+/* BUTTONS */
 .btn-success {
-    background: linear-gradient(135deg, var(--primary-light), var(--primary)) !important;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
     border: none !important;
     color: #fff !important;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important;
     font-weight: 600;
 }
 
 .btn-success:hover {
-    box-shadow: 0 6px 22px rgba(16, 185, 129, 0.5) !important;
+    box-shadow: 0 6px 22px rgba(5, 150, 105, 0.5) !important;
     transform: translateY(-2px);
 }
 
 .btn-warning, .btn-gold {
     background: linear-gradient(135deg, #f59e0b, #d97706) !important;
     border: none !important;
-    color: #071711 !important;
+    color: #ffffff !important;
     font-weight: 700 !important;
     box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35) !important;
     border-radius: var(--radius-md) !important;
@@ -286,14 +301,14 @@ select.form-control option, select.form-select option {
 .btn-warning:hover, .btn-gold:hover {
     box-shadow: 0 6px 22px rgba(245, 158, 11, 0.55) !important;
     transform: translateY(-2px);
-    color: #000 !important;
+    color: #ffffff !important;
 }
 
 .btn-outline,
 .btn-outline-custom {
-    border: 1.5px solid #34d399 !important;
-    color: #34d399 !important;
-    background: rgba(16, 185, 129, 0.12) !important;
+    border: 1.5px solid #059669 !important;
+    color: #059669 !important;
+    background: #ecfdf5 !important;
     font-weight: 600 !important;
     text-decoration: none !important;
     border-radius: 9999px !important;
@@ -303,10 +318,10 @@ select.form-control option, select.form-select option {
 
 .btn-outline:hover,
 .btn-outline-custom:hover {
-    background: #10b981 !important;
-    color: #071711 !important;
-    border-color: #10b981 !important;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.45) !important;
+    background: #059669 !important;
+    color: #ffffff !important;
+    border-color: #059669 !important;
+    box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4) !important;
     transform: translateY(-2px);
 }
 
@@ -319,52 +334,49 @@ select.form-control option, select.form-select option {
 }
 
 .btn-outline-info {
-    border: 1.2px solid #06b6d4 !important;
-    color: #22d3ee !important;
-    background: rgba(6, 182, 212, 0.12) !important;
+    border: 1.2px solid #0284c7 !important;
+    color: #0284c7 !important;
+    background: #f0f9ff !important;
 }
 
 .btn-outline-info:hover {
-    background: #06b6d4 !important;
-    color: #071711 !important;
-    border-color: #06b6d4 !important;
-    box-shadow: 0 3px 12px rgba(6, 182, 212, 0.45) !important;
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 12px rgba(2, 132, 199, 0.35) !important;
     transform: translateY(-1px);
 }
 
 .btn-outline-primary {
-    border: 1.2px solid #3b82f6 !important;
-    color: #60a5fa !important;
-    background: rgba(59, 130, 246, 0.12) !important;
+    border: 1.2px solid #2563eb !important;
+    color: #2563eb !important;
+    background: #eff6ff !important;
 }
 
 .btn-outline-primary:hover {
-    background: #3b82f6 !important;
+    background: #2563eb !important;
     color: #ffffff !important;
-    border-color: #3b82f6 !important;
-    box-shadow: 0 3px 12px rgba(59, 130, 246, 0.45) !important;
+    box-shadow: 0 3px 12px rgba(37, 99, 235, 0.35) !important;
     transform: translateY(-1px);
 }
 
 .btn-outline-warning {
-    border: 1.2px solid #f59e0b !important;
-    color: #fbbf24 !important;
-    background: rgba(245, 158, 11, 0.12) !important;
+    border: 1.2px solid #d97706 !important;
+    color: #d97706 !important;
+    background: #fffbeb !important;
 }
 
 .btn-outline-warning:hover {
-    background: #f59e0b !important;
-    color: #071711 !important;
-    border-color: #f59e0b !important;
-    box-shadow: 0 3px 12px rgba(245, 158, 11, 0.45) !important;
+    background: #d97706 !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 12px rgba(217, 119, 6, 0.35) !important;
     transform: translateY(-1px);
 }
 
 .btn-logout,
 .btn-outline-danger {
-    border: 1.2px solid #ef4444 !important;
-    color: #f87171 !important;
-    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1.2px solid #dc2626 !important;
+    color: #dc2626 !important;
+    background: #fef2f2 !important;
     font-weight: 600 !important;
     text-decoration: none !important;
     border-radius: var(--radius-sm) !important;
@@ -378,37 +390,36 @@ select.form-control option, select.form-select option {
 
 .btn-logout:hover,
 .btn-outline-danger:hover {
-    background: #ef4444 !important;
+    background: #dc2626 !important;
     color: #ffffff !important;
-    border-color: #ef4444 !important;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.45) !important;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35) !important;
     transform: translateY(-2px);
 }
 
 .btn-outline-success {
-    border: 1.2px solid #34d399 !important;
-    color: #34d399 !important;
-    background: rgba(16, 185, 129, 0.08) !important;
+    border: 1.2px solid #059669 !important;
+    color: #059669 !important;
+    background: #ecfdf5 !important;
 }
 
 .btn-outline-success:hover {
-    background: #34d399 !important;
-    color: #071711 !important;
-    border-color: #34d399 !important;
-    box-shadow: 0 3px 12px rgba(16, 185, 129, 0.4) !important;
+    background: #059669 !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 12px rgba(5, 150, 105, 0.35) !important;
 }
 
 .btn-outline-secondary {
-    border-color: var(--border-glass) !important;
-    color: var(--text-muted) !important;
-    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+    background: #f8fafc !important;
 }
 
 .btn-outline-secondary:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: #fff !important;
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
 }
 
+/* BADGES */
 .badge {
     border-radius: 9999px !important;
     font-weight: 600 !important;
@@ -417,41 +428,42 @@ select.form-control option, select.form-select option {
 }
 
 .badge.bg-success {
-    background-color: rgba(16, 185, 129, 0.18) !important;
-    color: #34d399 !important;
-    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    background-color: #d1fae5 !important;
+    color: #047857 !important;
+    border: 1px solid #a7f3d0 !important;
 }
 
 .badge.bg-warning {
-    background-color: rgba(245, 158, 11, 0.18) !important;
-    color: var(--accent-gold) !important;
-    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    background-color: #fef3c7 !important;
+    color: #b45309 !important;
+    border: 1px solid #fde68a !important;
 }
 
 .badge.bg-danger {
-    background-color: rgba(239, 68, 68, 0.18) !important;
-    color: #f87171 !important;
-    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5 !important;
 }
 
 .badge.bg-secondary {
-    background-color: rgba(148, 163, 184, 0.15) !important;
-    color: #cbd5e1 !important;
-    border: 1px solid rgba(148, 163, 184, 0.25) !important;
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
 }
 
 .badge.bg-info {
-    background-color: rgba(59, 130, 246, 0.18) !important;
-    color: #60a5fa !important;
-    border: 1px solid rgba(59, 130, 246, 0.35) !important;
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+    border: 1px solid #bae6fd !important;
 }
 
 .badge.bg-primary {
-    background-color: rgba(14, 165, 233, 0.18) !important;
-    color: #38bdf8 !important;
-    border: 1px solid rgba(14, 165, 233, 0.35) !important;
+    background-color: #dbeafe !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
 }
 
+/* EMPTY STATES */
 .empty-state {
     padding: 3.5rem 1.5rem;
     text-align: center;
@@ -461,33 +473,35 @@ select.form-control option, select.form-select option {
     font-size: 3.25rem;
     margin-bottom: 0.75rem;
     display: inline-block;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
 .empty-state-title {
     font-size: 1.15rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: #0f172a;
     margin-bottom: 0.35rem;
 }
 
 .empty-state-desc {
-    color: var(--text-muted);
+    color: #64748b;
     font-size: 0.9rem;
     max-width: 440px;
     margin: 0 auto;
 }
 
+/* LIST GROUPS */
 .list-group-item {
-    background: rgba(0, 0, 0, 0.35) !important;
-    border-color: var(--border-glass) !important;
-    color: var(--text-light) !important;
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #334155 !important;
 }
 
 .list-group-item:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: #f8fafc !important;
 }
 
+/* PAGINATION */
 .pagination {
     justify-content: center;
     gap: 0.35rem;
@@ -495,9 +509,9 @@ select.form-control option, select.form-select option {
 }
 
 .pagination .page-link {
-    background: rgba(0, 0, 0, 0.4) !important;
-    border: 1px solid var(--border-glass) !important;
-    color: var(--text-light) !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
     border-radius: var(--radius-sm) !important;
     min-width: 38px;
     text-align: center;
@@ -506,27 +520,28 @@ select.form-control option, select.form-select option {
 }
 
 .pagination .page-link:hover {
-    background: rgba(16, 185, 129, 0.18) !important;
-    border-color: #34d399 !important;
-    color: #34d399 !important;
+    background: #ecfdf5 !important;
+    border-color: #059669 !important;
+    color: #059669 !important;
 }
 
 .pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-    border-color: #f59e0b !important;
-    color: #071711 !important;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    background: linear-gradient(135deg, #059669, #047857) !important;
+    border-color: #059669 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
 }
 
 .pagination .page-item.disabled .page-link {
     opacity: 0.45;
 }
 
+/* INPUT GROUPS */
 .input-group-text {
-    background: rgba(16, 185, 129, 0.12) !important;
-    border: 1px solid var(--border-glass) !important;
+    background: #f1f5f9 !important;
+    border: 1.5px solid #cbd5e1 !important;
     border-right: 0 !important;
-    color: #34d399 !important;
+    color: #059669 !important;
     border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
     min-width: 46px;
     justify-content: center;
@@ -539,68 +554,57 @@ select.form-control option, select.form-select option {
 }
 
 .input-group:focus-within .input-group-text {
-    border-color: #10b981 !important;
+    border-color: #059669 !important;
 }
 
 .ticket-date-badge {
-    background: rgba(7, 23, 17, 0.88) !important;
-    color: #fff !important;
-    border: 1px solid rgba(245, 158, 11, 0.6) !important;
-    backdrop-filter: blur(6px);
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
+/* ALERTS */
 .alert-success {
-    background-color: rgba(16, 185, 129, 0.15) !important;
-    border-color: rgba(16, 185, 129, 0.35) !important;
-    color: #34d399 !important;
+    background-color: #ecfdf5 !important;
+    border-color: #a7f3d0 !important;
+    color: #065f46 !important;
 }
 
 .alert-danger {
-    background-color: rgba(239, 68, 68, 0.15) !important;
-    border-color: rgba(239, 68, 68, 0.35) !important;
-    color: #f87171 !important;
+    background-color: #fef2f2 !important;
+    border-color: #fecaca !important;
+    color: #991b1b !important;
 }
 
+.alert-warning {
+    background-color: #fffbeb !important;
+    border-color: #fde68a !important;
+    color: #92400e !important;
+}
+
+/* BREADCRUMB */
 .breadcrumb {
     --bs-breadcrumb-divider: '›';
-    --bs-breadcrumb-divider-color: #64748b;
+    --bs-breadcrumb-divider-color: #94a3b8;
 }
 
 .breadcrumb-item + .breadcrumb-item::before {
-    color: #64748b !important;
+    color: #94a3b8 !important;
 }
 
 .breadcrumb-item a {
-    color: #34d399 !important;
+    color: #059669 !important;
     text-decoration: none;
 }
 
 .breadcrumb-item.active {
-    color: var(--text-muted) !important;
+    color: #64748b !important;
 }
 
-.text-dark {
-    color: #f8fafc !important;
-}
-
-.text-muted {
-    color: #94a3b8 !important;
-}
-
-.text-secondary {
-    color: #cbd5e1 !important;
-}
-
-.bg-white {
-    background-color: transparent !important;
-}
-
-.bg-light {
-    background-color: transparent !important;
-}
-
+/* BORDER UTILITIES */
 .border-top, .border-bottom, .border-end, .border-start, .border {
-    border-color: var(--border-glass) !important;
+    border-color: #e2e8f0 !important;
 }
 
 .header-container {
@@ -614,7 +618,7 @@ select.form-control option, select.form-select option {
     align-items: center;
     gap: 12px;
     text-decoration: none;
-    color: var(--text-main);
+    color: #0f172a;
 }
 
 .brand-logo {
@@ -626,6 +630,7 @@ select.form-control option, select.form-select option {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    color: #ffffff;
 }
 
 .brand-text h1 {
@@ -633,15 +638,15 @@ select.form-control option, select.form-select option {
     font-weight: 800;
     margin: 0;
     letter-spacing: -0.5px;
-    background: linear-gradient(to right, #fff, #a7f3d0);
+    background: linear-gradient(135deg, #064e3b, #059669);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .brand-text span {
     font-size: 0.72rem;
-    color: var(--accent-gold);
-    font-weight: 600;
+    color: var(--accent-amber);
+    font-weight: 700;
     letter-spacing: 0.5px;
     display: block;
 }
@@ -649,7 +654,7 @@ select.form-control option, select.form-select option {
 .skygate-navbar nav > ul {
     display: flex;
     list-style: none;
-    gap: 1.25rem;
+    gap: 1.15rem;
     align-items: center;
     margin: 0;
     padding: 0;
@@ -657,20 +662,67 @@ select.form-control option, select.form-select option {
 
 .skygate-navbar nav > ul > li {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .skygate-navbar nav a {
     text-decoration: none;
-    color: var(--text-muted);
+    color: #475569;
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     transition: color 0.2s ease;
     white-space: nowrap !important;
 }
 
-.skygate-navbar nav a:hover,
-.skygate-navbar nav a.active {
-    color: #fff;
+.skygate-navbar nav a.nav-item-link {
+    padding: 6px 3px;
+    display: inline-flex;
+    align-items: center;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    color: #475569 !important;
+    font-size: 0.88rem;
+    font-weight: 600;
+    position: relative;
+    transition: color 0.2s ease, font-weight 0.2s ease;
+}
+
+.skygate-navbar nav a.nav-item-link:hover {
+    color: #059669 !important;
+    background: transparent !important;
+}
+
+.skygate-navbar nav a.nav-item-link.active,
+.skygate-navbar nav li.dropdown.active > a.nav-item-link {
+    color: #059669 !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.skygate-navbar nav a.nav-item-link.active:not(.dropdown-toggle)::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 2px;
+    right: 2px;
+    height: 2.5px;
+    background: #059669;
+    border-radius: 9999px;
+}
+
+.skygate-navbar .dropdown-menu {
+    left: 0 !important;
+    right: auto !important;
+    top: 100% !important;
+    margin-top: 8px !important;
+    min-width: 210px !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
 }
 
 .nav-actions {
@@ -686,12 +738,17 @@ select.form-control option, select.form-select option {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--border-glass);
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
     border-radius: 9999px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #fff;
+    color: #0f172a;
+    transition: all 0.2s ease;
+}
+
+.badge-cart:hover {
+    background: #e2e8f0;
 }
 
 .badge-count {
@@ -703,11 +760,24 @@ select.form-control option, select.form-select option {
     font-weight: 800;
 }
 
+/* FOOTER SANG TRỌNG TONE GRADIENT ĐẠI NGÀN (NATURE MIDNIGHT GRADIENT) */
 .skygate-footer {
-    border-top: 1px solid var(--border-glass);
-    background: #04100c !important;
+    border-top: 1px solid rgba(16, 185, 129, 0.3) !important;
+    background: linear-gradient(135deg, #022c22 0%, #0f172a 45%, #064e3b 100%) !important;
+    color: #cbd5e1;
     padding: 3.5rem 2rem 2rem;
     margin-top: auto;
+    position: relative;
+}
+
+.skygate-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #10b981, #f59e0b, transparent);
 }
 
 .footer-container {
@@ -723,7 +793,7 @@ select.form-control option, select.form-select option {
     font-size: 0.95rem;
     font-weight: 700;
     margin-bottom: 1.25rem;
-    color: #fff;
+    color: #ffffff;
 }
 
 .footer-col ul {
@@ -737,7 +807,7 @@ select.form-control option, select.form-select option {
 }
 
 .footer-col a {
-    color: var(--text-muted);
+    color: #94a3b8;
     text-decoration: none;
     font-size: 0.88rem;
     transition: color 0.2s ease;
@@ -751,36 +821,38 @@ select.form-control option, select.form-select option {
     max-width: 1320px;
     margin: 0 auto;
     padding-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: 0.85rem;
-    color: var(--text-muted);
+    color: #94a3b8;
     flex-wrap: wrap;
     gap: 1rem;
 }
 
+/* FLATPICKR LỊCH SÁNG ĐẸP */
 .flatpickr-calendar {
-    background: #0c231a !important;
-    border: 1px solid var(--border-glass-strong) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12) !important;
     border-radius: var(--radius-lg) !important;
-    color: #fff !important;
+    color: #0f172a !important;
 }
 
 .flatpickr-day {
-    color: #cbd5e1 !important;
+    color: #334155 !important;
 }
 
 .flatpickr-day:hover {
-    background: rgba(16, 185, 129, 0.25) !important;
+    background: #ecfdf5 !important;
+    color: #047857 !important;
 }
 
 .flatpickr-day.selected {
-    background: #10b981 !important;
-    border-color: #10b981 !important;
-    color: #000 !important;
+    background: #059669 !important;
+    border-color: #059669 !important;
+    color: #ffffff !important;
     font-weight: 700 !important;
 }
 
@@ -788,8 +860,9 @@ select.form-control option, select.form-select option {
 .flatpickr-current-month .flatpickr-monthDropdown-months,
 .flatpickr-weekdays,
 span.flatpickr-weekday {
-    background: transparent !important;
-    color: #34d399 !important;
+    background: #f8fafc !important;
+    color: #047857 !important;
+    font-weight: 700 !important;
 }
 
 @media (max-width: 900px) {
@@ -798,3 +871,237 @@ span.flatpickr-weekday {
         gap: 2rem;
     }
 }
+
+/* ==========================================================================
+   RÀ SOÁT & ĐỒNG BỘ TOÀN DIỆN LIGHT THEME CHO TOÀN BỘ WEBSITE
+   Khắc phục triệt để lỗi:
+   1. Nền sáng nhưng có text màu trắng/sáng gây tàng hình, khó đọc
+   2. Các box đen/nền đen còn sót lại từ theme tối cũ
+   3. Input và form bị tối hoặc nhảy màu khi autofill
+   ========================================================================== */
+
+/* Ép các tiêu đề h1-h6 và text trong các khu vực nền sáng về màu than đậm rõ nét,
+   trừ các Hero Banners nền tối của KDL */
+body:not(.dark-mode) h1:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.banner-psub-sm *),
+body:not(.dark-mode) h2:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.banner-psub-sm *),
+body:not(.dark-mode) h3:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.banner-psub-sm *),
+body:not(.dark-mode) h4:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.banner-psub-sm *),
+body:not(.dark-mode) h5:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.banner-psub-sm *),
+body:not(.dark-mode) h6:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.banner-psub-sm *) {
+    color: #0f172a;
+}
+
+/* Sửa các class text-white và text-light xuất hiện trong các khối nội dung sáng */
+main .card .text-white,
+main .card h1.text-white,
+main .card h2.text-white,
+main .card h3.text-white,
+main .card h4.text-white,
+main .card h5.text-white,
+main .card h6.text-white,
+main .card label.text-white,
+main .card span.text-white,
+main .card div.text-white,
+main .card strong.text-white,
+main .card p.text-white,
+main .table .text-white,
+main .table th.text-white,
+main .table td.text-white,
+main h1.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main h2.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main h3.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main h4.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main h5.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main h6.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main label.text-white,
+main div.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main span.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.badge),
+main strong.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main p.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+.skygate-sidebar .text-white,
+.skygate-admin-topbar .text-white {
+    color: #0f172a !important;
+}
+
+main .card .text-light,
+main .table .text-light,
+main label.text-light {
+    color: #334155 !important;
+}
+
+/* ==========================================================================
+   TIÊU ĐỀ HERO TOÀN DIỆN CHO CÁC TRANG — CHỮ TRẮNG SÁNG RỰC RỠ & FONT PLAYFAIR DISPLAY
+   ========================================================================== */
+.hero-official h2,
+.hero-official h1,
+.hero-official h2 span,
+.about-hero h1,
+.attract-hero h1,
+.attractions-hero h1,
+.contact-hero h1,
+.hotel-hero h1,
+.dining-hero h1,
+.lookup-hero h1 {
+    font-family: 'Playfair Display', Georgia, serif !important;
+    color: #ffffff !important;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.65) !important;
+}
+
+.hero-official p.lead,
+.about-hero p.lead,
+.attract-hero p.lead,
+.attractions-hero p.lead,
+.contact-hero p.lead,
+.hotel-hero p.lead,
+.dining-hero p.lead,
+.lookup-hero p.lead {
+    color: #f1f5f9 !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* TIÊU ĐỀ CÁC PHẦN KHÁC LẤY FONT PLAYFAIR DISPLAY NHƯ TRANG CHỦ */
+.section-title-wrap h2,
+.section-heading h2,
+.section-intro-home h2,
+.section-products h2,
+.section-hotel h2,
+.section-dining h2 {
+    font-family: 'Playfair Display', Georgia, serif !important;
+}
+
+/* MODALS: Ép toàn bộ popup/modal về chuẩn nền trắng, chữ đen, viền sáng */
+.modal-content {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12) !important;
+    border-radius: 16px !important;
+}
+
+.modal-header,
+.modal-footer {
+    border-color: #e2e8f0 !important;
+    background: transparent !important;
+}
+
+.modal-body {
+    color: #0f172a !important;
+    background: transparent !important;
+}
+
+.modal-title,
+.modal-title.text-white {
+    color: #0f172a !important;
+}
+
+.modal-body .text-white,
+.modal-body label.text-white,
+.modal-body h4.text-white,
+.modal-body h5.text-white,
+.modal-body p.text-white,
+.modal-body span.text-white:not(.badge),
+.modal-body strong.text-white {
+    color: #0f172a !important;
+}
+
+.modal-body .text-light {
+    color: #475569 !important;
+}
+
+.btn-close-white {
+    filter: none !important;
+}
+
+/* TABLES: Bảng quản trị và khách hàng luôn sáng sủa, header xám nhạt hiện đại */
+table thead,
+.table thead,
+table thead tr {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+table thead th,
+.table thead th {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    font-weight: 700 !important;
+    font-size: 0.82rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+table thead th a,
+.table thead th a,
+table thead th a.text-white {
+    color: #334155 !important;
+    text-decoration: none !important;
+}
+
+table tbody td.text-white,
+.table tbody td.text-white {
+    color: #0f172a !important;
+}
+
+table tbody td.text-light,
+.table tbody td.text-light {
+    color: #475569 !important;
+}
+
+/* Sửa các box đen / alert nền tối còn sót lại */
+.alert-secondary.bg-dark,
+.bg-dark.bg-opacity-50,
+.bg-dark.bg-opacity-25 {
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+/* Triệt tiêu mọi inline style nền tối thừa từ theme cũ */
+[style*="rgba(12, 34, 25"],
+[style*="rgba(10, 28, 21"],
+[style*="rgba(7, 23, 17"]:not(.lookup-hero):not(.dining-hero):not(.hotel-hero):not(.hero-banner):not(.auth-banner-overlay),
+[style*="background: #0d281e"],
+[style*="background:#0d281e"],
+[style*="background: #0c241b"],
+[style*="background:#0c241b"] {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+/* Đảm bảo tất cả input, textarea và select luôn sáng sủa, chữ rõ ràng */
+input.form-control,
+textarea.form-control,
+select.form-select,
+.form-control {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+}
+
+input.form-control:focus,
+textarea.form-control:focus,
+select.form-select:focus {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #059669 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+}
+
+input.form-control::placeholder,
+textarea.form-control::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
+/* Đảm bảo autofill của trình duyệt không làm biến thành màu đen */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    -webkit-text-fill-color: #0f172a !important;
+}
+

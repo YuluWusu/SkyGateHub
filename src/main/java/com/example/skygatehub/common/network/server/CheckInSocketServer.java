@@ -6,6 +6,7 @@ import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
 import com.example.skygatehub.repository.order.VeRepository;
 import com.example.skygatehub.repository.roombooking.DatPhongRepository;
+import com.example.skygatehub.service.room.RoomOperationService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class CheckInSocketServer {
     private final DatBanRepository datBanRepository;
     private final CheckInRepository checkInRepository;
     private final NguoiDungRepository nguoiDungRepository;
+    private final RoomOperationService roomOperationService;
     private final PlatformTransactionManager transactionManager;
 
     private ServerSocket serverSocket;
@@ -81,6 +83,7 @@ public class CheckInSocketServer {
                             datBanRepository,
                             checkInRepository,
                             nguoiDungRepository,
+                            roomOperationService,
                             transactionManager
                     );
                     threadPool.execute(handler);

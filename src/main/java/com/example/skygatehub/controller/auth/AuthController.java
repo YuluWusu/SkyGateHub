@@ -58,8 +58,8 @@ public class AuthController {
         phienLamViec.setAttribute(SessionKeys.CURRENT_USER_ROLES, nguoiDungHienTai.getRoles());
 
         if (Boolean.TRUE.equals(nguoiDungHienTai.getCanDoiMatKhau())) {
-            dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Vui lòng đổi mật khẩu mới trong lần đầu đăng nhập.");
-            return "redirect:/profile";
+            dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Chào mừng bạn! Vui lòng cập nhật thông tin cá nhân và đặt mật khẩu mới cho lần đầu đăng nhập.");
+            return "redirect:/doi-mat-khau-lan-dau";
         }
 
         if (chuyenHuong != null && !chuyenHuong.trim().isEmpty() && !chuyenHuong.contains("login")) {
@@ -69,8 +69,83 @@ public class AuthController {
         if (nguoiDungHienTai.isAdmin()) {
             return "redirect:/admin/users";
         }
+        if (nguoiDungHienTai.hasRole("NHAN_VIEN_LUU_TRU") || nguoiDungHienTai.hasRole("VT006")) {
+            return "redirect:/admin/room-map";
+        }
+        if (nguoiDungHienTai.hasRole("NHAN_VIEN_VE") || nguoiDungHienTai.hasRole("VT004")) {
+            return "redirect:/admin/tickets";
+        }
 
-        return "redirect:/";
+        return "redirect:/admin/rooms";
+    }
+
+    @GetMapping("/doi-mat-khau-lan-dau")
+    public String hienThiTrangDoiMatKhauLanDau(HttpSession phienLamViec, Model moHinh, RedirectAttributes dieuHuong) {
+        CurrentUser nguoiDungHienTai = (CurrentUser) phienLamViec.getAttribute(SessionKeys.CURRENT_USER);
+        if (nguoiDungHienTai == null) {
+            dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Vui lòng đăng nhập trước.");
+            return "redirect:/login";
+        }
+
+        moHinh.addAttribute("currentUser", nguoiDungHienTai);
+        return "auth/first-login";
+    }
+
+    @PostMapping("/doi-mat-khau-lan-dau")
+    public String xuLyDoiMatKhauLanDau(@RequestParam("hoTen") String hoTen,
+                                       @RequestParam("email") String email,
+                                       @RequestParam("soDienThoai") String soDienThoai,
+                                       @RequestParam("matKhauHienTai") String matKhauHienTai,
+                                       @RequestParam("matKhauMoi") String matKhauMoi,
+                                       @RequestParam("xacNhanMatKhauMoi") String xacNhanMatKhauMoi,
+                                       HttpSession phienLamViec,
+                                       RedirectAttributes dieuHuong) {
+        CurrentUser nguoiDungHienTai = (CurrentUser) phienLamViec.getAttribute(SessionKeys.CURRENT_USER);
+        if (nguoiDungHienTai == null) {
+            return "redirect:/login";
+        }
+
+        if (matKhauMoi == null || matKhauMoi.trim().length() < 6) {
+            dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Mật khẩu mới phải có tối thiểu 6 ký tự.");
+            return "redirect:/doi-mat-khau-lan-dau";
+        }
+
+        if (!matKhauMoi.equals(xacNhanMatKhauMoi)) {
+            dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Mật khẩu mới xác nhận không trùng khớp.");
+            return "redirect:/doi-mat-khau-lan-dau";
+        }
+
+        boolean thanhCong = authService.capNhatThongTinVaDoiMatKhau(
+                nguoiDungHienTai.getMaNguoiDung(),
+                hoTen, email, soDienThoai,
+                matKhauHienTai, matKhauMoi
+        );
+
+        if (!thanhCong) {
+            dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Mật khẩu khởi tạo hiện tại không chính xác.");
+            return "redirect:/doi-mat-khau-lan-dau";
+        }
+
+        nguoiDungHienTai.setHoTen(hoTen.trim());
+        nguoiDungHienTai.setEmail(email.trim());
+        nguoiDungHienTai.setSoDienThoai(soDienThoai.trim());
+        nguoiDungHienTai.setCanDoiMatKhau(false);
+        phienLamViec.setAttribute(SessionKeys.CURRENT_USER, nguoiDungHienTai);
+
+        dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS,
+                "Cập nhật hồ sơ và đổi mật khẩu lần đầu thành công! Chào mừng bạn đến với hệ thống SkyGateHub.");
+
+        if (nguoiDungHienTai.isAdmin()) {
+            return "redirect:/admin/users";
+        }
+        if (nguoiDungHienTai.hasRole("NHAN_VIEN_LUU_TRU") || nguoiDungHienTai.hasRole("VT006")) {
+            return "redirect:/admin/room-map";
+        }
+        if (nguoiDungHienTai.hasRole("NHAN_VIEN_VE") || nguoiDungHienTai.hasRole("VT004")) {
+            return "redirect:/admin/tickets";
+        }
+
+        return "redirect:/admin/rooms";
     }
 
     @GetMapping("/logout")
@@ -78,34 +153,30 @@ public class AuthController {
         if (phienLamViec != null) {
             phienLamViec.invalidate();
         }
-        dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Đăng xuất thành công.");
+        dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Bạn đã đăng xuất khỏi hệ thống.");
         return "redirect:/login?logout=true";
     }
 
-    @GetMapping("/register")
-    public String hienThiTrangDangKy(Model moHinh, HttpSession phienLamViec) {
-        if (phienLamViec != null && phienLamViec.getAttribute(SessionKeys.CURRENT_USER) != null) {
-            return "redirect:/";
+    @GetMapping("/admin/switch-to-customer")
+    public String chuyenVeWebsiteKhachHang(HttpSession phienLamViec, RedirectAttributes dieuHuong) {
+        if (phienLamViec != null) {
+            phienLamViec.invalidate();
         }
-        moHinh.addAttribute("registerRequest", new RegisterRequest());
-        return "auth/register";
+        dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Đã đăng xuất và chuyển về giao diện Khách hàng.");
+        return "redirect:/";
+    }
+
+    @GetMapping("/register")
+    public String hienThiTrangDangKy(RedirectAttributes dieuHuong) {
+        dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR,
+                "Hệ thống chỉ dành cho cán bộ & nhân viên được cấp tài khoản bởi Ban Quản Trị. Quý du khách vui lòng đặt dịch vụ trực tiếp mà không cần đăng ký tài khoản.");
+        return "redirect:/login";
     }
 
     @PostMapping("/register")
-    public String xuLyDangKy(@ModelAttribute("registerRequest") RegisterRequest yeuCauDangKy,
-                             RedirectAttributes dieuHuong) {
-        if (!yeuCauDangKy.getMatKhau().equals(yeuCauDangKy.getXacNhanMatKhau())) {
-            dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Mật khẩu xác nhận không trùng khớp.");
-            return "redirect:/register";
-        }
-
-        try {
-            authService.dangKy(yeuCauDangKy);
-            dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Đăng ký tài khoản thành công! Vui lòng đăng nhập.");
-            return "redirect:/login";
-        } catch (Exception ngoaiLe) {
-            dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, ngoaiLe.getMessage());
-            return "redirect:/register";
-        }
+    public String xuLyDangKy(RedirectAttributes dieuHuong) {
+        dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR,
+                "Chức năng đăng ký công khai đã ngừng hoạt động. Tài khoản chỉ được cấp bởi Ban Quản Trị.");
+        return "redirect:/login";
     }
 }

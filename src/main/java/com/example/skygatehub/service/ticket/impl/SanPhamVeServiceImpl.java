@@ -95,10 +95,29 @@ public class SanPhamVeServiceImpl implements SanPhamVeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public String generateNextMaLoaiVe() {
+        List<String> codes = loaiVeRepository.findAllMaLoaiVe();
+        int maxNumber = 0;
+        for (String code : codes) {
+            if (code != null && code.toUpperCase().startsWith("VE")) {
+                try {
+                    int num = Integer.parseInt(code.substring(2).trim());
+                    if (num > maxNumber) {
+                        maxNumber = num;
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        int nextNumber = maxNumber + 1;
+        return String.format("VE%02d", nextNumber);
+    }
+
+    @Override
     public LoaiVe taoLoaiVe(SanPhamVeRequest yeuCau) {
         String maLoaiVe = yeuCau.getMaLoaiVe();
-        if (maLoaiVe == null || maLoaiVe.trim().isEmpty()) {
-            maLoaiVe = "LV" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        if (maLoaiVe == null || maLoaiVe.trim().isEmpty() || maLoaiVe.startsWith("LV")) {
+            maLoaiVe = generateNextMaLoaiVe();
         }
 
         LoaiVe loaiVe = new LoaiVe();

@@ -3,7 +3,6 @@ package com.example.skygatehub.common.network.server;
 import com.example.skygatehub.common.enums.LoaiCheckIn;
 import com.example.skygatehub.common.enums.TrangThaiCheckIn;
 import com.example.skygatehub.common.enums.TrangThaiDatBan;
-import com.example.skygatehub.common.enums.TrangThaiDatPhong;
 import com.example.skygatehub.common.enums.TrangThaiVe;
 import com.example.skygatehub.entity.account.NguoiDung;
 import com.example.skygatehub.entity.checkin.CheckIn;
@@ -17,6 +16,7 @@ import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
 import com.example.skygatehub.repository.order.VeRepository;
 import com.example.skygatehub.repository.roombooking.DatPhongRepository;
+import com.example.skygatehub.service.room.RoomOperationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,6 +48,7 @@ public class CheckInClientHandler implements Runnable {
     private final DatBanRepository datBanRepository;
     private final CheckInRepository checkInRepository;
     private final NguoiDungRepository nguoiDungRepository;
+    private final RoomOperationService roomOperationService;
     private final PlatformTransactionManager transactionManager;
 
     private final int clientId;
@@ -61,6 +63,7 @@ public class CheckInClientHandler implements Runnable {
             DatBanRepository datBanRepository,
             CheckInRepository checkInRepository,
             NguoiDungRepository nguoiDungRepository,
+            RoomOperationService roomOperationService,
             PlatformTransactionManager transactionManager) {
         this.clientSocket = socket;
         this.donDatRepository = donDatRepository;
@@ -69,6 +72,7 @@ public class CheckInClientHandler implements Runnable {
         this.datBanRepository = datBanRepository;
         this.checkInRepository = checkInRepository;
         this.nguoiDungRepository = nguoiDungRepository;
+        this.roomOperationService = roomOperationService;
         this.transactionManager = transactionManager;
         this.clientId = CLIENT_COUNTER.getAndIncrement();
     }
@@ -91,7 +95,7 @@ public class CheckInClientHandler implements Runnable {
 
                 log.info("[THREAD: {}] [CLIENT #{} - {}] Lệnh nhận: {}", threadName, clientId, stationName, line);
 
-                String[] parts = line.split("\\s+");
+                String[] parts = line.contains("|") ? line.split("\\|") : line.split("\\s+");
                 String command = parts[0].toUpperCase();
 
                 if ("QUIT".equals(command) || "EXIT".equals(command)) {
@@ -132,7 +136,8 @@ public class CheckInClientHandler implements Runnable {
             case "CHECKIN_PHONG":
                 if (!authenticated) return "401 UNAUTHORIZED Vui lòng AUTH trước khi check-in.";
                 if (parts.length < 2) return "400 ERROR Thiếu mã đặt phòng: Cú pháp: CHECKIN_PHONG <MA_DAT_PHONG>";
-                return processCheckinPhong(parts[1]);
+                String maNhanVien = (parts.length >= 3) ? parts[2] : null;
+                return processCheckinPhong(parts[1], maNhanVien);
 
             case "CHECKIN_AN":
                 if (!authenticated) return "401 UNAUTHORIZED Vui lòng AUTH trước khi check-in.";
@@ -243,44 +248,37 @@ public class CheckInClientHandler implements Runnable {
         });
     }
 
-    private String processCheckinVe(String code) {
-        return xuLyCheckinVe(code);
-    }
+    /**
+     * Tích hợp Trạm 2: Lễ Tân Lưu Trú qua RoomOperationService (Tiêu chí 5.3, 5.4).
+     */
+    private String processCheckinPhong(String codeOrOrder, String maNhanVien) {
+        try {
+            String targetMaDatPhong = codeOrOrder;
+            Optional<DatPhong> dpOpt = datPhongRepository.findByMaDatPhong(targetMaDatPhong);
 
-    private String processCheckinPhong(String maDatPhong) {
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        return tx.execute(status -> {
-            Optional<DatPhong> dpOpt = datPhongRepository.findByMaDatPhong(maDatPhong);
-            if (dpOpt.isEmpty()) return "404 NOT_FOUND Mã đặt phòng không tồn tại: " + maDatPhong;
-
-            DatPhong dp = dpOpt.get();
-            if (dp.getTrangThai() == TrangThaiDatPhong.DA_NHAN_PHONG) {
-                return "409 CONFLICT_ALREADY_CHECKED_IN Đặt phòng [" + maDatPhong + "] đã nhận phòng trước đó.";
+            if (dpOpt.isEmpty()) {
+                // Thử tra theo mã đơn hàng
+                Optional<DonDat> donOpt = donDatRepository.findByMaDonHang(codeOrOrder);
+                if (donOpt.isPresent()) {
+                    List<DatPhong> dps = datPhongRepository.findByChiTietDon_DonDat_MaDonDat(donOpt.get().getMaDonDat());
+                    if (!dps.isEmpty()) {
+                        targetMaDatPhong = dps.get(0).getMaDatPhong();
+                        dpOpt = Optional.of(dps.get(0));
+                    }
+                }
             }
-            if (dp.getTrangThai() == TrangThaiDatPhong.DA_HUY) {
-                return "410 GONE Đặt phòng [" + maDatPhong + "] đã bị hủy.";
+
+            if (dpOpt.isEmpty()) {
+                return "404 NOT_FOUND Không tìm thấy đơn đặt phòng hoặc mã đơn: " + codeOrOrder;
             }
 
-            dp.setTrangThai(TrangThaiDatPhong.DA_NHAN_PHONG);
-            datPhongRepository.save(dp);
-
-            CheckIn ci = new CheckIn();
-            ci.setMaCheckIn("CI-PHONG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-            ci.setDonDat(dp.getChiTietDon().getDonDat());
-            ci.setLoaiCheckIn(LoaiCheckIn.PHONG);
-            ci.setDatPhong(dp);
-
-            NguoiDung nv = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
-            ci.setNhanVien(nv);
-            ci.setSoLuong(dp.getSoLuongPhong());
-            ci.setThoiGianCheckIn(LocalDateTime.now());
-            ci.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
-            ci.setGhiChu("Check-in phòng qua Socket tại trạm: " + stationName);
-            checkInRepository.save(ci);
-
-            log.info("[CHECKIN-PHONG-SUCCESS] Trạm {} check-in phòng thành công: {}", stationName, maDatPhong);
-            return "200 CHECKIN_SUCCESS MaCheckIn=" + ci.getMaCheckIn() + " MaDatPhong=" + maDatPhong + " LoaiPhong=" + dp.getLoaiPhong().getTenLoaiPhong();
-        });
+            String rooms = roomOperationService.checkInRoom(targetMaDatPhong, maNhanVien);
+            log.info("[CHECKIN-PHONG-SUCCESS] Trạm {} check-in thành công đơn {}: Phòng [{}]", stationName, targetMaDatPhong, rooms);
+            return "200 CHECKIN_PHONG_OK MaDatPhong=" + targetMaDatPhong + " SoPhong=" + rooms + " LoaiPhong=" + dpOpt.get().getLoaiPhong().getTenLoaiPhong();
+        } catch (Exception ex) {
+            log.warn("Lỗi check-in phòng qua socket: {}", ex.getMessage());
+            return "409 CONFLICT " + ex.getMessage();
+        }
     }
 
     private String processCheckinAn(String maDatBan) {

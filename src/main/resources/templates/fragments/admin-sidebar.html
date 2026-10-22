@@ -1,10 +1,14 @@
 <div xmlns:th="http://www.thymeleaf.org" class="skygate-sidebar" style="width: 280px; min-width: 280px; min-height: 88vh;">
     <div class="sidebar-brand-box">
-        <div class="sidebar-brand-logo">SG</div>
-        <div class="sidebar-brand-info">
-            <h4>Quản trị hệ thống</h4>
-            <span>Cổng Trời Đông Giang</span>
-        </div>
+        <a th:href="@{/admin/rooms}" class="d-flex align-items-center gap-2 text-decoration-none">
+            <img th:src="@{/images/logo/images-removebg-preview.png}"
+                 onerror="this.onerror=null; this.src='/images/logo/logo.png';"
+                 alt="Logo" style="height: 36px; width: auto; object-fit: contain;">
+            <div class="sidebar-brand-info">
+                <h4>Quản trị hệ thống</h4>
+                <span>Cổng Trời Đông Giang</span>
+            </div>
+        </a>
     </div>
 
     <div class="sidebar-scrollable" style="flex: 1; overflow-y: auto; padding-right: 2px;">
@@ -27,19 +31,16 @@
         <div class="sidebar-section">
             <div class="sidebar-section-header">
                 <span>Khách sạn & Phòng nghỉ (TV3)</span>
-                <span class="badge bg-secondary bg-opacity-25 text-muted sidebar-tag">Chờ TV3</span>
+                <span class="badge bg-success bg-opacity-25 text-success sidebar-tag">Sẵn sàng</span>
             </div>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV3: Khách sạn & Phòng nghỉ', 'Quản lý hạng phòng', 'LOAI_PHONG, KHU_LUU_TRU')">
-                <span>Quản lý hạng phòng</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV3</span>
+            <a th:href="@{/admin/room-map}" class="sidebar-link">
+                <span>Sơ đồ phòng (Room Map)</span>
             </a>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV3: Khách sạn & Phòng nghỉ', 'Sơ đồ & trạng thái phòng', 'PHONG')">
-                <span>Sơ đồ & danh sách phòng</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV3</span>
+            <a th:href="@{/admin/rooms}" class="sidebar-link">
+                <span>Danh sách phòng vật lý</span>
             </a>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV3: Khách sạn & Phòng nghỉ', 'Lễ tân phân phòng', 'PHAN_PHONG, DAT_PHONG')">
-                <span>Lễ tân phân phòng</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV3</span>
+            <a th:href="@{/admin/room-types}" class="sidebar-link">
+                <span>Hạng phòng & Khu lưu trú</span>
             </a>
         </div>
 
@@ -87,21 +88,21 @@
     </div>
 
     <div class="sidebar-user-footer">
-        <a th:href="@{/tickets}" target="_blank" class="sidebar-link mb-2" style="font-size: 0.82rem; color: #34d399;">
-            <span>Xem website khách hàng</span>
-            <span style="font-size: 0.75rem;">&#8599;</span>
+        <a th:href="@{/admin/switch-to-customer}" class="sidebar-link mb-2" style="font-size: 0.85rem; color: #059669; font-weight: 600;" title="Đăng xuất phiên nhân viên và chuyển về Website Khách hàng">
+            <span>Về Website Khách hàng</span>
+            <span style="font-size: 0.85rem;">&#8599;</span>
         </a>
         <div class="sidebar-user-card">
             <div class="d-flex align-items-center gap-2">
-                <div style="width: 32px; height: 32px; border-radius: 50%; background: #064e3b; border: 1px solid #34d399; color: #34d399; font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">
                     AD
                 </div>
                 <div>
-                    <div class="text-white fw-bold" style="font-size: 0.82rem;" th:if="${currentUser != null}" th:text="${currentUser.hoTen}">Quản trị viên</div>
-                    <div style="font-size: 0.7rem; color: #34d399;">Trực tuyến</div>
+                    <div class="fw-bold" style="font-size: 0.85rem; color: #0f172a;" th:if="${currentUser != null}" th:text="${currentUser.hoTen}">Quản trị viên</div>
+                    <div style="font-size: 0.72rem; color: #059669; font-weight: 600;">Trực tuyến</div>
                 </div>
             </div>
-            <a th:href="@{/logout}" class="btn btn-sm btn-outline-danger" style="padding: 2px 8px; font-size: 0.75rem; text-decoration: none;">Thoát</a>
+            <button type="button" onclick="if(window.openAdminLogoutModal) window.openAdminLogoutModal();" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal" class="btn btn-sm btn-outline-danger" style="padding: 2px 8px; font-size: 0.75rem;">Thoát</button>
         </div>
     </div>
 

@@ -33,4 +33,7 @@ public interface BangGiaVeRepository extends JpaRepository<BangGiaVe, Long> {
     default List<BangGiaVe> findValidPrices(String maLoaiVe, LocalDate ngay) {
         return timBangGiaHopLe(maLoaiVe, ngay);
     }
+
+    @Query("SELECT b.maBangGia FROM BangGiaVe b")
+    List<String> findAllMaBangGia();
 }

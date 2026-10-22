@@ -33,5 +33,26 @@ public interface DatPhongRepository extends JpaRepository<DatPhong, Long> {
             @Param("ngayNhan") LocalDate ngayNhan,
             @Param("ngayTra") LocalDate ngayTra
     );
-}
 
+    @Query("""
+        SELECT dp FROM DatPhong dp
+        JOIN FETCH dp.loaiPhong lp
+        JOIN FETCH lp.khuLuuTru klt
+        JOIN FETCH dp.chiTietDon ctd
+        JOIN FETCH ctd.donDat dd
+        WHERE dp.trangThai IN ('CHO_XAC_NHAN', 'DA_XAC_NHAN')
+          AND dd.trangThaiDon <> 'DA_HUY'
+        ORDER BY dp.ngayNhanPhong ASC, dp.id ASC
+    """)
+    List<DatPhong> findAllPendingBookingsWithDetails();
+
+    @Query("""
+        SELECT dp FROM DatPhong dp
+        JOIN FETCH dp.loaiPhong lp
+        JOIN FETCH lp.khuLuuTru klt
+        JOIN FETCH dp.chiTietDon ctd
+        JOIN FETCH ctd.donDat dd
+        WHERE dp.maDatPhong = :maDatPhong
+    """)
+    Optional<DatPhong> findByMaDatPhongWithDetails(@Param("maDatPhong") String maDatPhong);
+}

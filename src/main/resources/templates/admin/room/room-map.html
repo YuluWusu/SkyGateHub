@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ phòng trực quan (Room Map) — SkyGateHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/modules/room-admin.css}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <!-- Header & Actions -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold text-white mb-1" style="letter-spacing: -0.5px;">Sơ đồ phòng trực quan (Room Map)</h3>
+                    <p class="text-muted mb-0 small">Quản lý sơ đồ trạng thái phòng thời gian thực, điều phối lễ tân và phân phòng lưu trú</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/admin/rooms}" class="btn btn-outline-success px-3 py-2 fw-semibold">
+                        <i class="bi bi-door-open me-1"></i> Danh sách phòng
+                    </a>
+                    <a th:href="@{/admin/room-types}" class="btn btn-outline-info px-3 py-2 fw-semibold">
+                        <i class="bi bi-building me-1"></i> Hạng phòng & Khu
+                    </a>
+                </div>
+            </div>
+
+            <!-- KPI Summary Cards -->
+            <div class="room-kpi-grid">
+                <div class="room-kpi-card kpi-total">
+                    <div class="room-kpi-icon"><i class="bi bi-houses"></i></div>
+                    <div>
+                        <div class="room-kpi-value" th:text="${summary.tongSoPhong}">30</div>
+                        <div class="room-kpi-label">Tổng số phòng</div>
+                    </div>
+                </div>
+                <div class="room-kpi-card kpi-available">
+                    <div class="room-kpi-icon"><i class="bi bi-check2-circle"></i></div>
+                    <div>
+                        <div class="room-kpi-value" style="color: #34d399;" th:text="${summary.soPhongTrong}">22</div>
+                        <div class="room-kpi-label">Phòng trống sẵn sàng</div>
+                    </div>
+                </div>
+                <div class="room-kpi-card kpi-assigned">
+                    <div class="room-kpi-icon"><i class="bi bi-clock-history"></i></div>
+                    <div>
+                        <div class="room-kpi-value" style="color: #fbbf24;" th:text="${summary.soPhongDaPhan}">4</div>
+                        <div class="room-kpi-label">Chờ khách đến nhận</div>
+                    </div>
+                </div>
+                <div class="room-kpi-card kpi-occupied">
+                    <div class="room-kpi-icon"><i class="bi bi-person-check-fill"></i></div>
+                    <div>
+                        <div class="room-kpi-value" style="color: #f87171;" th:text="${summary.soPhongDangO}">2</div>
+                        <div class="room-kpi-label">Khách đang ở</div>
+                    </div>
+                </div>
+                <div class="room-kpi-card kpi-maintenance">
+                    <div class="room-kpi-icon"><i class="bi bi-tools"></i></div>
+                    <div>
+                        <div class="room-kpi-value" style="color: #cbd5e1;" th:text="${summary.soPhongBaoTri}">2</div>
+                        <div class="room-kpi-label">Đang bảo trì</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="room-filter-bar mb-4">
+                <form th:action="@{/admin/room-map}" method="get" class="row g-2 align-items-center">
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small mb-1 text-muted">Ngày xem sơ đồ:</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                            <input type="date" name="date" th:value="${targetDate}" class="form-control" onchange="this.form.submit()">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small mb-1 text-muted">Khu lưu trú:</label>
+                        <select name="maKhu" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Tất cả khu lưu trú --</option>
+                            <option th:each="khu : ${khuList}" th:value="${khu.maKhu}" th:text="${khu.tenKhu}" th:selected="${khu.maKhu == selectedMaKhu}"></option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small mb-1 text-muted">Hạng phòng:</label>
+                        <select name="maLoaiPhong" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Tất cả hạng phòng --</option>
+                            <option th:each="lp : ${loaiPhongList}" th:value="${lp.maLoaiPhong}" th:text="${lp.tenLoaiPhong} + (${lp.khuLuuTru != null} ? ' (' + ${lp.khuLuuTru.tenKhu} + ')' : '')" th:selected="${lp.maLoaiPhong == selectedMaLoaiPhong}"></option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <label class="form-label small mb-1 text-muted">Trạng thái:</label>
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="ALL" th:selected="${selectedStatus == null or selectedStatus == 'ALL'}">Tất cả</option>
+                            <option value="TRONG" th:selected="${selectedStatus == 'TRONG'}">Phòng trống</option>
+                            <option value="DA_PHAN_CHO_NHAN" th:selected="${selectedStatus == 'DA_PHAN_CHO_NHAN'}">Chờ nhận</option>
+                            <option value="DANG_O" th:selected="${selectedStatus == 'DANG_O'}">Đang ở</option>
+                            <option value="BAO_TRI" th:selected="${selectedStatus == 'BAO_TRI'}">Bảo trì</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-1 d-grid">
+                        <label class="form-label small mb-1 text-transparent d-none d-md-block">&nbsp;</label>
+                        <a th:href="@{/admin/room-map}" class="btn btn-outline-secondary" title="Đặt lại hôm nay">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Main Content Area: Room Map Grid + Pending Bookings Sidebar -->
+            <div class="row g-4">
+                <!-- Left: Room Grid Grouped By Khu -->
+                <div class="col-12 col-xl-9">
+                    <!-- Empty State Placeholder -->
+                    <div th:if="${cellsByKhu == null or cellsByKhu.isEmpty()}" class="card p-5 text-center text-muted" style="border: 1px dashed var(--border-glass); background: rgba(12, 34, 25, 0.6); border-radius: 16px;">
+                        <i class="bi bi-grid-3x3-gap fs-1 mb-2 text-warning opacity-75"></i>
+                        <h5 class="text-white">Không có phòng vật lý nào hiển thị</h5>
+                        <p class="small mb-3">Hiện chưa có dữ liệu phòng phù hợp với bộ lọc ngày <strong class="text-gold" th:text="${targetDateFormatted}"></strong> hoặc phân khu đã chọn.</p>
+                        <div>
+                            <a th:href="@{/admin/room-map}" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Xem tất cả phòng hôm nay
+                            </a>
+                        </div>
+                    </div>
+
+                    <div th:each="entry : ${cellsByKhu.entrySet()}" class="mb-4">
+                        <div class="khu-section-title">
+                            <i class="bi bi-geo-alt-fill text-warning"></i>
+                            <span th:text="${entry.key}">FIVITEL Sông Ngân</span>
+                            <span class="badge bg-secondary ms-2 small" th:text="${entry.value.size()} + ' phòng'">6 phòng</span>
+                        </div>
+
+                        <div class="room-grid">
+                            <div th:each="c : ${entry.value}"
+                                 class="room-card"
+                                 th:classappend="${c.isTrong() ? 'state-available' : (c.isDaPhan() ? 'state-assigned' : (c.isDangO() ? 'state-occupied' : 'state-maintenance'))}">
+
+                                <!-- Header -->
+                                <div>
+                                    <div class="room-card-header">
+                                        <div>
+                                            <div class="room-number" th:text="${c.soPhong}">Room-101</div>
+                                            <div class="room-type-subtitle">
+                                                <span th:text="${c.tenLoaiPhong}">Superior DBL</span>
+                                                <small class="text-muted" th:if="${c.dienTich != null}" th:text="' • ' + ${c.dienTich} + 'm²'"></small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge" th:classappend="${c.cssBadge}" th:text="${c.badgeText}">Sẵn sàng</span>
+                                            <div class="room-price-tag mt-1" th:if="${c.giaCoBan != null}" th:text="${#numbers.formatDecimal(c.giaCoBan, 0, 'COMMA', 0, 'POINT')} + ' đ'">900,000 đ</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Body: Guest & Booking details if assigned / occupied -->
+                                    <div class="room-card-body" th:if="${!c.isTrong() and !c.isBaoTri()}">
+                                        <div class="guest-info-row">
+                                            <span class="guest-info-label"><i class="bi bi-person me-1"></i>Khách:</span>
+                                            <strong class="text-white text-truncate" th:text="${c.hoTenKhach}">Nguyễn Văn A</strong>
+                                        </div>
+                                        <div class="guest-info-row" th:if="${c.sdtKhach != null}">
+                                            <span class="guest-info-label"><i class="bi bi-telephone me-1"></i>SĐT:</span>
+                                            <span class="text-muted" th:text="${c.sdtKhach}">0905123456</span>
+                                        </div>
+                                        <div class="guest-info-row">
+                                            <span class="guest-info-label"><i class="bi bi-ticket-perforated me-1"></i>Đơn:</span>
+                                            <span class="text-warning fw-semibold" th:text="${c.maDonHang != null ? c.maDonHang : c.maDatPhong}">DP002</span>
+                                        </div>
+                                        <div class="guest-info-row" th:if="${c.ngayNhan != null and c.ngayTra != null}">
+                                            <span class="guest-info-label"><i class="bi bi-calendar-range me-1"></i>Lịch:</span>
+                                            <span class="text-light" style="font-size: 0.76rem;" th:text="${#temporals.format(c.ngayNhan, 'dd/MM')} + ' - ' + ${#temporals.format(c.ngayTra, 'dd/MM/yyyy')}">10/05 - 12/05/2026</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Body placeholder for Available rooms -->
+                                    <div class="room-card-body d-flex flex-column justify-content-center text-center text-muted" th:if="${c.isTrong()}">
+                                        <div style="font-size: 0.8rem; color: #34d399;"><i class="bi bi-shield-check me-1"></i>Phòng sạch • Sẵn sàng đón khách</div>
+                                        <small class="text-muted" th:text="'Sức chứa: ' + ${c.sucChuaNguoiLon} + ' NL' + (${c.sucChuaTreEm != null and c.sucChuaTreEm > 0} ? ' + ' + ${c.sucChuaTreEm} + ' TE' : '')"></small>
+                                    </div>
+
+                                    <!-- Body placeholder for Maintenance rooms -->
+                                    <div class="room-card-body d-flex flex-column justify-content-center text-center text-muted" th:if="${c.isBaoTri()}">
+                                        <div style="font-size: 0.8rem; color: #cbd5e1;"><i class="bi bi-cone-striped text-warning me-1"></i>Đang trong chế độ bảo dưỡng</div>
+                                        <small class="text-muted">Tạm ngưng đón khách</small>
+                                    </div>
+                                </div>
+
+                                <!-- Actions Footer -->
+                                <div class="room-card-actions pt-2 border-top border-secondary border-opacity-25">
+                                    <!-- Case 1: Chờ nhận phòng -> Cho phép Check-in hoặc Hủy phân -->
+                                    <th:block th:if="${c.isDaPhan()}">
+                                        <form th:action="@{/admin/room-map/check-in}" method="post" class="d-inline" onsubmit="return confirm('Xác nhận khách đã đến và thực hiện Check-in nhận phòng ' + /*[[${c.soPhong}]]*/ 'này?');">
+                                            <input type="hidden" name="maDatPhong" th:value="${c.maDatPhong}">
+                                            <input type="hidden" name="returnDate" th:value="${targetDate}">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="bi bi-box-arrow-in-right me-1"></i>Check-in
+                                            </button>
+                                        </form>
+
+                                        <form th:action="@{/admin/room-map/unassign}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn hủy phân phòng ' + /*[[${c.soPhong}]]*/ 'này?');">
+                                            <input type="hidden" name="maPhanPhong" th:value="${c.maPhanPhong}">
+                                            <input type="hidden" name="returnDate" th:value="${targetDate}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy gán phòng">
+                                                <i class="bi bi-x-circle"></i> Hủy
+                                            </button>
+                                        </form>
+                                    </th:block>
+
+                                    <!-- Case 2: Khách đang ở -> Cho phép Check-out -->
+                                    <th:block th:if="${c.isDangO()}">
+                                        <form th:action="@{/admin/room-map/check-out}" method="post" class="d-inline" onsubmit="return confirm('Xác nhận khách trả phòng (Check-out) và hoàn tất lưu trú phòng ' + /*[[${c.soPhong}]]*/ 'này?');">
+                                            <input type="hidden" name="maDatPhong" th:value="${c.maDatPhong}">
+                                            <input type="hidden" name="returnDate" th:value="${targetDate}">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                <i class="bi bi-box-arrow-right me-1"></i>Trả phòng
+                                            </button>
+                                        </form>
+                                    </th:block>
+
+                                    <!-- Case 3: Phòng trống -> Có thể mở modal phân nhanh hoặc chuyển bảo trì -->
+                                    <th:block th:if="${c.isTrong()}">
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                                th:onclick="'openQuickAssignModal(\'' + ${c.maPhong} + '\', \'' + ${c.soPhong} + '\', \'' + ${c.maLoaiPhong} + '\', \'' + ${c.tenLoaiPhong} + '\')'">
+                                            <i class="bi bi-pin-angle me-1"></i>Gán đơn
+                                        </button>
+                                    </th:block>
+
+                                    <!-- Case 4: Đổi trạng thái bảo trì nếu phòng không có khách -->
+                                    <th:block th:if="${c.isTrong() or c.isBaoTri()}">
+                                        <form th:action="@{'/admin/rooms/toggle-maintenance/' + ${c.maPhong}}" method="post" class="d-inline"
+                                              th:onsubmit="'return confirm(\'Xác nhận ' + (${c.isBaoTri()} ? 'mở lại phòng sẵn sàng' : 'chuyển sang bảo trì') + ' phòng này?\');'">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" th:title="${c.isBaoTri() ? 'Mở lại sẵn sàng' : 'Bật bảo trì'}">
+                                                <i class="bi" th:classappend="${c.isBaoTri() ? 'bi-check-lg' : 'bi-tools'}"></i>
+                                            </button>
+                                        </form>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${cells.isEmpty()}" class="empty-state py-5 card">
+                        <div class="empty-state-icon text-muted"><i class="bi bi-search"></i></div>
+                        <div class="empty-state-title">Không tìm thấy phòng nào</div>
+                        <div class="empty-state-desc">Không có phòng vật lý nào khớp với tiêu chí lọc của bạn trong ngày được chọn.</div>
+                    </div>
+                </div>
+
+                <!-- Right: Pending Bookings Queue (Hàng đợi phân phòng) -->
+                <div class="col-12 col-xl-3">
+                    <div class="pending-bookings-box sticky-top" style="top: 85px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-white mb-0" style="font-size: 1rem;">
+                                <i class="bi bi-inbox-fill text-warning me-1"></i> Đơn Chờ Phân Phòng
+                            </h5>
+                            <span class="badge bg-warning text-dark" th:text="${pendingBookings.size()}">0</span>
+                        </div>
+                        <p class="text-muted small mb-3">Danh sách khách đã đặt phòng cần lễ tân gán phòng vật lý trước giờ check-in.</p>
+
+                        <div class="pending-list-scrollable" style="max-height: 72vh; overflow-y: auto; padding-right: 4px;">
+                            <div th:each="b : ${pendingBookings}" class="pending-card">
+                                <div class="pending-header">
+                                    <div class="pending-code" th:text="${b.maDonHang != null ? b.maDonHang : b.maDatPhong}">CTDG-260522-001</div>
+                                    <span th:if="${b.isDaPhanDu()}" class="badge bg-success small">Đủ phòng</span>
+                                    <span th:unless="${b.isDaPhanDu()}" class="badge bg-warning text-dark small">Thiếu phòng</span>
+                                </div>
+
+                                <div class="pending-guest" th:text="${b.hoTenKhach}">Nguyễn Văn B</div>
+                                <div class="pending-meta">
+                                    <div><i class="bi bi-door-closed me-1"></i><strong class="text-light" th:text="${b.tenLoaiPhong}">Deluxe DBL</strong></div>
+                                    <div><i class="bi bi-building me-1"></i><span th:text="${b.tenKhu}">FIVITEL Sông Ngân</span></div>
+                                    <div><i class="bi bi-calendar-event me-1"></i><span th:text="${#temporals.format(b.ngayNhanPhong, 'dd/MM')} + ' - ' + ${#temporals.format(b.ngayTraPhong, 'dd/MM/yyyy')}">22/05 - 24/05/2026</span></div>
+                                </div>
+
+                                <div class="pending-progress">
+                                    <span class="text-muted">Tiến độ phân phòng:</span>
+                                    <span th:text="${b.soLuongDaPhan} + '/' + ${b.soLuongPhong} + ' phòng'"
+                                          th:classappend="${b.isDaPhanDu() ? 'text-success' : 'text-warning'}">0/1 phòng</span>
+                                </div>
+
+                                <div th:if="${!b.danhSachPhongDaPhan.isEmpty()}" class="mb-2">
+                                    <span class="badge bg-secondary me-1 mb-1" th:each="rName : ${b.danhSachPhongDaPhan}" th:text="${rName}">Room-101</span>
+                                </div>
+
+                                <div class="d-grid mt-2" th:if="${!b.isDaPhanDu()}">
+                                    <button type="button" class="btn btn-sm btn-gold fw-bold py-1"
+                                            th:onclick="'openAssignBookingModal(\'' + ${b.maDatPhong} + '\', \'' + ${b.hoTenKhach} + '\', \'' + ${b.tenLoaiPhong} + '\', \'' + ${b.soLuongConThieu} + '\')'">
+                                        <i class="bi bi-plus-circle me-1"></i>Phân phòng ngay
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div th:if="${pendingBookings.isEmpty()}" class="text-center py-4 text-muted small">
+                                <i class="bi bi-check2-all text-success d-block fs-3 mb-1"></i>
+                                Tất cả các đơn đặt phòng đã được phân bổ phòng đầy đủ.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL PHÂN PHÒNG (Room Assignment Modal) -->
+            <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="background: #0c241b; border: 1px solid rgba(52, 211, 153, 0.4); color: #fff;">
+                        <form th:action="@{/admin/room-map/assign}" method="post">
+                            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                                <h5 class="modal-title fw-bold text-white" id="assignModalLabel">
+                                    <i class="bi bi-key-fill text-warning me-2"></i>Phân Phòng Vật Lý Cho Đơn Đặt
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <input type="hidden" id="modalMaDatPhong" name="maDatPhong">
+                                <input type="hidden" name="returnDate" th:value="${targetDate}">
+
+                                <div class="p-3 mb-3 rounded-3" style="background: rgba(0,0,0,0.35); border: 1px solid var(--border-glass);">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted small">Mã đặt phòng:</span>
+                                        <strong class="text-warning" id="modalDisplayMaDatPhong">DP000</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted small">Khách hàng:</span>
+                                        <strong class="text-white" id="modalDisplayTenKhach">...</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted small">Loại phòng:</span>
+                                        <span class="text-light" id="modalDisplayLoaiPhong">...</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted small">Số phòng cần phân:</span>
+                                        <span class="badge bg-warning text-dark" id="modalDisplayConThieu">1</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="selectAvailableRoom" class="form-label fw-semibold">Chọn phòng vật lý trống khả dụng (*):</label>
+                                    <select class="form-select" id="selectAvailableRoom" name="maPhong" required>
+                                        <option value="">-- Đang tải danh sách phòng khả dụng... --</option>
+                                    </select>
+                                    <small class="text-muted d-block mt-1">Chỉ những phòng đúng hạng phòng và không bị trùng lịch mới được hiển thị.</small>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top border-secondary border-opacity-25">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-gold fw-bold px-4">
+                                    <i class="bi bi-check-lg me-1"></i>Xác Nhận Phân Phòng
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+
+    <script th:inline="javascript">
+        const assignModalEl = document.getElementById('assignModal');
+        let assignModalInstance = null;
+        if (assignModalEl) {
+            assignModalInstance = new bootstrap.Modal(assignModalEl);
+        }
+
+        function openAssignBookingModal(maDatPhong, tenKhach, tenLoaiPhong, soLuongConThieu) {
+            document.getElementById('modalMaDatPhong').value = maDatPhong;
+            document.getElementById('modalDisplayMaDatPhong').textContent = maDatPhong;
+            document.getElementById('modalDisplayTenKhach').textContent = tenKhach;
+            document.getElementById('modalDisplayLoaiPhong').textContent = tenLoaiPhong;
+            document.getElementById('modalDisplayConThieu').textContent = soLuongConThieu + ' phòng';
+
+            const select = document.getElementById('selectAvailableRoom');
+            select.innerHTML = '<option value="">-- Đang kiểm tra phòng trống... --</option>';
+
+            fetch(/*[[@{/admin/room-map/available-rooms}]]*/ '/admin/room-map/available-rooms' + '?maDatPhong=' + encodeURIComponent(maDatPhong))
+                .then(res => res.json())
+                .then(data => {
+                    select.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        select.innerHTML = '<option value="">⚠️ Không có phòng vật lý nào còn trống trong khoảng ngày này!</option>';
+                        return;
+                    }
+                    select.innerHTML = '<option value="">-- Chọn 1 phòng vật lý --</option>';
+                    data.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.maPhong;
+                        opt.textContent = p.soPhong + ' (' + p.tenLoaiPhong + ' - ' + (p.giaCoBan ? Number(p.giaCoBan).toLocaleString('vi-VN') + ' đ' : '') + ')';
+                        select.appendChild(opt);
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    select.innerHTML = '<option value="">Lỗi tải dữ liệu phòng trống</option>';
+                });
+
+            if (assignModalInstance) {
+                assignModalInstance.show();
+            }
+        }
+
+        function openQuickAssignModal(maPhong, soPhong, maLoaiPhong, tenLoaiPhong) {
+            // Tìm trong danh sách pending bookings xem đơn nào cần hạng phòng này
+            const pendingList = /*[[${pendingBookings}]]*/ [];
+            const matching = pendingList.filter(b => b.maLoaiPhong === maLoaiPhong && b.soLuongConThieu > 0);
+
+            if (!matching || matching.length === 0) {
+                alert('Hiện tại không có đơn đặt phòng nào đang chờ phân cho hạng phòng ' + tenLoaiPhong + '!');
+                return;
+            }
+
+            const b = matching[0];
+            openAssignBookingModal(b.maDatPhong, b.hoTenKhach, b.tenLoaiPhong, b.soLuongConThieu);
+            setTimeout(() => {
+                const select = document.getElementById('selectAvailableRoom');
+                if (select) {
+                    select.value = maPhong;
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>

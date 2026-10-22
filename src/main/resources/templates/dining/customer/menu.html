@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ẩm thực & Nhà hàng — Cổng Trời Đông Giang</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+    <style>
+        .dining-hero {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.8) 100%),
+                        url('/images/dining/buffet.jpg') center/cover no-repeat;
+            padding: 5rem 1rem 3.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        .restaurant-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            border-color: #10b981;
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.12);
+        }
+        .menu-item-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        .menu-item-pill:hover {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="flex-grow-1 pb-5">
+        <section class="dining-hero">
+            <div class="container">
+                <span class="badge bg-gold text-dark px-3 py-2 fw-bold text-uppercase mb-3" style="letter-spacing: 1px;">
+                    EcoGate Gastronomy
+                </span>
+                <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -1px; text-shadow: 0 4px 15px rgba(0,0,0,0.6);">
+                    Tinh Hoa Ẩm Thực Đại Ngàn
+                </h1>
+                <p class="lead text-light mx-auto mb-4" style="max-width: 750px;">
+                    Thưởng thức những món ngon mang đậm phong vị núi rừng Tây xứ Quảng và văn hóa ẩm thực truyền thống đồng bào Cơ Tu giữa không gian thoáng đạt bên dòng sông Ngân.
+                </p>
+            </div>
+        </section>
+
+        <div class="container my-5">
+            <!-- 3 Nhà hàng chính -->
+            <div class="row g-4 mb-5">
+                <div class="col-12 col-md-4">
+                    <div class="restaurant-card h-100 d-flex flex-column">
+                        <img th:src="@{/images/dining/buffet.jpg}"
+                             alt="Nhà hàng Sông Ngân" style="height: 220px; object-fit: cover; width: 100%;">
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <span class="badge bg-gold text-dark mb-2 align-self-start font-monospace">Sức chứa: 500 khách</span>
+                            <h4 class="fw-bold text-dark mb-2">Nhà Hàng Sông Ngân</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Tọa lạc sát bờ sông Ngân thơ mộng, phục vụ các món tiệc Alacarte Á - Âu, buffet sáng tiêu chuẩn 5 sao và tổ chức tiệc gala ngoài trời.
+                            </p>
+                            <div class="pt-3 border-top border-light d-flex justify-content-between align-items-center">
+                                <span class="text-success small"><i class="bi bi-clock me-1"></i>06:30 - 22:00</span>
+                                <span class="text-gold fw-bold">Buffet & Alacarte</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="restaurant-card h-100 d-flex flex-column">
+                        <img th:src="@{/images/dining/dac-san-cotu.jpg}"
+                             alt="Nhà hàng Làng Moong" style="height: 220px; object-fit: cover; width: 100%;">
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <span class="badge bg-success mb-2 align-self-start font-monospace">Ẩm thực Cơ Tu</span>
+                            <h4 class="fw-bold text-dark mb-2">Nhà Hàng Làng Moong</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Không gian nhà sàn truyền thống với các món đặc sản trứ danh: Cơm lam, Gà nướng mật ong rừng, Cá niên suối nướng muối ớt, Heo đồng bào xông khói.
+                            </p>
+                            <div class="pt-3 border-top border-light d-flex justify-content-between align-items-center">
+                                <span class="text-success small"><i class="bi bi-clock me-1"></i>10:00 - 21:30</span>
+                                <span class="text-gold fw-bold">Đặc sản rừng</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="restaurant-card h-100 d-flex flex-column">
+                        <img th:src="@{/images/dining/ngan-ha.jpg}"
+                             alt="Lounge Cafe Mây Ngàn" style="height: 220px; object-fit: cover; width: 100%;">
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <span class="badge bg-info text-dark mb-2 align-self-start font-monospace">Cafe & Săn mây</span>
+                            <h4 class="fw-bold text-dark mb-2">Lounge Cafe Mây Ngàn</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Tầm nhìn panorama 360 độ ngắm toàn cảnh cầu kính Ngọc Rồng và thung lũng mây. Phục vụ cà phê Tây Nguyên, trà thảo mộc Ba Kích và nước ép tươi.
+                            </p>
+                            <div class="pt-3 border-top border-light d-flex justify-content-between align-items-center">
+                                <span class="text-success small"><i class="bi bi-clock me-1"></i>06:00 - 22:30</span>
+                                <span class="text-gold fw-bold">View săn mây</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thực đơn đặc sắc -->
+            <div class="card p-4 p-md-5 mb-5" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-dark mb-2">Món Ngon Đặc Sắc Không Thể Bỏ Lỡ</h3>
+                    <p class="text-muted small">Nguyên liệu tươi sạch từ núi rừng tự nhiên được chế biến bởi các nghệ nhân ẩm thực bản địa</p>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="menu-item-pill d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Gà Đồi Nướng Ống Tre & Cơm Lam Ba Kích</h6>
+                                <small class="text-muted">Gà thả đồi tẩm ướp mắc khén, mật ong rừng nướng than củi thơm lừng</small>
+                            </div>
+                            <span class="fw-bold text-success fs-6 ms-3 text-nowrap">350,000 đ</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="menu-item-pill d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Cá Niên Suối Nướng Mộc Muối Ớt Rừng</h6>
+                                <small class="text-muted">Cá niên tươi đánh bắt tại dòng suối mát Cổng Trời, thịt béo ngậy</small>
+                            </div>
+                            <span class="fw-bold text-success fs-6 ms-3 text-nowrap">220,000 đ</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="menu-item-pill d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Thịt Heo Mọi Bản Nướng Lá Móc Mật</h6>
+                                <small class="text-muted">Heo mọi thả rông đồng bào Cơ Tu, bì giòn thịt mềm ngọt tự nhiên</small>
+                            </div>
+                            <span class="fw-bold text-success fs-6 ms-3 text-nowrap">280,000 đ</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="menu-item-pill d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Lẩu Gà Lá Giang Rừng & Rau Rừng Thập Cẩm</h6>
+                                <small class="text-muted">Nước dùng chua thanh đậm vị ăn kèm rau dớn, rau tàu bay, đọt mây rừng</small>
+                            </div>
+                            <span class="fw-bold text-success fs-6 ms-3 text-nowrap">420,000 đ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4 pt-3 border-top border-light">
+                    <span class="text-muted small me-3">Quý khách có nhu cầu đặt tiệc theo đoàn hoặc đặt bàn trước:</span>
+                    <a href="tel:1900866644" class="btn btn-gold btn-sm fw-bold px-3 py-2">
+                        <i class="bi bi-telephone-fill me-1"></i>Hotline Đặt Bàn: 1900 86 66 44
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

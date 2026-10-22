@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điểm tham quan danh thắng nổi bật — KDL Cổng Trời Đông Giang</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+    <style>
+        .attract-hero {
+            position: relative;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.8) 100%),
+                        url('/images/banners/hero-banner.jpg') center/cover no-repeat;
+            padding: 5.5rem 1rem 4.5rem;
+            text-align: center;
+            color: #ffffff;
+        }
+        .attract-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+        .attract-card:hover {
+            transform: translateY(-5px);
+            border-color: #a7f3d0;
+            box-shadow: 0 12px 30px rgba(5, 150, 105, 0.12);
+        }
+        .attract-img-box {
+            position: relative;
+            height: 240px;
+            overflow: hidden;
+        }
+        .attract-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .attract-card:hover .attract-img-box img {
+            transform: scale(1.08);
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100" style="background-color: #f8fafc;">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="flex-grow-1 pb-5">
+        <!-- Hero Header -->
+        <section class="attract-hero">
+            <div class="container">
+                <h1 class="display-5 fw-bold mb-3 text-white" style="letter-spacing: -0.5px; text-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                    Các Điểm Tham Quan Danh Thắng Nổi Bật
+                </h1>
+                <p class="lead mx-auto mb-0" style="max-width: 800px; color: #e2e8f0; font-size: 1.15rem;">
+                    Khám phá kiệt tác thiên nhiên với cầu kính đi bộ trên mây ngàn, hệ thống 25 thác nước tự nhiên, hang động thạch nhũ triệu năm và nét đẹp văn hóa độc bản Cơ Tu.
+                </p>
+            </div>
+        </section>
+
+        <div class="container my-5">
+            <div class="row g-4" id="attractionsGrid">
+                <!-- 1. Cầu Kính Ngọc Rồng -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="attract-card h-100">
+                        <div class="attract-img-box">
+                            <img th:src="@{/images/attractions/cau-kinh.jpg}"
+                                 onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                                 alt="Cầu Kính Ngọc Rồng">
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h4 class="fw-bold mb-2 fs-5" style="color: #0f172a;">Cầu Kính Ngọc Rồng</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Tọa lạc tại độ cao 800m so với mực nước biển, tổ hợp công trình hành lang hình Rồng và Cầu kính Ngọc Rồng là địa điểm check-in săn mây ngoạn mục giữa đại ngàn.
+                            </p>
+                            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="text-success small fw-semibold"><i class="bi bi-clock me-1"></i>07:30 - 17:00</span>
+                                <button type="button" class="btn btn-outline-success btn-sm fw-semibold"
+                                        onclick="openDetailModal('Cầu Kính Ngọc Rồng', 'Tọa lạc tại độ cao 800m so với mực nước biển, tổ hợp công trình hành lang hình Rồng - Cầu kính Ngọc Rồng là địa điểm check-in săn mây và ngắm hoàng hôn buông xuống thung lũng đẹp bậc nhất Tây xứ Quảng. Mặt kính chịu lực pha lê siêu trong suốt đạt chuẩn an toàn quốc tế.', '/images/attractions/cau-kinh.jpg', 'Đi bộ, Cáp treo Ga 2', 'Bọc giày chuyên dụng được cung cấp miễn phí tại cửa soát vé.')">
+                                    Chi tiết <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Hệ Thống Cáp Treo -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="attract-card h-100">
+                        <div class="attract-img-box">
+                            <img th:src="@{/images/attractions/cap-treo.jpg}"
+                                 onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                                 alt="Cáp Treo Cổng Trời Đông Giang">
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h4 class="fw-bold mb-2 fs-5" style="color: #0f172a;">Cáp Treo Cổng Trời Đông Giang</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Từ độ cao 400 - 800m so với mực nước biển, du khách đi cáp treo có dịp chiêm ngưỡng toàn cảnh rừng núi nguyên sinh bạt ngàn với góc nhìn toàn cảnh thung lũng sông Ngân.
+                            </p>
+                            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="text-success small fw-semibold"><i class="bi bi-clock me-1"></i>08:00 - 17:30</span>
+                                <button type="button" class="btn btn-outline-success btn-sm fw-semibold"
+                                        onclick="openDetailModal('Cáp Treo Cổng Trời Đông Giang', 'Tuyến cáp treo hiện đại đưa du khách lướt êm qua tán rừng nguyên sinh xanh thẳm, vượt độ cao từ 400m lên 800m so với mực nước biển. Cabin panorama 360 độ giúp thu trọn vẻ đẹp hoang sơ của núi rừng Tây Quảng Nam.', '/images/attractions/cap-treo.jpg', 'Ga Cáp Treo 1 & 2', 'Trẻ em dưới 1m đi cùng người lớn được miễn phí vé cáp treo.')">
+                                    Chi tiết <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Thác Tiên & Hệ Thống 25 Thác -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="attract-card h-100">
+                        <div class="attract-img-box">
+                            <img th:src="@{/images/attractions/thac-tien.jpg}"
+                                 onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                                 alt="Thác Tiên Đông Giang">
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h4 class="fw-bold mb-2 fs-5" style="color: #0f172a;">Hệ Thống Thác Nước Tự Nhiên</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Bắt nguồn từ dãy đại ngàn Trường Sơn, hệ thống thác nước được hình thành tự nhiên gồm hơn 25 ngọn thác lớn nhỏ như Thác Tiên, Thác Trứng Rồng với làn nước trong vắt mát lạnh.
+                            </p>
+                            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="text-success small fw-semibold"><i class="bi bi-clock me-1"></i>07:00 - 17:00</span>
+                                <button type="button" class="btn btn-outline-success btn-sm fw-semibold"
+                                        onclick="openDetailModal('Hệ Thống Thác Nước Tự Nhiên', 'Bắt nguồn từ dãy đại ngàn Trường Sơn, hệ thống gồm hơn 25 thác nước tự nhiên kỳ vĩ quanh năm tuôn chảy. Nước suối trong vắt như ngọc bích, mát lành thanh khiết là nơi lý tưởng để ngâm mình thư giãn phục hồi sức khỏe.', '/images/attractions/thac-tien.jpg', 'Xe điện nội khu Trạm 3', 'Mang theo trang phục bơi nếu muốn trải nghiệm tắm suối thiên nhiên.')">
+                                    Chi tiết <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Động Tiên Cung -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="attract-card h-100">
+                        <div class="attract-img-box">
+                            <img th:src="@{/images/attractions/dong-tien-cung.jpg}"
+                                 onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                                 alt="Động Tiên Cung">
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h4 class="fw-bold mb-2 fs-5" style="color: #0f172a;">Hệ Thống Hang Động & Động Tiên Cung</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Quần thể hang động đá vôi tự nhiên như Động Tiên Cung, Hang Ngọc Đế, Hang Cổ Cò với hàng vạn khối thạch nhũ kiến tạo qua hàng triệu năm lộng lẫy và huyền bí.
+                            </p>
+                            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="text-success small fw-semibold"><i class="bi bi-clock me-1"></i>08:00 - 16:30</span>
+                                <button type="button" class="btn btn-outline-success btn-sm fw-semibold"
+                                        onclick="openDetailModal('Hệ Thống Hang Động & Động Tiên Cung', 'Hệ thống hang động tự nhiên với các măng đá, cột đá thạch nhũ lấp lánh như cung điện dưới lòng núi. Nhiệt độ trong hang luôn duy trì mát lạnh ở mức 20-22 độ C quanh năm.', '/images/attractions/dong-tien-cung.jpg', 'Cung đường đi bộ ven vách núi', 'Nên đi giày thể thao chống trượt vì lối đi trong hang có độ ẩm tự nhiên.')">
+                                    Chi tiết <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Làng Văn Hóa Cơ Tu -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="attract-card h-100">
+                        <div class="attract-img-box">
+                            <img th:src="@{/images/attractions/lang-co-tu.jpg}"
+                                 onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                                 alt="Làng Văn Hóa Cơ Tu">
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h4 class="fw-bold mb-2 fs-5" style="color: #0f172a;">Làng Văn Hóa Cơ Tu</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Tái hiện trọn vẹn không gian sinh hoạt của đồng bào Cơ Tu với Nhà Gươl, nhà Moong, nghề dệt thổ cẩm, điêu khắc và show diễn văn hóa nghệ thuật Vũ Điệu Đại Ngàn.
+                            </p>
+                            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="text-success small fw-semibold"><i class="bi bi-clock me-1"></i>08:00 - 20:00</span>
+                                <button type="button" class="btn btn-outline-success btn-sm fw-semibold"
+                                        onclick="openDetailModal('Làng Văn Hóa Cơ Tu', 'Làng văn hóa Cơ Tu tái hiện trọn vẹn cuộc sống, kiến trúc nhà Gươl, phong tục tập quán và nghề dệt thổ cẩm cổ truyền. Du khách còn được thưởng thức các tiết mục dân ca, dân vũ và hòa nhịp điệu múa Tung tung Da dá say đắm lòng người.', '/images/attractions/lang-co-tu.jpg', 'Xe điện Trạm Làng Moong', 'Mỗi ngày đều có nghệ nhân dệt thổ cẩm và biểu diễn cồng chiêng đón khách.')">
+                                    Chi tiết <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Đền Bà Lâm Cung Thánh Mẫu -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="attract-card h-100">
+                        <div class="attract-img-box">
+                            <img th:src="@{/images/attractions/den-ba.jpg}"
+                                 onerror="this.onerror=null; this.src='/images/banners/hero-banner.jpg';"
+                                 alt="Đền Bà Lâm Cung Thánh Mẫu">
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h4 class="fw-bold mb-2 fs-5" style="color: #0f172a;">Đền Bà Lâm Cung Thánh Mẫu</h4>
+                            <p class="text-muted small flex-grow-1">
+                                Điểm đến tâm linh thanh tịnh giữa đại ngàn Trường Sơn. Nơi du khách thập phương gửi gắm ước nguyện bình an, tài lộc và tìm về sự bình yên trong tâm hồn.
+                            </p>
+                            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="text-success small fw-semibold"><i class="bi bi-clock me-1"></i>06:00 - 18:00</span>
+                                <button type="button" class="btn btn-outline-success btn-sm fw-semibold"
+                                        onclick="openDetailModal('Đền Bà Lâm Cung Thánh Mẫu', 'Chốn thờ tự linh thiêng ẩn mình dưới tán lim xanh cổ thụ. Nơi gửi gắm những lời nguyện cầu an lành, mưa thuận gió hòa và hanh thông may mắn cho gia đình.', '/images/attractions/den-ba.jpg', 'Khu tâm linh Đền Mẫu', 'Trang phục trang nghiêm, lịch sự khi vào viếng đền.')">
+                                    Chi tiết <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Chi Tiết Điểm Tham Quan (Light Theme Sáng Sủa) -->
+    <div class="modal fade" id="attractionDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold" id="modalTitle" style="color: #0f172a;">Tên Thắng Cảnh</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <img id="modalImg" src="" alt="Thắng cảnh" class="img-fluid rounded-3 mb-3 w-100" style="max-height: 380px; object-fit: cover;">
+                    <p id="modalDesc" class="leading-relaxed mb-4" style="color: #475569; font-size: 1rem;"></p>
+                    <div class="row g-3 p-3 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <div class="col-md-6">
+                            <strong class="d-block small mb-1" style="color: #0f172a;"><i class="bi bi-geo-alt text-success me-1"></i>Phương tiện tiếp cận:</strong>
+                            <span id="modalAccess" class="small text-muted"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="d-block small mb-1" style="color: #0f172a;"><i class="bi bi-info-circle text-warning me-1"></i>Lưu ý du khách:</strong>
+                            <span id="modalNote" class="small text-muted"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <a th:href="@{/dat-dich-vu}" class="btn btn-gold fw-bold">
+                        <i class="bi bi-ticket-perforated me-1"></i>Đặt Vé Khám Phá Ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openDetailModal(title, desc, imgSrc, access, note) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalDesc').textContent = desc;
+            document.getElementById('modalImg').src = imgSrc;
+            document.getElementById('modalAccess').textContent = access;
+            document.getElementById('modalNote').textContent = note;
+            const modal = new bootstrap.Modal(document.getElementById('attractionDetailModal'));
+            modal.show();
+        }
+    </script>
+</body>
+</html>

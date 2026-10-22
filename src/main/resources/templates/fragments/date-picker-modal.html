@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ========================================================================== -->
+<!-- BỘ CHỌN NGÀY THAM QUAN / SỬ DỤNG CHUẨN THIẾT KẾ CỔNG TRỜI ĐÔNG GIANG       -->
+<!-- Tông màu: Nền xanh rừng đại ngàn (#035235), Header đỏ (#dc2626),           -->
+<!-- Ô chọn: Nền xanh viền vàng gold (#ca8a04), Nút xác nhận đỏ bo tròn        -->
+<!-- ========================================================================== -->
+<div th:fragment="datePickerModal" class="modal fade" id="skygateDatePickerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+        <div class="modal-content border-0 shadow-lg" style="background: #035235 !important; border-radius: 24px; padding: 22px 18px 26px; color: #ffffff;">
+            
+            <!-- Header Tiêu Đề Modal -->
+            <div class="text-center mb-3">
+                <h4 style="color: #ffffff !important; font-weight: 800; font-size: 1.35rem; letter-spacing: 0.5px; margin: 0; text-transform: uppercase;">
+                    NGÀY SỬ DỤNG
+                </h4>
+            </div>
+
+            <!-- Calendar Box Bên Trong -->
+            <div style="background: #e2e8f0; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);">
+                
+                <!-- Thanh điều hướng tháng đỏ -->
+                <div style="background: #dc2626; color: #ffffff; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" class="btn btn-link text-white text-decoration-none p-0 fs-5 fw-bold" onclick="window.SkygatePicker.prevMonth()" title="Tháng trước">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span id="skygatePickerMonthYear" style="font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px; color: #ffffff !important;">
+                        Tháng 10  2026
+                    </span>
+                    <button type="button" class="btn btn-link text-white text-decoration-none p-0 fs-5 fw-bold" onclick="window.SkygatePicker.nextMonth()" title="Tháng sau">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Thứ trong tuần (Su Mo Tu We Th Fr Sa) -->
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); padding: 12px 8px 6px; font-weight: 700; font-size: 0.88rem; color: #1e293b; background: #e2e8f0; text-align: center;">
+                    <span>Su</span>
+                    <span>Mo</span>
+                    <span>Tu</span>
+                    <span>We</span>
+                    <span>Th</span>
+                    <span>Fr</span>
+                    <span>Sa</span>
+                </div>
+
+                <!-- Lưới hiển thị các ngày trong tháng -->
+                <div id="skygatePickerDaysGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 6px 8px 18px; background: #e2e8f0; text-align: center;">
+                    <!-- JS sẽ render các ô ngày vào đây -->
+                </div>
+            </div>
+
+            <!-- Lưu ý quan trọng dưới lịch -->
+            <p style="color: #ffffff !important; font-size: 0.88rem; font-weight: 700; line-height: 1.45; margin: 18px auto 16px; text-align: center; max-width: 320px;">
+                Quý khách lưu ý, ngày đã chọn là ngày sử dụng, không thể thay đổi ngày
+            </p>
+
+            <!-- Nút Xác Nhận Đỏ Bo Tròn -->
+            <div class="text-center">
+                <button type="button" class="btn fw-bold shadow"
+                        style="background: #dc2626; color: #ffffff; font-size: 1.05rem; border-radius: 9999px; padding: 10px 52px; border: none; letter-spacing: 0.5px; transition: transform 0.2s;"
+                        onmouseover="this.style.transform='scale(1.04)'"
+                        onmouseout="this.style.transform='scale(1)'"
+                        onclick="window.SkygatePicker.confirmSelection()">
+                    XÁC NHẬN
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Script Điều Khiển Bộ Chọn Ngày Trực Quan SkyGate -->
+<script th:fragment="datePickerScript">
+window.SkygatePicker = (function() {
+    let currentConfig = {
+        targetInputId: null,
+        displayElementId: null,
+        onConfirm: null,
+        selectedDateStr: null
+    };
+
+    let viewYear = 2026;
+    let viewMonth = 9; // 0-indexed (9 = Tháng 10)
+    let tempSelectedDateStr = null;
+
+    function padZero(n) {
+        return n < 10 ? '0' + n : '' + n;
+    }
+
+    function parseYmd(str) {
+        if (!str) return new Date();
+        const parts = str.split('-');
+        if (parts.length === 3) {
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        }
+        return new Date();
+    }
+
+    function formatYmd(year, month, day) {
+        return year + '-' + padZero(month + 1) + '-' + padZero(day);
+    }
+
+    function open(options) {
+        currentConfig.targetInputId = options.targetInputId;
+        currentConfig.displayElementId = options.displayElementId;
+        currentConfig.onConfirm = options.onConfirm || null;
+
+        let initDateStr = options.currentDate;
+        if (!initDateStr && options.targetInputId) {
+            const input = document.getElementById(options.targetInputId);
+            if (input && input.value) initDateStr = input.value;
+        }
+
+        const d = parseYmd(initDateStr);
+        viewYear = d.getFullYear();
+        viewMonth = d.getMonth();
+        tempSelectedDateStr = formatYmd(d.getFullYear(), d.getMonth(), d.getDate());
+
+        render();
+
+        const modalEl = document.getElementById('skygateDatePickerModal');
+        if (modalEl) {
+            const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            bsModal.show();
+        }
+    }
+
+    function render() {
+        const titleEl = document.getElementById('skygatePickerMonthYear');
+        if (titleEl) {
+            titleEl.textContent = 'Tháng ' + (viewMonth + 1) + '  ' + viewYear;
+        }
+
+        const gridEl = document.getElementById('skygatePickerDaysGrid');
+        if (!gridEl) return;
+        gridEl.innerHTML = '';
+
+        const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay(); // 0 = Chủ nhật
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+        const now = new Date();
+        const todayStr = formatYmd(now.getFullYear(), now.getMonth(), now.getDate());
+
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.style.padding = '8px 0';
+            gridEl.appendChild(emptyCell);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = formatYmd(viewYear, viewMonth, day);
+            const isPast = dateStr < todayStr;
+            const isSelected = (dateStr === tempSelectedDateStr);
+
+            const cell = document.createElement('div');
+            cell.textContent = padZero(day);
+            cell.style.padding = '8px 0';
+            cell.style.fontSize = '0.95rem';
+            cell.style.fontWeight = '600';
+            cell.style.transition = 'all 0.15s ease';
+
+            if (isSelected) {
+                cell.style.background = '#035235';
+                cell.style.color = '#ffffff';
+                cell.style.border = '2.5px solid #ca8a04';
+                cell.style.borderRadius = '6px';
+                cell.style.fontWeight = '800';
+                cell.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+            } else if (isPast) {
+                cell.style.color = '#94a3b8';
+                cell.style.opacity = '0.55';
+                cell.style.cursor = 'not-allowed';
+            } else {
+                cell.style.color = '#1e293b';
+                cell.style.cursor = 'pointer';
+                cell.style.borderRadius = '6px';
+                cell.onmouseover = function() {
+                    this.style.background = '#cbd5e1';
+                };
+                cell.onmouseout = function() {
+                    this.style.background = 'transparent';
+                };
+                cell.onclick = function() {
+                    tempSelectedDateStr = dateStr;
+                    render();
+                };
+            }
+
+            gridEl.appendChild(cell);
+        }
+    }
+
+    function prevMonth() {
+        viewMonth--;
+        if (viewMonth < 0) {
+            viewMonth = 11;
+            viewYear--;
+        }
+        render();
+    }
+
+    function nextMonth() {
+        viewMonth++;
+        if (viewMonth > 11) {
+            viewMonth = 0;
+            viewYear++;
+        }
+        render();
+    }
+
+    function confirmSelection() {
+        if (!tempSelectedDateStr) return;
+
+        if (currentConfig.targetInputId) {
+            const input = document.getElementById(currentConfig.targetInputId);
+            if (input) {
+                input.value = tempSelectedDateStr;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        if (currentConfig.displayElementId) {
+            const displayEl = document.getElementById(currentConfig.displayElementId);
+            if (displayEl) {
+                const parts = tempSelectedDateStr.split('-');
+                displayEl.innerHTML = '<i class="bi bi-calendar2-week-fill text-success me-2"></i>' + parts[2] + '/' + parts[1] + '/' + parts[0];
+            }
+        }
+
+        if (typeof currentConfig.onConfirm === 'function') {
+            currentConfig.onConfirm(tempSelectedDateStr);
+        }
+
+        const modalEl = document.getElementById('skygateDatePickerModal');
+        if (modalEl) {
+            const bsModal = bootstrap.Modal.getInstance(modalEl);
+            if (bsModal) bsModal.hide();
+        }
+    }
+
+    return {
+        open: open,
+        prevMonth: prevMonth,
+        nextMonth: nextMonth,
+        confirmSelection: confirmSelection
+    };
+})();
+</script>
+
+</body>
+</html>

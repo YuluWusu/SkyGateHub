@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Đặt Dịch Vụ Thành Công — Cổng Trời Đông Giang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <style>
+        body {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+        }
+        .voucher-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            max-width: 900px;
+            margin: 3rem auto;
+        }
+        .voucher-header {
+            background: linear-gradient(135deg, #064e3b, #047857);
+            color: #ffffff;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        .voucher-body {
+            padding: 2.5rem;
+        }
+        .qr-card {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .voucher-card { border: none; box-shadow: none; margin: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header tối giản cho trang kết quả -->
+    <header class="py-3 px-4 bg-white border-bottom no-print">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a th:href="@{/}" class="d-flex align-items-center gap-2 text-decoration-none">
+                <span class="fs-4">🌿</span>
+                <strong class="text-success fs-5">CỔNG TRỜI ĐÔNG GIANG</strong>
+            </a>
+            <div class="d-flex gap-2">
+                <a th:href="@{/}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-house me-1"></i> Trang chủ
+                </a>
+                <a th:href="@{/tra-cuu-don(maDonHang=${don.maDonHang})}" class="btn btn-success btn-sm rounded-pill px-3">
+                    <i class="bi bi-search me-1"></i> Tra cứu đơn
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="voucher-card">
+            
+            <!-- HEADER PHIẾU XÁC NHẬN -->
+            <div class="voucher-header">
+                <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-20 rounded-circle p-3 mb-3">
+                    <i class="bi bi-check-circle-fill fs-1 text-warning"></i>
+                </div>
+                <h2 class="fw-bold mb-1" style="font-family: 'Playfair Display', serif;">Đặt Dịch Vụ Thành Công!</h2>
+                <p class="mb-3 opacity-90">Cảm ơn quý khách đã tin tưởng lựa chọn Khu Du Lịch Sinh Thái Cổng Trời Đông Giang.</p>
+                
+                <div class="d-inline-flex align-items-center gap-2 bg-white bg-opacity-15 px-4 py-2 rounded-pill font-monospace fs-5">
+                    <span>Mã đơn hàng:</span>
+                    <strong class="text-warning" th:text="${don.maDonHang}">CTDG-260520-1234</strong>
+                </div>
+            </div>
+
+            <!-- NỘI DUNG CHI TIẾT -->
+            <div class="voucher-body">
+
+                <!-- Thông tin khách hàng & thời gian -->
+                <div class="row g-4 mb-4 pb-4 border-bottom">
+                    <div class="col-md-6">
+                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Thông tin khách hàng:</h6>
+                        <h5 class="fw-bold text-dark mb-1" th:text="${don.hoTenKhach}">Nguyễn Văn An</h5>
+                        <div class="text-secondary small">
+                            <span class="d-block mb-1"><i class="bi bi-telephone text-success me-2"></i><span th:text="${don.sdtKhach}">0905123456</span></span>
+                            <span class="d-block mb-1" th:if="${don.emailKhach}"><i class="bi bi-envelope text-success me-2"></i><span th:text="${don.emailKhach}">email@example.com</span></span>
+                            <span class="d-block" th:if="${don.ghiChu}"><i class="bi bi-chat-left-text text-success me-2"></i><span th:text="${don.ghiChu}">Ghi chú...</span></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Thời gian khởi tạo đơn:</h6>
+                        <strong class="text-dark d-block fs-6" th:text="${#temporals.format(don.thoiGianDat, 'HH:mm - dd/MM/yyyy')}">14:30 - 22/10/2026</strong>
+                        <div class="mt-2">
+                            <span class="badge bg-warning bg-opacity-25 text-warning-emphasis px-3 py-2 rounded-pill fw-bold">
+                                <i class="bi bi-clock-history me-1"></i> Chờ thanh toán cọc 30%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng chi tiết dịch vụ đã đặt -->
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-list-check text-success me-2"></i>Chi tiết dịch vụ đã đăng ký</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Loại dịch vụ</th>
+                                <th>Chi tiết sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="it : ${items}">
+                                <td>
+                                    <span th:if="${it.loaiDichVu.name() == 'VE'}" class="badge bg-success bg-opacity-10 text-success">Vé tham quan</span>
+                                    <span th:if="${it.loaiDichVu.name() == 'PHONG'}" class="badge bg-warning bg-opacity-25 text-warning-emphasis">Phòng khách sạn</span>
+                                    <span th:if="${it.loaiDichVu.name() == 'AN_UONG'}" class="badge bg-danger bg-opacity-10 text-danger">Ẩm thực</span>
+                                </td>
+                                <td>
+                                    <strong class="text-dark d-block" th:text="${it.tenSanPham}">Vé người lớn</strong>
+                                    <small class="text-muted" th:if="${it.ngaySuDung != null}" th:text="'Ngày sử dụng: ' + ${#temporals.format(it.ngaySuDung, 'dd/MM/yyyy')}">22/10/2026</small>
+                                </td>
+                                <td class="text-center fw-bold" th:text="${it.soLuong}">2</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(it.donGia, 0, 'COMMA', 0, 'POINT')} + ' đ'">300,000 đ</td>
+                                <td class="text-end fw-bold text-success" th:text="${#numbers.formatDecimal(it.soLuong * it.donGia, 0, 'COMMA', 0, 'POINT')} + ' đ'">600,000 đ</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="border-top">
+                                <td colspan="4" class="text-end fw-bold text-secondary">Tổng giá trị đơn hàng:</td>
+                                <td class="text-end fw-bold fs-6 text-dark" th:text="${#numbers.formatDecimal(tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">1,000,000 đ</td>
+                            </tr>
+                            <tr class="bg-warning bg-opacity-10">
+                                <td colspan="4" class="text-end fw-bold text-danger fs-6">SỐ TIỀN CỌC CẦN THANH TOÁN (30%):</td>
+                                <td class="text-end fw-bold fs-5 text-danger" th:text="${#numbers.formatDecimal(tienCoc, 0, 'COMMA', 0, 'POINT')} + ' đ'">300,000 đ</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end small text-muted">Số tiền còn lại thanh toán khi check-in (70%):</td>
+                                <td class="text-end small text-muted fw-semibold" th:text="${#numbers.formatDecimal(tienConLai, 0, 'COMMA', 0, 'POINT')} + ' đ'">700,000 đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- KHUNG THANH TOÁN CHUYỂN KHOẢN VIETQR CỌC 30% -->
+                <div class="qr-card mb-4">
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-5 text-center">
+                            <img th:src="${qrImageUrl}" alt="Mã VietQR Chuyển Khoản Đặt Cọc" class="img-fluid rounded-3 shadow-sm border bg-white p-2" style="max-height: 230px;">
+                            <small class="d-block text-muted mt-2"><i class="bi bi-qr-code-scan me-1"></i>Quét bằng ứng dụng Ngân hàng</small>
+                        </div>
+                        <div class="col-md-7 text-start">
+                            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-bank text-success me-2"></i>Hướng dẫn chuyển khoản đặt cọc 30%</h5>
+                            <ul class="list-unstyled mb-3 small">
+                                <li class="mb-2"><strong>Ngân hàng thụ hưởng:</strong> <span th:text="${bankName}">VietinBank — CN Đà Nẵng</span></li>
+                                <li class="mb-2"><strong>Số tài khoản:</strong> <span class="font-monospace fw-bold text-success fs-6" th:text="${accountNo}">108866644888</span></li>
+                                <li class="mb-2"><strong>Chủ tài khoản:</strong> <span class="text-uppercase fw-bold" th:text="${accountName}">KDL CONG TROI DONG GIANG</span></li>
+                                <li class="mb-2"><strong>Số tiền đặt cọc:</strong> <strong class="text-danger fs-6" th:text="${#numbers.formatDecimal(tienCoc, 0, 'COMMA', 0, 'POINT')} + ' đ'">300,000 đ</strong></li>
+                                <li class="mb-2"><strong>Nội dung chuyển khoản:</strong> <span class="badge bg-dark font-monospace fs-6 px-3 py-1" th:text="${don.maDonHang}">CTDG-260520-1234</span></li>
+                            </ul>
+                            <div class="small text-muted">
+                                <i class="bi bi-shield-check text-success me-1"></i>Hệ thống tự động kích hoạt trạng thái đơn và gửi xác nhận sau khi nhận được chuyển khoản cọc.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nút thao tác -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 pt-3 border-top no-print">
+                    <a th:href="@{/}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-1"></i> Về trang chủ
+                    </a>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-dark rounded-pill px-4" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i> In phiếu / Lưu PDF
+                        </button>
+                        <a th:href="@{/tra-cuu-don(maDonHang=${don.maDonHang})}" class="btn btn-success rounded-pill px-4 fw-bold">
+                            <i class="bi bi-search me-1"></i> Theo dõi & Tra cứu đơn
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
