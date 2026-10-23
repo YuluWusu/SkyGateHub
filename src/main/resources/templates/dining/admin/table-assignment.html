@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điều Phối &amp; Xếp Bàn Ăn Nhà Hàng — SkyGateHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .table-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .table-kpi-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .table-kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .table-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+        .table-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+        }
+        .table-card.state-available { border-top: 4px solid #10b981; }
+        .table-card.state-assigned { border-top: 4px solid #f59e0b; background: #fffdfa; }
+        .table-card.state-occupied { border-top: 4px solid #ef4444; background: #fef2f2; }
+        .table-card.state-maintenance { border-top: 4px solid #94a3b8; opacity: 0.75; }
+        .khu-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <!-- Header & Actions -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold mb-1" style="color: #0f172a; letter-spacing: -0.5px;">
+                        <i class="bi bi-cup-hot-fill text-danger me-2"></i>Sơ Đồ Bàn Ăn &amp; Check-in Nhà Hàng
+                    </h3>
+                    <p class="text-muted mb-0 small">Điều phối xếp bàn, phục vụ bữa ăn theo ca và ghi nhận lượt khách check-in</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/admin/dining/meal-schedule(date=${targetDate})}" class="btn btn-outline-primary px-3 py-2 fw-semibold">
+                        <i class="bi bi-calendar3-range me-1"></i> Xem lịch phục vụ ca ăn
+                    </a>
+                </div>
+            </div>
+
+            <!-- KPI Summary Cards -->
+            <div class="table-kpi-grid">
+                <div class="table-kpi-card">
+                    <div class="table-kpi-icon"><i class="bi bi-grid-3x3"></i></div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-dark" th:text="${tongBan}">25</h4>
+                        <div class="text-muted small">Tổng số bàn</div>
+                    </div>
+                </div>
+                <div class="table-kpi-card">
+                    <div class="table-kpi-icon" style="color: #10b981; background: #ecfdf5;"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-success" th:text="${banTrong}">18</h4>
+                        <div class="text-muted small">Bàn trống sẵn sàng</div>
+                    </div>
+                </div>
+                <div class="table-kpi-card">
+                    <div class="table-kpi-icon" style="color: #f59e0b; background: #fffbeb;"><i class="bi bi-clock-history"></i></div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-warning" th:text="${banChoKhach}">4</h4>
+                        <div class="text-muted small">Chờ nhận bàn</div>
+                    </div>
+                </div>
+                <div class="table-kpi-card">
+                    <div class="table-kpi-icon" style="color: #ef4444; background: #fef2f2;"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-danger" th:text="${banDangAn}">3</h4>
+                        <div class="text-muted small">Đang dùng bữa</div>
+                    </div>
+                </div>
+                <div class="table-kpi-card">
+                    <div class="table-kpi-icon"><i class="bi bi-tools"></i></div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-secondary" th:text="${banBaoTri}">0</h4>
+                        <div class="text-muted small">Bảo trì</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="card p-3 mb-4 border-0 shadow-sm rounded-4">
+                <form th:action="@{/admin/dining/table-assignment}" method="get" class="row g-2 align-items-center">
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small mb-1 text-muted">Ngày phục vụ:</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                            <input type="date" name="date" th:value="${targetDate}" class="form-control" onchange="this.form.submit()">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small mb-1 text-muted">Ca ăn:</label>
+                        <select name="caAn" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Tất cả ca ăn --</option>
+                            <option th:each="ca : ${caAnList}" th:value="${ca.maCaAn}" th:text="${ca.tenCaAn}" th:selected="${ca.maCaAn == selectedCaAn}"></option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small mb-1 text-muted">Khu vực bàn:</label>
+                        <select name="khuVuc" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Tất cả khu vực --</option>
+                            <option th:each="kv : ${khuVucList}" th:value="${kv}" th:text="${kv}" th:selected="${kv == selectedKhuVuc}"></option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <label class="form-label small mb-1 text-muted">Trạng thái:</label>
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="ALL" th:selected="${selectedStatus == null or selectedStatus == 'ALL'}">Tất cả</option>
+                            <option value="TRONG" th:selected="${selectedStatus == 'TRONG'}">Bàn trống</option>
+                            <option value="DA_XEP_CHO_KHACH" th:selected="${selectedStatus == 'DA_XEP_CHO_KHACH'}">Chờ khách</option>
+                            <option value="DANG_AN" th:selected="${selectedStatus == 'DANG_AN'}">Đang ăn</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-1 d-grid">
+                        <label class="form-label small mb-1 d-none d-md-block">&nbsp;</label>
+                        <a th:href="@{/admin/dining/table-assignment}" class="btn btn-outline-secondary" title="Hôm nay">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Main Layout: Table Grid on Left + Pending Queue on Right -->
+            <div class="row g-4">
+                <!-- Left: Table Grid Grouped By Area -->
+                <div class="col-12 col-xl-9">
+                    <div th:if="${cellsByKhu == null or cellsByKhu.isEmpty()}" class="card p-5 text-center text-muted border-0 shadow-sm rounded-4">
+                        <i class="bi bi-inbox fs-1 text-secondary mb-2"></i>
+                        <h5>Không tìm thấy bàn ăn nào phù hợp với bộ lọc</h5>
+                        <p class="small mb-0">Thử chọn ngày khác hoặc xóa bộ lọc để hiển thị danh sách bàn.</p>
+                    </div>
+
+                    <div th:each="entry : ${cellsByKhu.entrySet()}" class="mb-4">
+                        <div class="khu-title">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <span th:text="${entry.key}">Khu Sân Hồ</span>
+                            <span class="badge bg-secondary ms-1 small" th:text="${entry.value.size()} + ' bàn'">6 bàn</span>
+                        </div>
+
+                        <div class="table-grid">
+                            <div th:each="c : ${entry.value}"
+                                 class="table-card"
+                                 th:classappend="${c.isTrong() ? 'state-available' : (c.isDaXep() ? 'state-assigned' : (c.isDangAn() ? 'state-occupied' : 'state-maintenance'))}">
+
+                                <div>
+                                    <!-- Table Header -->
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="fw-bold mb-0 text-dark">
+                                                Bàn <span th:text="${c.soBan}">B01</span>
+                                            </h5>
+                                            <small class="text-muted">
+                                                <i class="bi bi-people me-1"></i>Sức chứa: <strong th:text="${c.sucChua}">4</strong> khách
+                                            </small>
+                                        </div>
+                                        <span class="badge" th:classappend="${c.cssBadge}" th:text="${c.badgeText}">Sẵn sàng</span>
+                                    </div>
+
+                                    <!-- Body: Guest details if assigned / occupied -->
+                                    <div th:if="${!c.isTrong() and !c.isBaoTri()}" class="py-2 border-top border-bottom my-2 small">
+                                        <div class="mb-1">
+                                            <span class="text-muted">Khách:</span>
+                                            <strong class="text-dark" th:text="${c.hoTenKhach}">Nguyễn Văn A</strong>
+                                        </div>
+                                        <div class="mb-1" th:if="${c.sdtKhach != null}">
+                                            <span class="text-muted">SĐT:</span>
+                                            <span class="text-muted" th:text="${c.sdtKhach}">0905123456</span>
+                                        </div>
+                                        <div class="mb-1">
+                                            <span class="text-muted">Đơn:</span>
+                                            <span class="text-danger fw-semibold" th:text="${c.maDatBan}">DB001</span>
+                                            <span class="badge bg-light text-dark border ms-1" th:if="${c.soKhach != null}" th:text="${c.soKhach} + ' người'">4 người</span>
+                                        </div>
+                                        <div th:if="${c.tenDichVu != null}">
+                                            <span class="text-muted">Món:</span>
+                                            <span class="text-dark fw-semibold" th:text="${c.tenDichVu}">Buffet trưa</span>
+                                        </div>
+                                        <div th:if="${c.tenCaAn != null}">
+                                            <span class="text-muted">Ca:</span>
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25" th:text="${c.tenCaAn}">Ca Trưa</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Empty Table Message -->
+                                    <div th:if="${c.isTrong()}" class="py-4 text-center text-muted small">
+                                        <i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>
+                                        Bàn sạch • Sẵn sàng đón khách
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="pt-2 border-top d-flex gap-2 justify-content-end flex-wrap">
+                                    <!-- Case 1: Chờ khách nhận bàn -> Check-in hoặc Hủy gán -->
+                                    <th:block th:if="${c.isDaXep()}">
+                                        <form th:action="@{/admin/dining/check-in}" method="post" class="d-inline"
+                                              onsubmit="return confirm('Xác nhận khách đã đến và Check-in nhận bàn ' + /*[[${c.soBan}]]*/ 'này?');">
+                                            <input type="hidden" name="maDatBan" th:value="${c.maDatBan}">
+                                            <input type="hidden" name="returnDate" th:value="${targetDate}">
+                                            <input type="hidden" name="returnCaAn" th:value="${selectedCaAn}">
+                                            <button type="submit" class="btn btn-sm btn-success fw-semibold">
+                                                <i class="bi bi-box-arrow-in-right me-1"></i>Check-in
+                                            </button>
+                                        </form>
+
+                                        <form th:action="@{/admin/dining/unassign}" method="post" class="d-inline"
+                                              onsubmit="return confirm('Hủy xếp bàn ' + /*[[${c.soBan}]]*/ 'này?');">
+                                            <input type="hidden" name="maDatBan" th:value="${c.maDatBan}">
+                                            <input type="hidden" name="returnDate" th:value="${targetDate}">
+                                            <input type="hidden" name="returnCaAn" th:value="${selectedCaAn}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy xếp bàn">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
+                                    </th:block>
+
+                                    <!-- Case 2: Khách đang dùng bữa -> Trả bàn / Hoàn tất -->
+                                    <th:block th:if="${c.isDangAn()}">
+                                        <form th:action="@{/admin/dining/complete}" method="post" class="d-inline"
+                                              onsubmit="return confirm('Xác nhận khách đã dùng xong bữa và hoàn tất trả bàn ' + /*[[${c.soBan}]]*/ 'này?');">
+                                            <input type="hidden" name="maDatBan" th:value="${c.maDatBan}">
+                                            <input type="hidden" name="returnDate" th:value="${targetDate}">
+                                            <input type="hidden" name="returnCaAn" th:value="${selectedCaAn}">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning fw-semibold">
+                                                <i class="bi bi-check-all me-1"></i>Trả bàn
+                                            </button>
+                                        </form>
+                                    </th:block>
+
+                                    <!-- Case 3: Bàn trống -> Có thể mở modal gán -->
+                                    <th:block th:if="${c.isTrong()}">
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                                th:onclick="'openAssignModal(\'\', \'' + ${c.maBanAn} + '\', \'' + ${c.soBan} + '\')'">
+                                            <i class="bi bi-pin-angle me-1"></i>Xếp khách
+                                        </button>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Pending Bookings Sidebar -->
+                <div class="col-12 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 sticky-top" style="top: 80px;">
+                        <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-list-check text-warning me-2"></i>Đơn Chờ Xếp Bàn</span>
+                            <span class="badge bg-warning text-dark" th:text="${pendingBookings.size()} + ' đơn'">0 đơn</span>
+                        </h6>
+
+                        <div th:if="${pendingBookings.isEmpty()}" class="text-center py-4 text-muted small">
+                            <i class="bi bi-check-circle text-success fs-3 d-block mb-1"></i>
+                            Tất cả đơn đặt bàn trong ngày đã được xếp bàn đầy đủ!
+                        </div>
+
+                        <div style="max-height: 520px; overflow-y: auto;">
+                            <div th:each="db : ${pendingBookings}" class="card p-3 mb-2 border rounded-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <strong class="text-danger font-monospace" th:text="${db.maDatBan}">DB001</strong>
+                                    <span class="badge"
+                                          th:classappend="${db.banAn != null ? 'bg-info text-dark' : 'bg-secondary'}"
+                                          th:text="${db.banAn != null ? 'Đã xếp: ' + db.banAn.soBan : 'Chưa xếp bàn'}">Chưa xếp</span>
+                                </div>
+                                <div class="small text-dark fw-semibold" th:text="${db.donDat != null ? db.donDat.hoTenKhach : 'Khách lẻ'}">Nguyễn Văn A</div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-people me-1"></i><span th:text="${db.soKhach}">4</span> người •
+                                    <span th:if="${db.dichVuCaAn != null and db.dichVuCaAn.caAn != null}" th:text="${db.dichVuCaAn.caAn.tenCaAn}">Ca Trưa</span>
+                                </div>
+
+                                <div class="mt-2 pt-2 border-top d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-primary w-100 fw-semibold"
+                                            th:onclick="'openAssignModal(\'' + ${db.maDatBan} + '\', \'\', \'\')'">
+                                        <i class="bi bi-arrow-right-circle me-1"></i>
+                                        <span th:text="${db.banAn != null ? 'Đổi bàn' : 'Xếp bàn'}">Xếp bàn</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Assign Table -->
+            <div class="modal fade" id="assignTableModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-4 border-0 shadow">
+                        <div class="modal-header border-bottom">
+                            <h5 class="modal-title fw-bold text-dark">
+                                <i class="bi bi-pin-angle-fill text-warning me-2"></i>Xếp Bàn Ăn Cho Khách
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/admin/dining/assign}" method="post">
+                            <input type="hidden" name="returnDate" th:value="${targetDate}">
+                            <input type="hidden" name="returnCaAn" th:value="${selectedCaAn}">
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Mã đơn đặt bàn:</label>
+                                    <input type="text" name="maDatBan" id="modalMaDatBan" class="form-control" required placeholder="Ví dụ: DB001">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Chọn bàn ăn vật lý:</label>
+                                    <select name="maBanAn" id="modalMaBanAn" class="form-select" required>
+                                        <option value="">-- Chọn bàn ăn --</option>
+                                        <th:block th:each="c : ${cells}">
+                                            <option th:if="${c.isTrong()}" th:value="${c.maBanAn}" th:text="'Bàn ' + ${c.soBan} + ' (' + ${c.khuVuc} + ' - Sức chứa ' + ${c.sucChua} + ' khách)'"></option>
+                                        </th:block>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Ghi chú phục vụ:</label>
+                                    <input type="text" name="ghiChu" class="form-control" placeholder="Ví dụ: Cần ghế trẻ em, bàn cạnh cửa sổ...">
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-success fw-bold px-4">Xác nhận xếp bàn</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openAssignModal(maDatBan, maBanAn, soBan) {
+            if (maDatBan) {
+                document.getElementById('modalMaDatBan').value = maDatBan;
+            }
+            if (maBanAn) {
+                document.getElementById('modalMaBanAn').value = maBanAn;
+            }
+            const modal = new bootstrap.Modal(document.getElementById('assignTableModal'));
+            modal.show();
+        }
+    </script>
+</body>
+</html>
