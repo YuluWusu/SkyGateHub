@@ -28,9 +28,6 @@ public class AdminCheckInController {
 
     private final CheckInService checkInService;
 
-    /**
-     * Màn hình tra cứu vé vào cổng (lookup.html)
-     */
     @GetMapping({"", "/", "/lookup"})
     public String showLookupPage(
             @RequestParam(value = "keyword", required = false) String keyword,
@@ -41,7 +38,6 @@ public class AdminCheckInController {
         model.addAttribute("recentCheckIns", recentCheckIns);
         model.addAttribute("keyword", keyword);
 
-        // Nếu có keyword truyền vào (ví dụ sau khi check-in chuyển về hoặc gõ link trực tiếp)
         if (keyword != null && !keyword.trim().isEmpty()) {
             try {
                 CheckInLookupResponse lookupResult = checkInService.lookupTicket(keyword.trim());
@@ -55,9 +51,6 @@ public class AdminCheckInController {
         return "checkin/admin/lookup";
     }
 
-    /**
-     * Xử lý gửi form tra cứu (chuyển hướng sang detail.html)
-     */
     @PostMapping("/lookup")
     public String processLookup(
             @RequestParam("keyword") String keyword,
