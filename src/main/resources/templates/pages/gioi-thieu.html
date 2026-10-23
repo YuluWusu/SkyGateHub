@@ -6,7 +6,7 @@
     <title>Giới thiệu — Khu Du Lịch Sinh Thái Cổng Trời Đông Giang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/base.css(v=2.2)}">
     <link rel="stylesheet" th:href="@{/css/customer.css}">
     <style>
         .about-hero {
@@ -45,6 +45,36 @@
         }
         .feature-img-box:hover img {
             transform: scale(1.04);
+        }
+        .cta-banner-green {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%) !important;
+            border-radius: 24px !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 20px 40px -10px rgba(6, 78, 59, 0.35) !important;
+            color: #ffffff !important;
+        }
+        .cta-banner-green h3 {
+            color: #ffffff !important;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+        }
+        .cta-banner-green p,
+        .cta-banner-green .cta-desc {
+            color: rgba(255, 255, 255, 0.92) !important;
+            line-height: 1.6 !important;
+        }
+        .cta-banner-green .btn-white-fivitel {
+            background: #ffffff !important;
+            color: #064e3b !important;
+            border: 1.5px solid #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.25s ease !important;
+        }
+        .cta-banner-green .btn-white-fivitel:hover {
+            background: #ecfdf5 !important;
+            color: #047857 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.25) !important;
         }
     </style>
 </head>
@@ -166,17 +196,20 @@
             </div>
 
             <!-- Call to Action Banner -->
-            <div class="card p-4 p-md-5 text-center border-0 shadow-sm mb-4"
-                 style="background: linear-gradient(135deg, #064e3b, #059669); border-radius: 20px;">
-                <h3 class="fw-bold text-white mb-2">Bạn Đã Sẵn Sàng Khám Phá Cổng Trời Đông Giang?</h3>
-                <p class="text-white-50 mx-auto mb-4" style="max-width: 650px;">
+            <div class="cta-banner-green p-4 p-md-5 text-center mb-4"
+                 style="background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%) !important; border-radius: 24px !important; box-shadow: 0 20px 40px -10px rgba(6, 78, 59, 0.35) !important; color: #ffffff !important;">
+                <h3 class="fw-bold mb-2" style="color: #ffffff !important; text-shadow: 0 2px 10px rgba(0,0,0,0.25) !important; font-size: 1.85rem; letter-spacing: -0.3px;">
+                    Bạn Đã Sẵn Sàng Khám Phá Cổng Trời Đông Giang?
+                </h3>
+                <p class="cta-desc mx-auto mb-4" style="max-width: 650px; font-size: 1.05rem; color: rgba(255, 255, 255, 0.92) !important; line-height: 1.6 !important;">
                     Hãy lên kế hoạch cho chuyến đi kỳ thú và đặt vé tham quan, phòng khách sạn Fivitel cùng thực đơn ẩm thực trực tuyến dễ dàng ngay hôm nay.
                 </p>
                 <div class="d-flex justify-content-center gap-3 flex-wrap">
-                    <a th:href="@{/dat-dich-vu}" class="btn btn-gold btn-lg fw-bold px-4 py-3 shadow">
+                    <a th:href="@{/dat-dich-vu}" class="btn btn-gold btn-lg fw-bold px-4 py-3 shadow" style="border-radius: 12px;">
                         <i class="bi bi-calendar2-check-fill me-2"></i>Đặt Dịch Vụ Ngay
                     </a>
-                    <a th:href="@{/khach-san}" class="btn btn-outline-light btn-lg fw-semibold px-4 py-3">
+                    <a th:href="@{/khach-san}" class="btn btn-white-fivitel btn-lg fw-bold px-4 py-3"
+                       style="background: #ffffff !important; color: #064e3b !important; border: 1.5px solid #ffffff !important; border-radius: 12px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         <i class="bi bi-building me-2"></i>Khách Sạn Fivitel
                     </a>
                 </div>

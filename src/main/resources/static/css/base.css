@@ -913,17 +913,17 @@ main .card p.text-white,
 main .table .text-white,
 main .table th.text-white,
 main .table td.text-white,
-main h1.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
-main h2.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
-main h3.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
-main h4.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
-main h5.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
-main h6.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main h1.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
+main h2.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
+main h3.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
+main h4.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
+main h5.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
+main h6.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
 main label.text-white,
-main div.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
-main span.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.badge),
-main strong.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
-main p.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *),
+main div.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
+main span.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.badge):not(.cta-banner-green *),
+main strong.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
+main p.text-white:not(.hero-official *):not(.about-hero *):not(.attract-hero *):not(.attractions-hero *):not(.contact-hero *):not(.hotel-hero *):not(.dining-hero *):not(.lookup-hero *):not(.hero-banner *):not(.auth-banner-overlay *):not(.cta-banner-green *),
 .skygate-sidebar .text-white,
 .skygate-admin-topbar .text-white {
     color: #0f172a !important;
@@ -933,6 +933,46 @@ main .card .text-light,
 main .table .text-light,
 main label.text-light {
     color: #334155 !important;
+}
+
+/* ==========================================================================
+   CALL TO ACTION BANNER (MÀU XANH NGỌC SANG TRỌNG & NỔI BẬT)
+   ========================================================================== */
+.cta-banner-green {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 15px 35px -5px rgba(6, 78, 59, 0.35) !important;
+    color: #ffffff !important;
+}
+
+.cta-banner-green h2,
+.cta-banner-green h3,
+.cta-banner-green h4,
+.cta-banner-green .cta-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+}
+
+.cta-banner-green p,
+.cta-banner-green .cta-desc {
+    color: rgba(255, 255, 255, 0.9) !important;
+    line-height: 1.6 !important;
+}
+
+.cta-banner-green .btn-outline-light {
+    color: #ffffff !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(6px);
+    transition: all 0.25s ease;
+}
+
+.cta-banner-green .btn-outline-light:hover {
+    color: #064e3b !important;
+    background: #ffffff !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3) !important;
 }
 
 /* ==========================================================================
