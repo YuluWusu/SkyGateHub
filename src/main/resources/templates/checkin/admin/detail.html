@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Soát Vé — SkyGateHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .badge-ticket-ok {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .badge-ticket-used {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .order-info-box {
+            background-color: #f8fafc;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <!-- Top breadcrumbs & back button -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <a th:href="@{/admin/checkin}" class="btn btn-outline-secondary btn-sm mb-2">
+                        <i class="bi bi-arrow-left me-1"></i> Quay lại tra cứu
+                    </a>
+                    <h3 class="fw-bold mb-1" style="color: #0f172a; letter-spacing: -0.5px;">
+                        Kết Quả Tra Cứu &amp; Soát Vé Cổng Vào
+                    </h3>
+                    <p class="text-muted mb-0 small">
+                        Từ khóa tra cứu: <strong class="text-success font-monospace" th:text="${keyword}">VE_TK001</strong>
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/admin/checkin}" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-search me-1"></i> Soát vé mới
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Status Alert Banner -->
+            <div th:if="${result.soVeChuaDung > 0}" class="alert alert-success border-2 shadow-sm rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: #059669; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-success mb-1">VÉ HỢP LỆ — SẴN SÀNG CHO KHÁCH QUA CỔNG</h5>
+                        <p class="mb-0 text-muted small">
+                            Đơn hàng có <strong class="text-dark" th:text="${result.soVeChuaDung} + '/' + ${result.tongSoVe}">2/2</strong> vé chưa sử dụng. Vui lòng bấm <strong>[Check-in]</strong> bên dưới.
+                        </p>
+                    </div>
+                </div>
+                <!-- Check in all button -->
+                <form th:if="${result.soVeChuaDung > 1}" th:action="@{/admin/checkin/all}" method="post"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn Check-in TẤT CẢ vé chưa sử dụng trong đơn này?');">
+                    <input type="hidden" name="maDonDat" th:value="${result.maDonDat}">
+                    <input type="hidden" name="keyword" th:value="${keyword}">
+                    <input type="hidden" name="ghiChu" value="Soát vé trọn gói tại cổng chính">
+                    <button type="submit" class="btn btn-success fw-bold px-4 py-2 shadow-sm">
+                        <i class="bi bi-check2-all me-1"></i> Check-in tất cả ([[${result.soVeChuaDung}]] vé)
+                    </button>
+                </form>
+            </div>
+
+            <div th:if="${result.soVeChuaDung == 0}" class="alert alert-warning border-2 shadow-sm rounded-4 p-3 mb-4 d-flex align-items-center gap-3">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: #d97706; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">TOÀN BỘ VÉ TRONG ĐƠN ĐÃ ĐƯỢC CHECK-IN HOẶC HỦY</h5>
+                    <p class="mb-0 text-muted small">
+                        Tất cả các vé thuộc đơn đặt này đã được sử dụng trước đó. Vui lòng kiểm tra nhật ký thời gian vào cổng bên dưới để tránh quét trùng.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left: Customer and Order Overview -->
+                <div class="col-12 col-lg-4">
+                    <div class="card order-info-box p-4 shadow-sm border-0 mb-4">
+                        <h5 class="fw-bold text-dark mb-3 pb-2 border-bottom">
+                            <i class="bi bi-person-badge text-success me-2"></i>Thông Tin Khách Hàng
+                        </h5>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Họ và tên khách:</label>
+                            <h5 class="fw-bold text-dark mb-0" th:text="${result.hoTenKhach}">Nguyễn Văn A</h5>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Số điện thoại:</label>
+                            <h6 class="fw-bold text-success mb-0">
+                                <i class="bi bi-telephone me-1"></i><span th:text="${result.sdtKhach}">0905123456</span>
+                            </h6>
+                        </div>
+                        <div class="mb-3" th:if="${result.emailKhach != null}">
+                            <label class="text-muted small d-block">Email:</label>
+                            <span class="text-dark small" th:text="${result.emailKhach}">khach@gmail.com</span>
+                        </div>
+                        <div class="mb-3" th:if="${result.ghiChu != null and !result.ghiChu.isEmpty()}">
+                            <label class="text-muted small d-block">Ghi chú đơn:</label>
+                            <span class="text-muted small fst-italic" th:text="${result.ghiChu}">Khách đặt online</span>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mt-4 mb-3 pb-2 border-bottom">
+                            <i class="bi bi-receipt text-success me-2"></i>Đơn Hàng Tổng Hợp
+                        </h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Mã đơn hàng:</span>
+                            <strong class="text-dark font-monospace" th:text="${result.maDonHang}">CTDG-260501-0001</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Mã đơn nội bộ:</span>
+                            <span class="text-muted small font-monospace" th:text="${result.maDonDat}">DD001</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Thời gian đặt:</span>
+                            <span class="text-dark small" th:text="${#temporals.format(result.thoiGianDat, 'HH:mm dd/MM/yyyy')}">08:30 01/05/2026</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Tổng tiền:</span>
+                            <strong class="text-danger" th:text="${#numbers.formatDecimal(result.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">1,900,000 đ</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Thanh toán:</span>
+                            <span class="badge bg-success" th:text="${result.trangThaiThanhToan}">DA_THANH_TOAN</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: List of Tickets to Check-in -->
+                <div class="col-12 col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-ticket-detailed text-success me-2"></i>Danh Sách Vé Cần Soát Vào Cổng
+                            </h5>
+                            <div>
+                                <span class="badge bg-success" th:text="${result.soVeChuaDung} + ' vé chưa dùng'">1 vé chưa dùng</span>
+                                <span class="badge bg-secondary" th:text="${result.soVeDaDung} + ' vé đã dùng'">1 vé đã dùng</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">Mã vé</th>
+                                            <th>Tên loại vé</th>
+                                            <th>Ngày tham quan</th>
+                                            <th>Đơn giá</th>
+                                            <th>Trạng thái vào cổng</th>
+                                            <th class="text-end pe-4">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="t : ${result.tickets}"
+                                            th:classappend="${t.trangThai.name() == 'DA_SU_DUNG' ? 'table-light text-muted' : ''}">
+                                            <td class="ps-4">
+                                                <strong class="font-monospace text-dark fs-6" th:text="${t.maVe}">VE_TK001</strong>
+                                                <div class="small text-muted font-monospace" th:if="${t.maVeChuoi != null}" th:text="${t.maVeChuoi}">TK-260501-A1</div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-semibold text-dark" th:text="${t.tenLoaiVe}">Vé người lớn</span>
+                                                <span class="badge bg-light text-secondary border small ms-1" th:text="${t.loaiVeType}">NGUOI_LON</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-dark" th:text="${#temporals.format(t.ngayThamQuan, 'dd/MM/yyyy')}">01/05/2026</span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${t.donGia != null}" th:text="${#numbers.formatDecimal(t.donGia, 0, 'COMMA', 0, 'POINT')} + ' đ'">300,000 đ</span>
+                                                <span th:unless="${t.donGia != null}" class="text-muted">-</span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${t.trangThai.name() == 'CHUA_SU_DUNG'}" class="badge badge-ticket-ok px-2 py-1">
+                                                    <i class="bi bi-check-circle me-1"></i>Chưa sử dụng
+                                                </span>
+                                                <span th:if="${t.trangThai.name() == 'DA_SU_DUNG'}" class="badge badge-ticket-used px-2 py-1">
+                                                    <i class="bi bi-x-circle me-1"></i>Đã sử dụng
+                                                </span>
+                                                <span th:if="${t.trangThai.name() == 'DA_HUY'}" class="badge bg-secondary px-2 py-1">
+                                                    <i class="bi bi-slash-circle me-1"></i>Đã hủy
+                                                </span>
+                                                <div class="small text-muted mt-1" th:text="${t.thongBaoTrangThai}">Hợp lệ</div>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <!-- Action Check-in if ticket is unused -->
+                                                <form th:if="${t.canCheckIn}" th:action="@{/admin/checkin/ticket}" method="post"
+                                                      onsubmit="return confirm('Xác nhận soát vé cho vé ' + /*[[${t.maVe}]]*/ 'này?');">
+                                                    <input type="hidden" name="maVe" th:value="${t.maVe}">
+                                                    <input type="hidden" name="keyword" th:value="${keyword}">
+                                                    <input type="hidden" name="ghiChu" value="Soát vé tại quầy cổng">
+                                                    <button type="submit" class="btn btn-success fw-bold px-3 py-2 shadow-sm">
+                                                        <i class="bi bi-box-arrow-in-right me-1"></i> Check-in
+                                                    </button>
+                                                </form>
+
+                                                <!-- Already used indicator -->
+                                                <span th:unless="${t.canCheckIn}" class="badge bg-light text-muted border py-2 px-3">
+                                                    <i class="bi bi-lock-fill me-1"></i> Đã hoàn tất
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trạm Soát Vé &amp; Check-in Cổng Vào — SkyGateHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .search-hero-card {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);
+            border-radius: 18px;
+            color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.3);
+        }
+        .search-input-lg {
+            font-size: 1.15rem;
+            height: 56px;
+            border-radius: 12px 0 0 12px;
+            border: 2px solid #a7f3d0;
+            padding-left: 20px;
+        }
+        .search-btn-lg {
+            font-size: 1.1rem;
+            padding: 0 28px;
+            border-radius: 0 12px 12px 0;
+            font-weight: 700;
+        }
+        .quick-tag {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .quick-tag:hover {
+            transform: translateY(-2px);
+            opacity: 0.95;
+        }
+        .feature-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold mb-1" style="color: #0f172a; letter-spacing: -0.5px;">
+                        <i class="bi bi-ticket-perforated-fill text-success me-2"></i>Trạm Soát Vé &amp; Check-in Cổng Vào
+                    </h3>
+                    <p class="text-muted mb-0 small">Soát vé vào cổng khu du lịch, cáp treo và các phân khu chức năng</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 fs-6 rounded-pill">
+                        <i class="bi bi-broadcast me-1"></i> Trạm đang sẵn sàng
+                    </span>
+                </div>
+            </div>
+
+            <!-- Big Search Hero Box -->
+            <div class="card search-hero-card p-4 p-md-5 mb-4 border-0">
+                <div class="row align-items-center g-4">
+                    <div class="col-12 col-lg-8">
+                        <span class="badge bg-warning text-dark px-3 py-1 mb-2 fw-semibold">
+                            <i class="bi bi-keyboard me-1"></i> Tra cứu không cần quét QR
+                        </span>
+                        <h2 class="fw-bold mb-2">Nhập mã vé, mã đơn hàng hoặc SĐT khách</h2>
+                        <p class="text-light opacity-75 mb-4">
+                            Hệ thống tự động nhận diện Mã vé (<code class="text-warning">VE_...</code>), Mã đơn (<code class="text-warning">CTDG-...</code>), Mã QR hoặc Số điện thoại người đặt.
+                        </p>
+
+                        <form th:action="@{/admin/checkin/lookup}" method="post">
+                            <div class="input-group mb-3 shadow-sm">
+                                <input type="text" name="keyword" th:value="${keyword}"
+                                       class="form-control search-input-lg"
+                                       id="ticketSearchInput"
+                                       placeholder="Ví dụ: VE_TK001 hoặc CTDG-260501-0001 hoặc 0912345008..."
+                                       autofocus required autocomplete="off">
+                                <button type="submit" class="btn btn-warning search-btn-lg text-dark">
+                                    <i class="bi bi-search me-1"></i> Tra cứu
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Quick demo pills for easy testing -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap small text-light">
+                            <span class="opacity-75"><i class="bi bi-lightbulb me-1"></i>Mẫu thử nhanh:</span>
+                            <span class="badge bg-white bg-opacity-25 text-white quick-tag" onclick="fillKeyword('VE_TK001')">VE_TK001 (Mã vé)</span>
+                            <span class="badge bg-white bg-opacity-25 text-white quick-tag" onclick="fillKeyword('VE_TK002')">VE_TK002 (Mã vé)</span>
+                            <span class="badge bg-white bg-opacity-25 text-white quick-tag" onclick="fillKeyword('CTDG-260501-0001')">CTDG-260501-0001 (Mã đơn)</span>
+                            <span class="badge bg-white bg-opacity-25 text-white quick-tag" onclick="fillKeyword('0912345008')">0912345008 (SĐT)</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-4 text-center d-none d-lg-block">
+                        <div class="p-3 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-20 text-start">
+                            <h6 class="fw-bold text-warning mb-2"><i class="bi bi-shield-check me-1"></i>Quy trình soát vé:</h6>
+                            <ol class="small ps-3 mb-0 opacity-90" style="line-height: 1.8;">
+                                <li>Khách đọc <strong>Mã đơn / Mã vé</strong> hoặc <strong>SĐT</strong>.</li>
+                                <li>Nhân viên nhập vào ô tìm kiếm và bấm <strong>Tra cứu</strong>.</li>
+                                <li>Kiểm tra thông tin hợp lệ trên màn hình.</li>
+                                <li>Bấm <strong>[Xác nhận Check-in]</strong> để mở cổng cho khách.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Check-ins Table -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-clock-history text-muted me-2"></i>Nhật ký soát vé vừa thực hiện gần nhất
+                    </h5>
+                    <span class="badge bg-secondary" th:text="${recentCheckIns != null ? recentCheckIns.size() : 0} + ' lượt gần đây'">0 lượt</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Mã Check-in</th>
+                                    <th>Mã vé</th>
+                                    <th>Khách hàng</th>
+                                    <th>Loại vé</th>
+                                    <th>Thời gian soát vé</th>
+                                    <th>Nhân viên soát</th>
+                                    <th>Ghi chú cổng</th>
+                                    <th class="text-center">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${recentCheckIns == null or recentCheckIns.isEmpty()}">
+                                    <td colspan="8" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                                        Chưa có lượt soát vé nào trong phiên làm việc hiện tại.
+                                    </td>
+                                </tr>
+                                <tr th:each="ci : ${recentCheckIns}">
+                                    <td class="ps-4 fw-semibold text-success font-monospace" th:text="${ci.maCheckIn}">CI-V-1234</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace"
+                                              th:text="${ci.ve != null ? ci.ve.maVe : 'N/A'}">VE_TK001</span>
+                                    </td>
+                                    <td>
+                                        <strong th:text="${ci.donDat != null ? ci.donDat.hoTenKhach : 'Khách lẻ'}">Nguyễn Văn A</strong>
+                                        <div class="small text-muted" th:if="${ci.donDat != null}" th:text="${ci.donDat.sdtKhach}">0905123456</div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${ci.ve != null and ci.ve.loaiVe != null}" th:text="${ci.ve.loaiVe.tenLoaiVe}">Vé người lớn</span>
+                                        <span th:unless="${ci.ve != null and ci.ve.loaiVe != null}" class="text-muted">Vé tham quan</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(ci.thoiGianCheckIn, 'HH:mm:ss dd/MM/yyyy')}">14:30:00 01/05/2026</td>
+                                    <td>
+                                        <span class="badge bg-light text-secondary border"
+                                              th:text="${ci.nhanVien != null ? ci.nhanVien.hoTen : 'Nhân viên'}">Lê Văn Soát Vé</span>
+                                    </td>
+                                    <td class="small text-muted" th:text="${ci.ghiChu != null ? ci.ghiChu : 'Soát vé qua cổng'}">Cổng chính</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check2-circle me-1"></i>Đã vào cổng
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function fillKeyword(code) {
+            const input = document.getElementById('ticketSearchInput');
+            input.value = code;
+            input.focus();
+        }
+    </script>
+</body>
+</html>
