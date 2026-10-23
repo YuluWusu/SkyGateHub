@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sơ đồ phòng trực quan (Room Map) — SkyGateHub</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -21,7 +24,7 @@
             <!-- Header & Actions -->
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <div>
-                    <h3 class="fw-bold text-white mb-1" style="letter-spacing: -0.5px;">Sơ đồ phòng trực quan (Room Map)</h3>
+                    <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">Sơ đồ phòng trực quan (Room Map)</h3>
                     <p class="text-muted mb-0 small">Quản lý sơ đồ trạng thái phòng thời gian thực, điều phối lễ tân và phân phòng lưu trú</p>
                 </div>
                 <div class="d-flex gap-2">
@@ -121,9 +124,9 @@
                 <!-- Left: Room Grid Grouped By Khu -->
                 <div class="col-12 col-xl-9">
                     <!-- Empty State Placeholder -->
-                    <div th:if="${cellsByKhu == null or cellsByKhu.isEmpty()}" class="card p-5 text-center text-muted" style="border: 1px dashed var(--border-glass); background: rgba(12, 34, 25, 0.6); border-radius: 16px;">
+                    <div th:if="${cellsByKhu == null or cellsByKhu.isEmpty()}" class="card p-5 text-center text-muted" style="border: 1px dashed #cbd5e1; background: #ffffff; border-radius: 16px;">
                         <i class="bi bi-grid-3x3-gap fs-1 mb-2 text-warning opacity-75"></i>
-                        <h5 class="text-white">Không có phòng vật lý nào hiển thị</h5>
+                        <h5 class="text-dark fw-bold">Không có phòng vật lý nào hiển thị</h5>
                         <p class="small mb-3">Hiện chưa có dữ liệu phòng phù hợp với bộ lọc ngày <strong class="text-gold" th:text="${targetDateFormatted}"></strong> hoặc phân khu đã chọn.</p>
                         <div>
                             <a th:href="@{/admin/room-map}" class="btn btn-sm btn-outline-success">
@@ -164,7 +167,7 @@
                                     <div class="room-card-body" th:if="${!c.isTrong() and !c.isBaoTri()}">
                                         <div class="guest-info-row">
                                             <span class="guest-info-label"><i class="bi bi-person me-1"></i>Khách:</span>
-                                            <strong class="text-white text-truncate" th:text="${c.hoTenKhach}">Nguyễn Văn A</strong>
+                                            <strong class="text-dark text-truncate" th:text="${c.hoTenKhach}">Nguyễn Văn A</strong>
                                         </div>
                                         <div class="guest-info-row" th:if="${c.sdtKhach != null}">
                                             <span class="guest-info-label"><i class="bi bi-telephone me-1"></i>SĐT:</span>
@@ -228,7 +231,11 @@
                                     <!-- Case 3: Phòng trống -> Có thể mở modal phân nhanh hoặc chuyển bảo trì -->
                                     <th:block th:if="${c.isTrong()}">
                                         <button type="button" class="btn btn-sm btn-outline-success"
-                                                th:onclick="'openQuickAssignModal(\'' + ${c.maPhong} + '\', \'' + ${c.soPhong} + '\', \'' + ${c.maLoaiPhong} + '\', \'' + ${c.tenLoaiPhong} + '\')'">
+                                                th:data-maphong="${c.maPhong}"
+                                                th:data-sophong="${c.soPhong}"
+                                                th:data-maloaiphong="${c.maLoaiPhong}"
+                                                th:data-tenloaiphong="${c.tenLoaiPhong}"
+                                                onclick="openQuickAssignModalFromBtn(this)">
                                             <i class="bi bi-pin-angle me-1"></i>Gán đơn
                                         </button>
                                     </th:block>
@@ -236,7 +243,8 @@
                                     <!-- Case 4: Đổi trạng thái bảo trì nếu phòng không có khách -->
                                     <th:block th:if="${c.isTrong() or c.isBaoTri()}">
                                         <form th:action="@{'/admin/rooms/toggle-maintenance/' + ${c.maPhong}}" method="post" class="d-inline"
-                                              th:onsubmit="'return confirm(\'Xác nhận ' + (${c.isBaoTri()} ? 'mở lại phòng sẵn sàng' : 'chuyển sang bảo trì') + ' phòng này?\');'">
+                                              th:data-is-baotri="${c.isBaoTri()}"
+                                              onsubmit="return confirm(this.dataset.isBaotri === 'true' ? 'Xác nhận mở lại phòng sẵn sàng?' : 'Xác nhận chuyển sang bảo trì phòng này?');">
                                             <button type="submit" class="btn btn-sm btn-outline-secondary" th:title="${c.isBaoTri() ? 'Mở lại sẵn sàng' : 'Bật bảo trì'}">
                                                 <i class="bi" th:classappend="${c.isBaoTri() ? 'bi-check-lg' : 'bi-tools'}"></i>
                                             </button>
@@ -258,7 +266,7 @@
                 <div class="col-12 col-xl-3">
                     <div class="pending-bookings-box sticky-top" style="top: 85px;">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold text-white mb-0" style="font-size: 1rem;">
+                            <h5 class="fw-bold text-dark mb-0" style="font-size: 1rem;">
                                 <i class="bi bi-inbox-fill text-warning me-1"></i> Đơn Chờ Phân Phòng
                             </h5>
                             <span class="badge bg-warning text-dark" th:text="${pendingBookings.size()}">0</span>
@@ -275,7 +283,7 @@
 
                                 <div class="pending-guest" th:text="${b.hoTenKhach}">Nguyễn Văn B</div>
                                 <div class="pending-meta">
-                                    <div><i class="bi bi-door-closed me-1"></i><strong class="text-light" th:text="${b.tenLoaiPhong}">Deluxe DBL</strong></div>
+                                    <div><i class="bi bi-door-closed me-1"></i><strong class="text-dark" th:text="${b.tenLoaiPhong}">Deluxe DBL</strong></div>
                                     <div><i class="bi bi-building me-1"></i><span th:text="${b.tenKhu}">FIVITEL Sông Ngân</span></div>
                                     <div><i class="bi bi-calendar-event me-1"></i><span th:text="${#temporals.format(b.ngayNhanPhong, 'dd/MM')} + ' - ' + ${#temporals.format(b.ngayTraPhong, 'dd/MM/yyyy')}">22/05 - 24/05/2026</span></div>
                                 </div>
@@ -292,7 +300,11 @@
 
                                 <div class="d-grid mt-2" th:if="${!b.isDaPhanDu()}">
                                     <button type="button" class="btn btn-sm btn-gold fw-bold py-1"
-                                            th:onclick="'openAssignBookingModal(\'' + ${b.maDatPhong} + '\', \'' + ${b.hoTenKhach} + '\', \'' + ${b.tenLoaiPhong} + '\', \'' + ${b.soLuongConThieu} + '\')'">
+                                            th:data-madatphong="${b.maDatPhong}"
+                                            th:data-tenkhach="${b.hoTenKhach}"
+                                            th:data-tenloaiphong="${b.tenLoaiPhong}"
+                                            th:data-conthieu="${b.soLuongConThieu}"
+                                            onclick="openAssignBookingModalFromBtn(this)">
                                         <i class="bi bi-plus-circle me-1"></i>Phân phòng ngay
                                     </button>
                                 </div>
@@ -310,30 +322,30 @@
             <!-- MODAL PHÂN PHÒNG (Room Assignment Modal) -->
             <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content" style="background: #0c241b; border: 1px solid rgba(52, 211, 153, 0.4); color: #fff;">
+                    <div class="modal-content shadow-lg" style="background: #ffffff; border: 1px solid #e2e8f0; color: #0f172a;">
                         <form th:action="@{/admin/room-map/assign}" method="post">
-                            <div class="modal-header border-bottom border-secondary border-opacity-25">
-                                <h5 class="modal-title fw-bold text-white" id="assignModalLabel">
+                            <div class="modal-header border-bottom border-light">
+                                <h5 class="modal-title fw-bold text-dark" id="assignModalLabel">
                                     <i class="bi bi-key-fill text-warning me-2"></i>Phân Phòng Vật Lý Cho Đơn Đặt
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body p-4">
                                 <input type="hidden" id="modalMaDatPhong" name="maDatPhong">
                                 <input type="hidden" name="returnDate" th:value="${targetDate}">
 
-                                <div class="p-3 mb-3 rounded-3" style="background: rgba(0,0,0,0.35); border: 1px solid var(--border-glass);">
+                                <div class="p-3 mb-3 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                                     <div class="d-flex justify-content-between mb-1">
                                         <span class="text-muted small">Mã đặt phòng:</span>
                                         <strong class="text-warning" id="modalDisplayMaDatPhong">DP000</strong>
                                     </div>
                                     <div class="d-flex justify-content-between mb-1">
                                         <span class="text-muted small">Khách hàng:</span>
-                                        <strong class="text-white" id="modalDisplayTenKhach">...</strong>
+                                        <strong class="text-dark" id="modalDisplayTenKhach">...</strong>
                                     </div>
                                     <div class="d-flex justify-content-between mb-1">
                                         <span class="text-muted small">Loại phòng:</span>
-                                        <span class="text-light" id="modalDisplayLoaiPhong">...</span>
+                                        <span class="text-dark fw-semibold" id="modalDisplayLoaiPhong">...</span>
                                     </div>
                                     <div class="d-flex justify-content-between">
                                         <span class="text-muted small">Số phòng cần phân:</span>
@@ -361,7 +373,7 @@
             </div>
         </main>
     </div>
-    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
@@ -427,6 +439,14 @@
                     select.value = maPhong;
                 }
             }, 500);
+        }
+
+        function openAssignBookingModalFromBtn(btn) {
+            openAssignBookingModal(btn.dataset.madatphong, btn.dataset.tenkhach, btn.dataset.tenloaiphong, btn.dataset.conthieu);
+        }
+
+        function openQuickAssignModalFromBtn(btn) {
+            openQuickAssignModal(btn.dataset.maphong, btn.dataset.sophong, btn.dataset.maloaiphong, btn.dataset.tenloaiphong);
         }
     </script>
 </body>

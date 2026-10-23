@@ -1117,23 +1117,93 @@ table tbody td.text-light,
     color: #0f172a !important;
 }
 
-/* Đảm bảo tất cả input, textarea và select luôn sáng sủa, chữ rõ ràng */
-input.form-control,
-textarea.form-control,
-select.form-select,
-.form-control {
-    background-color: #ffffff !important;
-    color: #0f172a !important;
-    border: 1.5px solid #cbd5e1 !important;
+/* Đảm bảo toàn bộ input, textarea và select trên toàn hệ thống có độ tương phản cao, 
+   nền không bị trắng toát làm chìm con trỏ chuột màu trắng của Windows,
+   đồng thời tích hợp custom dark cursor để luôn nhìn thấy rõ ràng mọi lúc */
+:root {
+    --cursor-text-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='24' viewBox='0 0 16 24'%3E%3Cpath d='M8 3v18M4 3h8M4 21h8' stroke='%230f172a' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M8 3v18M4 3h8M4 21h8' stroke='%23ffffff' stroke-width='0.6' stroke-linecap='round'/%3E%3C/svg%3E") 8 12, text;
 }
 
+input.form-control,
+textarea.form-control,
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+input[type="search"],
+textarea {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+    cursor: var(--cursor-text-dark) !important;
+    caret-color: #059669 !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+select.form-select,
+.form-select {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Hover: Đổi sang màu xám nhạt rõ ràng (#f1f5f9) và viền ngọc bích (#059669) 
+   để con trỏ chuột màu trắng của Windows nổi bật hoàn toàn, không bao giờ bị chìm */
+input.form-control:hover,
+textarea.form-control:hover,
+.form-control:hover,
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="tel"]:hover,
+input[type="number"]:hover,
+input[type="date"]:hover,
+input[type="search"]:hover,
+textarea:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #059669 !important;
+    cursor: var(--cursor-text-dark) !important;
+}
+
+select.form-select:hover,
+.form-select:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #059669 !important;
+    cursor: pointer !important;
+}
+
+/* Focus: Nhấn vào để gõ thì sáng bừng tinh tế (#ffffff) với viền ngọc bích và bóng đổ */
 input.form-control:focus,
 textarea.form-control:focus,
-select.form-select:focus {
+.form-control:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="search"]:focus,
+textarea:focus {
     background-color: #ffffff !important;
     color: #0f172a !important;
     border-color: #059669 !important;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+    cursor: var(--cursor-text-dark) !important;
+    caret-color: #059669 !important;
+}
+
+select.form-select:focus,
+.form-select:focus {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #059669 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+    cursor: pointer !important;
 }
 
 input.form-control::placeholder,
@@ -1147,7 +1217,8 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
     -webkit-text-fill-color: #0f172a !important;
+    caret-color: #059669 !important;
 }
 

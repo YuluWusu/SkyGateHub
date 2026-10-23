@@ -54,10 +54,13 @@ public class AdminRoomController {
 
         String[] sortParts = sortParam.split(",");
         String sortField = sortParts[0];
+        if (!"soPhong".equals(sortField) && !"maPhong".equals(sortField) && !"trangThai".equals(sortField) && !"id".equals(sortField)) {
+            sortField = "soPhong";
+        }
         Sort.Direction direction = (sortParts.length > 1 && "desc".equalsIgnoreCase(sortParts[1]))
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        Pageable pageable = PageRequest.of(page, Math.max(15, size), Sort.by(direction, sortField));
         Page<Phong> roomsPage = phongService.searchPhong(maKhu, maLoaiPhong, trangThai, keyword, pageable);
 
         List<KhuLuuTru> khuList = loaiPhongService.getAllKhuLuuTru();

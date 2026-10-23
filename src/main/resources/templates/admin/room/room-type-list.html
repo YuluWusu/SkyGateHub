@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -9,6 +9,9 @@
     <link rel="stylesheet" th:href="@{/css/base.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
     <link rel="stylesheet" th:href="@{/css/modules/room-admin.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}">
 </head>
 <body class="d-flex flex-column min-vh-100">
     <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
@@ -20,7 +23,7 @@
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <div>
-                    <h3 class="fw-bold text-white mb-1" style="letter-spacing: -0.5px;">
+                    <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">
                         <i class="bi bi-building text-gold me-2"></i>Hạng phòng & Khu lưu trú
                     </h3>
                     <p class="text-muted mb-0 small">
@@ -44,7 +47,7 @@
             </div>
 
             <!-- Navigation Tabs between Hạng Phòng & Khu Lưu Trú -->
-            <ul class="nav nav-pills mb-4 gap-2 border-bottom border-secondary border-opacity-25 pb-3" id="roomTypeTabs" role="tablist">
+            <ul class="nav nav-pills mb-4 gap-2 border-bottom border-light pb-3" id="roomTypeTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active fw-bold px-4 py-2" id="room-types-tab" data-bs-toggle="tab" data-bs-target="#room-types-pane" type="button" role="tab">
                         <i class="bi bi-card-list me-1"></i> Danh mục Hạng phòng
@@ -52,7 +55,7 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link fw-bold px-4 py-2 text-white" id="khu-tab" data-bs-toggle="tab" data-bs-target="#khu-pane" type="button" role="tab">
+                    <button class="nav-link fw-bold px-4 py-2 text-dark" id="khu-tab" data-bs-toggle="tab" data-bs-target="#khu-pane" type="button" role="tab">
                         <i class="bi bi-houses me-1"></i> Các Phân khu Lưu trú
                         <span class="badge bg-success ms-1" th:text="${khuList != null ? khuList.size() : 0}">0</span>
                     </button>
@@ -212,7 +215,10 @@
 
                                                 <button type="button"
                                                         class="btn btn-sm btn-outline-danger"
-                                                        th:onclick="'confirmDeleteRoomType(' + ${lp.id} + ', \'' + ${lp.tenLoaiPhong} + '\', \'' + ${lp.maLoaiPhong} + '\')'"
+                                                        th:data-id="${lp.id}"
+                                                        th:data-ten="${lp.tenLoaiPhong}"
+                                                        th:data-ma="${lp.maLoaiPhong}"
+                                                        onclick="confirmDeleteRoomType(this.dataset.id, this.dataset.ten, this.dataset.ma)"
                                                         title="Xóa hạng phòng">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -313,11 +319,19 @@
                                     </span>
                                     <div class="d-flex gap-1">
                                         <button type="button" class="btn btn-sm btn-outline-info"
-                                                th:onclick="'openEditKhuModal(' + ${khu.maKhu} + ', \'' + ${khu.tenKhu} + '\', ' + ${khu.hangSao} + ', \'' + ${khu.diaChi != null ? khu.diaChi : ''} + '\', \'' + ${khu.email != null ? khu.email : ''} + '\', \'' + ${khu.hotline != null ? khu.hotline : ''} + '\')'">
+                                                th:data-makhu="${khu.maKhu}"
+                                                th:data-tenkhu="${khu.tenKhu}"
+                                                th:data-hangsao="${khu.hangSao}"
+                                                th:data-diachi="${khu.diaChi != null ? khu.diaChi : ''}"
+                                                th:data-email="${khu.email != null ? khu.email : ''}"
+                                                th:data-hotline="${khu.hotline != null ? khu.hotline : ''}"
+                                                onclick="openEditKhuModal(this.dataset.makhu, this.dataset.tenkhu, this.dataset.hangsao, this.dataset.diachi, this.dataset.email, this.dataset.hotline)">
                                             <i class="bi bi-pencil"></i> Sửa
                                         </button>
                                         <button type="button" class="btn btn-sm btn-outline-danger"
-                                                th:onclick="'confirmDeleteKhu(' + ${khu.maKhu} + ', \'' + ${khu.tenKhu} + '\')'">
+                                                th:data-makhu="${khu.maKhu}"
+                                                th:data-tenkhu="${khu.tenKhu}"
+                                                onclick="confirmDeleteKhu(this.dataset.makhu, this.dataset.tenkhu)">
                                             <i class="bi bi-trash"></i> Xóa
                                         </button>
                                     </div>
@@ -485,7 +499,7 @@
             </div>
         </main>
     </div>
-    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>

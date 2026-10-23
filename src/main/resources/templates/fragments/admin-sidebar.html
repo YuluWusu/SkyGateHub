@@ -1,4 +1,4 @@
-<div xmlns:th="http://www.thymeleaf.org" class="skygate-sidebar" style="width: 280px; min-width: 280px; min-height: 88vh;">
+<div xmlns:th="http://www.thymeleaf.org" class="skygate-sidebar">
     <div class="sidebar-brand-box">
         <a th:href="@{/admin/rooms}" class="d-flex align-items-center gap-2 text-decoration-none">
             <img th:src="@{/images/logo/images-removebg-preview.png}"
@@ -14,8 +14,7 @@
     <div class="sidebar-scrollable" style="flex: 1; overflow-y: auto; padding-right: 2px;">
         <div class="sidebar-section">
             <div class="sidebar-section-header">
-                <span>Vé & Tài khoản (TV1)</span>
-                <span class="badge bg-success bg-opacity-25 text-success sidebar-tag">Sẵn sàng</span>
+                <span><i class="bi bi-ticket-perforated-fill me-1 text-success"></i>Vé &amp; Tài Khoản</span>
             </div>
             <a th:href="@{/admin/users}" class="sidebar-link">
                 <span>Quản trị người dùng</span>
@@ -30,8 +29,7 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section-header">
-                <span>Khách sạn & Phòng nghỉ (TV3)</span>
-                <span class="badge bg-success bg-opacity-25 text-success sidebar-tag">Sẵn sàng</span>
+                <span><i class="bi bi-building-fill me-1 text-success"></i>Khách Sạn &amp; Lưu Trú</span>
             </div>
             <a th:href="@{/admin/room-map}" class="sidebar-link">
                 <span>Sơ đồ phòng (Room Map)</span>
@@ -46,43 +44,34 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section-header">
-                <span>Nhà hàng & Ẩm thực (TV4)</span>
-                <span class="badge bg-secondary bg-opacity-25 text-muted sidebar-tag">Chờ TV4</span>
+                <span><i class="bi bi-cup-hot-fill me-1 text-success"></i>Nhà Hàng &amp; Ẩm Thực</span>
             </div>
+            <a th:href="@{/admin/dining/table-assignment}" class="sidebar-link">
+                <span>Sơ đồ &amp; Xếp bàn ăn</span>
+            </a>
+            <a th:href="@{/admin/dining/meal-schedule}" class="sidebar-link">
+                <span>Lịch phục vụ theo ca</span>
+            </a>
             <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV4: Nhà hàng & Ẩm thực', 'Thực đơn theo ca ăn', 'DICH_VU_AN_UONG, CA_AN')">
                 <span>Thực đơn theo ca ăn</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV4</span>
-            </a>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV4: Nhà hàng & Ẩm thực', 'Sơ đồ bàn ăn & khu vực', 'BAN_AN')">
-                <span>Sơ đồ bàn ăn</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV4</span>
-            </a>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV4: Nhà hàng & Ẩm thực', 'Điều phối & xếp bàn', 'DAT_AN')">
-                <span>Nhân viên xếp bàn</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV4</span>
             </a>
         </div>
 
         <div class="sidebar-section">
             <div class="sidebar-section-header">
-                <span>Đơn hàng & Soát vé (TV5)</span>
-                <span class="badge bg-secondary bg-opacity-25 text-muted sidebar-tag">Chờ TV5</span>
+                <span><i class="bi bi-receipt-cutoff me-1 text-success"></i>Đơn Hàng &amp; Soát Vé</span>
             </div>
+            <a th:href="@{/admin/checkin}" class="sidebar-link">
+                <span>Trạm soát vé cổng (Check-in)</span>
+            </a>
             <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV5: Đơn hàng & Soát vé', 'Quản lý đơn đặt tổng hợp', 'DON_DAT, CHI_TIET_DON')">
                 <span>Quản lý đơn đặt</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV5</span>
             </a>
             <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV5: Đơn hàng & Soát vé', 'Lịch sử thanh toán & cọc', 'THANH_TOAN')">
                 <span>Lịch sử thanh toán</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV5</span>
-            </a>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV5: Đơn hàng & Soát vé', 'Trạm soát vé 4 điểm', 'LICHSU_CHECK_IN, VE')">
-                <span>Trạm soát vé 4 điểm</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV5</span>
             </a>
             <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV5: Đơn hàng & Soát vé', 'Báo cáo doanh thu & công suất', 'DON_DAT, THANH_TOAN')">
                 <span>Báo cáo doanh thu</span>
-                <span class="text-muted small" style="font-size: 0.72rem;">TV5</span>
             </a>
         </div>
     </div>

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khách sạn & Khu nghỉ dưỡng FIVITEL — Cổng Trời Đông Giang</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -78,9 +80,6 @@
         <!-- Hero Section -->
         <section class="hotel-hero">
             <div class="container">
-                <span class="badge bg-gold text-dark px-3 py-2 fw-bold text-uppercase mb-3" style="letter-spacing: 1px;">
-                    EcoGate Luxury Hospitality
-                </span>
                 <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -1px; text-shadow: 0 4px 15px rgba(0,0,0,0.6);">
                     Hệ Thống Khách Sạn & Nghỉ Dưỡng FIVITEL
                 </h1>
@@ -141,20 +140,52 @@
                 </div>
 
                 <div class="row g-4">
-                    <div class="col-12 col-md-6 col-lg-3" th:each="khu : ${khuList}">
-                        <div class="resort-area-card h-100 p-3 d-flex flex-column shadow-sm">
-                            <img th:src="${khu.maKhu == 1 ? '/images/rooms/fivitel-song-ngan.jpg' : (khu.maKhu == 2 ? '/images/rooms/cau-kieu.jpg' : (khu.maKhu == 3 ? '/images/rooms/o-thuoc.jpg' : '/images/rooms/nha-moong.jpg'))}"
-                                 style="height: 160px; object-fit: cover; width: 100%; border-radius: 12px; margin-bottom: 0.85rem;" th:alt="${khu.tenKhu}">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-gold text-dark fw-bold font-monospace small" th:text="${khu.hangSao} + ' SAO ★★★★★'">5 SAO</span>
-                                <small class="text-muted"><i class="bi bi-shield-check text-success me-1"></i>Chuẩn Quốc Tế</small>
-                            </div>
-                            <h5 class="fw-bold text-dark mb-2" th:text="${khu.tenKhu}">FIVITEL Sông Ngân</h5>
-                            <p class="text-muted small flex-grow-1 mb-3" th:text="${khu.diaChi != null ? khu.diaChi : 'Khu vực cảnh quan thiên nhiên nguyên sinh Cổng Trời Đông Giang'}"></p>
-                            <div class="pt-2 border-top border-light">
-                                <a th:href="@{/khach-san(maKhu=${khu.maKhu}, ngayNhan=${ngayNhan}, ngayTra=${ngayTra})}" class="btn btn-gold w-100 fw-bold py-2 shadow-sm text-center">
-                                    <i class="bi bi-door-open-fill me-1"></i>Chọn khu này để xem phòng
-                                </a>
+                    <div class="col-12 col-md-6" th:each="khu : ${khuList}">
+                        <div class="card h-100 border-0 shadow-sm overflow-hidden" style="border: 1px solid #e2e8f0 !important; border-radius: 18px; transition: transform 0.25s ease, box-shadow 0.25s ease;">
+                            <a th:href="@{/khach-san(maKhu=${khu.maKhu}, ngayNhan=${ngayNhan}, ngayTra=${ngayTra})}" class="d-block overflow-hidden" style="height: 250px;">
+                                <img th:src="${khu.maKhu == 1 ? '/images/rooms/fivitel-song-ngan.jpg' : (khu.maKhu == 2 ? '/images/rooms/cau-kieu.jpg' : (khu.maKhu == 3 ? '/images/rooms/o-thuoc.jpg' : '/images/rooms/nha-moong.jpg'))}"
+                                     style="height: 100%; width: 100%; object-fit: cover; transition: transform 0.4s ease;"
+                                     onmouseover="this.style.transform='scale(1.03)'"
+                                     onmouseout="this.style.transform='scale(1)'"
+                                     th:alt="${khu.tenKhu}">
+                            </a>
+                            <div class="p-3 p-md-4">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 pb-1">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.15rem;" th:text="${khu.tenKhu}">FIVITEL Sông Ngân</h5>
+                                        <span class="ms-1" style="color: #eab308; font-size: 0.88rem;">
+                                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill" th:if="${khu.hangSao == null or khu.hangSao >= 5}"></i>
+                                        </span>
+                                    </div>
+                                    <div class="text-end small text-muted">
+                                        Chỉ từ <span class="fw-bold fs-6" style="color: #047857;" th:text="${khu.maKhu == 1 or khu.maKhu == 4 ? '900.000 đ' : '800.000 đ'}">900.000 đ</span>/đêm
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-end mt-2 pt-1 gap-2 flex-wrap">
+                                    <div class="text-secondary small d-flex flex-column gap-1" style="font-size: 0.84rem; line-height: 1.6;">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-geo-alt me-2 text-muted" style="font-size: 0.95rem;"></i>
+                                            <span th:text="${khu.diaChi != null ? khu.diaChi : 'Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng'}">Thôn A Sờ, Xã Bến Hiên, Thành Phố Đà Nẵng</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-envelope me-2 text-muted" style="font-size: 0.95rem;"></i>
+                                            <span th:text="${khu.email != null ? khu.email : 'booking@congtroidonggiang.com'}">booking@congtroidonggiang.com</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-telephone me-2 text-muted" style="font-size: 0.95rem;"></i>
+                                            <span th:text="${khu.hotline != null ? khu.hotline : '1900 866644'}">1900 866644</span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <a th:href="@{/khach-san(maKhu=${khu.maKhu}, ngayNhan=${ngayNhan}, ngayTra=${ngayTra})}"
+                                           class="btn btn-outline-warning fw-semibold px-3 py-1 text-nowrap shadow-sm"
+                                           style="border: 1.5px solid #ea580c; color: #c2410c !important; border-radius: 9999px; font-size: 0.86rem; background: #ffffff;">
+                                            Xem thêm <i class="bi bi-arrow-right ms-1 text-warning"></i>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

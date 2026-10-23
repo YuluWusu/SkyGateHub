@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle}">Quy Trình Đặt Dịch Vụ — Cổng Trời Đông Giang</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
@@ -368,9 +370,9 @@
                         <strong class="text-success" style="font-size: 0.95rem;">1900 866644</strong>
                     </div>
                 </a>
-                <a th:href="@{/}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" onclick="return confirm('Bạn có muốn tạm dừng quá trình đặt dịch vụ để quay về trang chủ?')">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" onclick="openExitModal()">
                     <i class="bi bi-x-lg me-1"></i> Thoát
-                </a>
+                </button>
             </div>
         </div>
     </header>
@@ -439,12 +441,12 @@
                                             <span class="price-highlight" th:text="${#numbers.formatDecimal(ticketPrices[lv.maLoaiVe], 0, 'COMMA', 0, 'POINT')} + ' đ'">300,000 đ</span>
                                         </div>
                                         <div class="qty-control">
-                                            <button type="button" class="qty-btn" onclick="changeQty('ticket', '[[${lv.maLoaiVe}]]', -1)">-</button>
+                                            <button type="button" class="qty-btn" onclick="stepQty(this, -1)">-</button>
                                             <input type="hidden" name="ticketCode" th:value="${lv.maLoaiVe}">
                                             <input type="text" name="ticketQty" th:id="'qty-ticket-' + ${lv.maLoaiVe}" value="0" readonly class="qty-input"
                                                    th:data-price="${ticketPrices[lv.maLoaiVe]}"
                                                    th:data-name="${lv.tenLoaiVe}">
-                                            <button type="button" class="qty-btn" onclick="changeQty('ticket', '[[${lv.maLoaiVe}]]', 1)">+</button>
+                                            <button type="button" class="qty-btn" onclick="stepQty(this, 1)">+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -551,16 +553,19 @@
                                     </div>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
                                         <div>
-                                            <span class="text-muted small d-block">Giá 1 đêm:</span>
+                                            <span class="text-muted small d-block">Đơn giá / đêm:</span>
                                             <span class="price-highlight" th:text="${#numbers.formatDecimal(lp.giaCoBan, 0, 'COMMA', 0, 'POINT')} + ' đ'">900,000 đ</span>
                                         </div>
-                                        <div class="qty-control">
-                                            <button type="button" class="qty-btn" onclick="changeQty('room', '[[${lp.maLoaiPhong}]]', -1)">-</button>
-                                            <input type="hidden" name="roomTypeCode" th:value="${lp.maLoaiPhong}">
-                                            <input type="text" name="roomQty" th:id="'qty-room-' + ${lp.maLoaiPhong}" value="0" readonly class="qty-input"
-                                                   th:data-price="${lp.giaCoBan}"
-                                                   th:data-name="${lp.tenLoaiPhong}">
-                                            <button type="button" class="qty-btn" onclick="changeQty('room', '[[${lp.maLoaiPhong}]]', 1)">+</button>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-muted small fw-semibold">Số phòng:</span>
+                                            <div class="qty-control">
+                                                <button type="button" class="qty-btn" onclick="stepQty(this, -1)">-</button>
+                                                <input type="hidden" name="roomTypeCode" th:value="${lp.maLoaiPhong}">
+                                                <input type="text" name="roomQty" th:id="'qty-room-' + ${lp.maLoaiPhong}" value="0" readonly class="qty-input"
+                                                       th:data-price="${lp.giaCoBan}"
+                                                       th:data-name="${lp.tenLoaiPhong}">
+                                                <button type="button" class="qty-btn" onclick="stepQty(this, 1)">+</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -646,12 +651,12 @@
                                             <span class="price-highlight" th:text="${#numbers.formatDecimal(dva.giaDichVu, 0, 'COMMA', 0, 'POINT')} + ' đ'">250,000 đ</span>
                                         </div>
                                         <div class="qty-control">
-                                            <button type="button" class="qty-btn" onclick="changeQty('dining', '[[${dva.maDichVu}]]', -1)">-</button>
+                                            <button type="button" class="qty-btn" onclick="stepQty(this, -1)">-</button>
                                             <input type="hidden" name="diningCode" th:value="${dva.maDichVu}">
                                             <input type="text" name="diningQty" th:id="'qty-dining-' + ${dva.maDichVu}" value="0" readonly class="qty-input"
                                                    th:data-price="${dva.giaDichVu}"
                                                    th:data-name="${dva.tenDichVu}">
-                                            <button type="button" class="qty-btn" onclick="changeQty('dining', '[[${dva.maDichVu}]]', 1)">+</button>
+                                            <button type="button" class="qty-btn" onclick="stepQty(this, 1)">+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -908,7 +913,35 @@
             goToStep(4);
         }
 
+        function stepQty(btn, delta) {
+            const parent = btn.closest('.qty-control');
+            if (!parent) return;
+            const input = parent.querySelector('input.qty-input');
+            if (!input) return;
+
+            let val = parseInt(input.value) || 0;
+            val = Math.max(0, val + delta);
+            input.value = val;
+
+            const card = btn.closest('.item-select-card');
+            if (card) {
+                if (val > 0) card.classList.add('selected');
+                else card.classList.remove('selected');
+            }
+
+            if (input.name === 'roomQty' && val > 0) {
+                document.getElementById('bookHotelFlag').value = 'true';
+            }
+            if (input.name === 'diningQty' && val > 0) {
+                document.getElementById('bookDiningFlag').value = 'true';
+            }
+
+            updateSummary();
+        }
+
         function changeQty(type, code, delta) {
+            if (!code) return;
+            code = String(code).replace(/\[\[|\]\]/g, '').trim();
             const input = document.getElementById(`qty-${type}-${code}`);
             if (!input) return;
 
@@ -933,11 +966,31 @@
         }
 
         function calculateNights() {
-            const inDate = new Date(document.getElementById('ngayNhanInput').value);
-            const outDate = new Date(document.getElementById('ngayTraInput').value);
-            if (!isNaN(inDate) && !isNaN(outDate) && outDate > inDate) {
-                const diffTime = Math.abs(outDate - inDate);
-                nightsCount = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const inInput = document.getElementById('ngayNhanInput');
+            const outInput = document.getElementById('ngayTraInput');
+            if (!inInput || !outInput) return;
+
+            if (inInput.value) {
+                const parts = inInput.value.split('-').map(Number);
+                if (parts.length === 3) {
+                    const nextDay = new Date(parts[0], parts[1] - 1, parts[2] + 1);
+                    const mm = String(nextDay.getMonth() + 1).padStart(2, '0');
+                    const dd = String(nextDay.getDate()).padStart(2, '0');
+                    const nextDayStr = `${nextDay.getFullYear()}-${mm}-${dd}`;
+                    outInput.min = nextDayStr;
+                    if (!outInput.value || outInput.value <= inInput.value) {
+                        outInput.value = nextDayStr;
+                    }
+                }
+            }
+
+            const inParts = inInput.value ? inInput.value.split('-').map(Number) : [];
+            const outParts = outInput.value ? outInput.value.split('-').map(Number) : [];
+            if (inParts.length === 3 && outParts.length === 3) {
+                const inDate = new Date(inParts[0], inParts[1] - 1, inParts[2]);
+                const outDate = new Date(outParts[0], outParts[1] - 1, outParts[2]);
+                const diffTime = outDate - inDate;
+                nightsCount = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
             } else {
                 nightsCount = 1;
             }
@@ -1077,11 +1130,54 @@
             });
         }
 
+        window.openExitModal = function() {
+            const modalEl = document.getElementById('exitConfirmModal');
+            if (modalEl) {
+                if (window.bootstrap && window.bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                } else {
+                    modalEl.classList.add('show');
+                    modalEl.style.display = 'block';
+                }
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             calculateNights();
             updateSummary();
         });
     </script>
+
+    <!-- Modal Xác Nhận Thoát Đặt Dịch Vụ -->
+    <div class="modal fade" id="exitConfirmModal" tabindex="-1" aria-labelledby="exitModalLabel" aria-hidden="true" style="z-index: 10050;">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+            <div class="modal-content shadow-lg border-0" style="border-radius: 20px; background: #ffffff;">
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3 mx-auto d-flex align-items-center justify-content-center rounded-circle"
+                         style="width: 64px; height: 64px; background: #fee2e2; color: #dc2626; font-size: 1.8rem;">
+                        <i class="bi bi-box-arrow-left"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" id="exitModalLabel" style="color: #0f172a;">Tạm dừng đặt dịch vụ?</h5>
+                    <p class="text-muted small mb-4">
+                        Quý khách có chắc chắn muốn kết thúc quá trình đặt dịch vụ để quay về trang chủ? Các dịch vụ đang chọn sẽ không được lưu.
+                    </p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-light px-4 py-2 fw-semibold" data-bs-dismiss="modal"
+                                style="border-radius: 9999px; border: 1px solid #cbd5e1;">
+                            Ở lại tiếp tục
+                        </button>
+                        <a th:href="@{/}" class="btn btn-danger px-4 py-2 fw-bold" style="border-radius: 9999px;">
+                            Xác nhận thoát
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS (Cần thiết cho Modal & SkygatePicker) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <div th:replace="~{fragments/date-picker-modal :: datePickerModal}"></div>
     <div th:replace="~{fragments/date-picker-modal :: datePickerScript}"></div>
 </body>

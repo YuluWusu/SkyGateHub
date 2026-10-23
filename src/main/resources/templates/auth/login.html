@@ -142,8 +142,11 @@
             font-size: 0.85rem;
             color: #ffffff;
             margin-bottom: 0.5rem;
-        }
     </style>
+    <link rel="icon" type="image/png" th:href="@{/images/logo/images-removebg-preview.png}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}">
 </head>
 <body>
     <div class="auth-split-wrapper">
@@ -167,11 +170,8 @@
 
                     <!-- Login Card Rộng rãi, Sang trọng -->
                     <div class="card p-4 p-md-5 shadow-sm" style="background: #ffffff; border: 1px solid #e2e8f0 !important; border-radius: 20px;">
-                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <div class="mb-3 pb-2 border-bottom">
                             <h5 class="fw-bold mb-0" style="color: #0f172a;">Đăng nhập tài khoản</h5>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 small">
-                                <i class="bi bi-person-badge me-1"></i>Nhân viên
-                            </span>
                         </div>
 
                         <form th:action="@{/login}" method="post" autocomplete="off">
@@ -230,6 +230,19 @@
                         <a th:href="@{/}" class="text-muted text-decoration-none small hover-underline">
                             <i class="bi bi-arrow-left me-1"></i>Quay về Website Khách hàng
                         </a>
+                    </div>
+
+                    <!-- Footer trách nhiệm quản lý & an toàn thông tin -->
+                    <div class="mt-4 pt-3 border-top text-center text-muted" style="font-size: 0.78rem; line-height: 1.5;">
+                        <div class="fw-semibold text-secondary mb-1">
+                            <i class="bi bi-shield-lock me-1 text-success"></i>CỔNG QUẢN TRỊ NỘI BỘ — ECOGATE RESORT
+                        </div>
+                        <div class="small">
+                            Cán bộ, nhân viên tuân thủ quy chế bảo mật thông tin &amp; dữ liệu khách hàng.
+                        </div>
+                        <div class="text-muted small mt-1">
+                            Mọi thao tác nghiệp vụ được ghi nhận nhật ký hệ thống (Audit Log).
+                        </div>
                     </div>
                 </div>
             </div>

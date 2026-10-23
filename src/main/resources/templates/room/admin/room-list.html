@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -9,6 +9,9 @@
     <link rel="stylesheet" th:href="@{/css/base.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
     <link rel="stylesheet" th:href="@{/css/modules/room-admin.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}">
 </head>
 <body class="d-flex flex-column min-vh-100">
     <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
@@ -102,42 +105,36 @@
             </div>
 
             <!-- Table of Physical Rooms -->
-            <div class="card overflow-hidden shadow-sm" style="border: 1px solid var(--border-glass);">
+            <div class="card overflow-hidden shadow-sm" style="border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead style="background: rgba(8, 22, 17, 0.95);">
+                        <thead class="table-light border-bottom">
                             <tr>
                                 <th style="width: 120px;">
-                                    <a class="text-white text-decoration-none d-flex align-items-center gap-1"
+                                    <a class="text-dark fw-bold text-decoration-none d-flex align-items-center gap-1"
                                        th:href="@{/admin/rooms(page=${currentPage}, keyword=${keyword}, maKhu=${selectedMaKhu}, maLoaiPhong=${selectedMaLoaiPhong}, trangThai=${selectedTrangThai}, sort=${sortParam == 'soPhong,asc' ? 'soPhong,desc' : 'soPhong,asc'})}">
                                         <span>Số phòng</span>
-                                        <i class="bi" th:classappend="${sortParam.startsWith('soPhong')} ? (${sortParam.endsWith('asc')} ? 'bi-sort-up text-gold' : 'bi-sort-down text-gold') : 'bi-arrow-down-up text-muted'"></i>
+                                        <i class="bi" th:classappend="${sortParam.startsWith('soPhong')} ? (${sortParam.endsWith('asc')} ? 'bi-sort-up text-success' : 'bi-sort-down text-success') : 'bi-arrow-down-up text-muted'"></i>
                                     </a>
                                 </th>
                                 <th style="width: 130px;">
-                                    <a class="text-white text-decoration-none d-flex align-items-center gap-1"
+                                    <a class="text-dark fw-bold text-decoration-none d-flex align-items-center gap-1"
                                        th:href="@{/admin/rooms(page=${currentPage}, keyword=${keyword}, maKhu=${selectedMaKhu}, maLoaiPhong=${selectedMaLoaiPhong}, trangThai=${selectedTrangThai}, sort=${sortParam == 'maPhong,asc' ? 'maPhong,desc' : 'maPhong,asc'})}">
                                         <span>Mã phòng</span>
-                                        <i class="bi" th:classappend="${sortParam.startsWith('maPhong')} ? (${sortParam.endsWith('asc')} ? 'bi-sort-up text-gold' : 'bi-sort-down text-gold') : 'bi-arrow-down-up text-muted'"></i>
+                                        <i class="bi" th:classappend="${sortParam.startsWith('maPhong')} ? (${sortParam.endsWith('asc')} ? 'bi-sort-up text-success' : 'bi-sort-down text-success') : 'bi-arrow-down-up text-muted'"></i>
                                     </a>
                                 </th>
-                                <th>
-                                    <a class="text-white text-decoration-none d-flex align-items-center gap-1"
-                                       th:href="@{/admin/rooms(page=${currentPage}, keyword=${keyword}, maKhu=${selectedMaKhu}, maLoaiPhong=${selectedMaLoaiPhong}, trangThai=${selectedTrangThai}, sort=${sortParam == 'loaiPhong.tenLoaiPhong,asc' ? 'loaiPhong.tenLoaiPhong,desc' : 'loaiPhong.tenLoaiPhong,asc'})}">
-                                        <span>Hạng phòng & Khu vực</span>
-                                        <i class="bi" th:classappend="${sortParam.startsWith('loaiPhong.tenLoaiPhong')} ? (${sortParam.endsWith('asc')} ? 'bi-sort-up text-gold' : 'bi-sort-down text-gold') : 'bi-arrow-down-up text-muted'"></i>
-                                    </a>
-                                </th>
-                                <th style="width: 150px;">Giá niêm yết</th>
-                                <th style="width: 140px;">Sức chứa</th>
+                                <th><span class="text-dark fw-bold">Hạng phòng & Khu vực</span></th>
+                                <th style="width: 150px;" class="text-dark fw-bold">Giá niêm yết</th>
+                                <th style="width: 140px;" class="text-dark fw-bold">Sức chứa</th>
                                 <th style="width: 150px;">
-                                    <a class="text-white text-decoration-none d-flex align-items-center gap-1"
+                                    <a class="text-dark fw-bold text-decoration-none d-flex align-items-center gap-1"
                                        th:href="@{/admin/rooms(page=${currentPage}, keyword=${keyword}, maKhu=${selectedMaKhu}, maLoaiPhong=${selectedMaLoaiPhong}, trangThai=${selectedTrangThai}, sort=${sortParam == 'trangThai,asc' ? 'trangThai,desc' : 'trangThai,asc'})}">
                                         <span>Trạng thái</span>
-                                        <i class="bi" th:classappend="${sortParam.startsWith('trangThai')} ? (${sortParam.endsWith('asc')} ? 'bi-sort-up text-gold' : 'bi-sort-down text-gold') : 'bi-arrow-down-up text-muted'"></i>
+                                        <i class="bi" th:classappend="${sortParam.startsWith('trangThai')} ? (${sortParam.endsWith('asc')} ? 'bi-sort-up text-success' : 'bi-sort-down text-success') : 'bi-arrow-down-up text-muted'"></i>
                                     </a>
                                 </th>
-                                <th class="text-end pe-4" style="width: 200px;">Thao tác</th>
+                                <th class="text-end pe-4 text-dark fw-bold" style="width: 180px;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -149,44 +146,47 @@
                             </tr>
                             <tr th:each="p : ${roomsPage.content}">
                                 <td class="fw-bold fs-6">
-                                    <span class="badge bg-dark border border-secondary text-white px-2 py-1"
+                                    <span class="badge bg-light text-dark border border-2 px-2.5 py-1.5 fs-6 shadow-sm"
                                           th:text="${p.soPhong}">P101</span>
                                 </td>
-                                <td class="fw-semibold text-gold font-monospace small" th:text="${p.maPhong}">PHONG01</td>
+                                <td class="fw-bold text-primary font-monospace small" th:text="${p.maPhong}">PHONG01</td>
                                 <td>
-                                    <div class="fw-semibold text-white" th:text="${p.loaiPhong != null ? p.loaiPhong.tenLoaiPhong : '-'}">Superior King</div>
+                                    <div class="fw-bold text-dark" th:text="${p.loaiPhong != null ? p.loaiPhong.tenLoaiPhong : '-'}">Superior King</div>
                                     <small class="text-muted" th:text="${p.loaiPhong != null and p.loaiPhong.khuLuuTru != null ? p.loaiPhong.khuLuuTru.tenKhu : '-'}">
                                         FIVITEL Sông Ngân
                                     </small>
                                 </td>
-                                <td class="fw-bold" style="color: #f59e0b;"
+                                <td class="fw-bold text-success fs-6"
                                     th:text="${p.loaiPhong != null and p.loaiPhong.giaCoBan != null ? #numbers.formatDecimal(p.loaiPhong.giaCoBan, 0, 'COMMA', 0, 'POINT') + ' đ' : '-'}">
                                     1,200,000 đ
                                 </td>
                                 <td>
-                                    <small class="text-white d-block" th:if="${p.loaiPhong != null}">
-                                        <i class="bi bi-person me-1 text-info"></i><span th:text="${p.loaiPhong.sucChuaNguoiLon} + ' NL'">2 NL</span>
-                                        <span class="mx-1 opacity-50">|</span>
-                                        <i class="bi bi-person-fill text-warning"></i><span th:text="${p.loaiPhong.sucChuaTreEm} + ' TE'">1 TE</span>
-                                    </small>
+                                    <div class="text-dark small fw-medium" th:if="${p.loaiPhong != null}">
+                                        <i class="bi bi-person-fill text-primary me-1"></i><span th:text="${p.loaiPhong.sucChuaNguoiLon} + ' NL'">2 NL</span>
+                                        <span class="mx-1 text-muted">|</span>
+                                        <i class="bi bi-person text-warning me-1"></i><span th:text="${p.loaiPhong.sucChuaTreEm} + ' TE'">1 TE</span>
+                                    </div>
                                     <small class="text-muted" th:if="${p.loaiPhong != null}" th:text="${p.loaiPhong.dienTich + ' m² - ' + p.loaiPhong.loaiGiuong}">30 m² - King</small>
                                 </td>
                                 <td>
-                                    <span th:if="${p.trangThai.name() == 'SAN_SANG'}" class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1">
-                                        <i class="bi bi-check-circle me-1"></i>Sẵn sàng đón khách
+                                    <span th:if="${p.trangThai != null and p.trangThai.name() == 'SAN_SANG'}" class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5 fw-semibold">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Sẵn sàng
                                     </span>
-                                    <span th:if="${p.trangThai.name() == 'DANG_SU_DUNG'}" class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-2 py-1">
-                                        <i class="bi bi-person-check-fill me-1"></i>Đang có khách ở
+                                    <span th:if="${p.trangThai != null and p.trangThai.name() == 'DANG_SU_DUNG'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5 fw-semibold">
+                                        <i class="bi bi-person-fill-check me-1"></i>Đang có khách
                                     </span>
-                                    <span th:if="${p.trangThai.name() == 'BAO_TRI'}" class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50 px-2 py-1">
+                                    <span th:if="${p.trangThai != null and p.trangThai.name() == 'BAO_TRI'}" class="badge bg-warning-subtle text-dark border border-warning-subtle px-2.5 py-1.5 fw-semibold">
                                         <i class="bi bi-tools me-1"></i>Đang bảo trì
+                                    </span>
+                                    <span th:if="${p.trangThai == null}" class="badge bg-secondary-subtle text-secondary px-2.5 py-1.5">
+                                        Chưa cập nhật
                                     </span>
                                 </td>
                                 <td class="text-end pe-3">
                                     <div class="d-inline-flex gap-1">
                                         <!-- Edit Room -->
                                         <a th:href="@{'/admin/rooms/edit/' + ${p.id}}"
-                                           class="btn btn-sm btn-outline-info"
+                                           class="btn btn-sm btn-outline-primary"
                                            title="Chỉnh sửa thông tin phòng">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
@@ -195,16 +195,19 @@
                                         <form th:action="@{'/admin/rooms/toggle-maintenance/' + ${p.id}}" method="post" class="d-inline">
                                             <button type="submit"
                                                     class="btn btn-sm"
-                                                    th:classappend="${p.trangThai.name() == 'BAO_TRI'} ? 'btn-outline-success' : 'btn-outline-warning'"
-                                                    th:title="${p.trangThai.name() == 'BAO_TRI'} ? 'Chuyển sang Sẵn sàng' : 'Bật bảo trì'">
-                                                <i class="bi" th:classappend="${p.trangThai.name() == 'BAO_TRI'} ? 'bi-check2-circle' : 'bi-tools'"></i>
+                                                    th:classappend="${p.trangThai != null and p.trangThai.name() == 'BAO_TRI'} ? 'btn-outline-success' : 'btn-outline-warning'"
+                                                    th:title="${p.trangThai != null and p.trangThai.name() == 'BAO_TRI'} ? 'Chuyển sang Sẵn sàng' : 'Bật bảo trì'">
+                                                <i class="bi" th:classappend="${p.trangThai != null and p.trangThai.name() == 'BAO_TRI'} ? 'bi-check2-circle' : 'bi-tools'"></i>
                                             </button>
                                         </form>
 
                                         <!-- Delete Room with Modal Trigger -->
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-danger"
-                                                th:onclick="'confirmDelete(' + ${p.id} + ', \'' + ${p.soPhong} + '\', \'' + ${p.maPhong} + '\')'"
+                                                th:data-id="${p.id}"
+                                                th:data-sophong="${p.soPhong}"
+                                                th:data-maphong="${p.maPhong}"
+                                                onclick="confirmDelete(this.dataset.id, this.dataset.sophong, this.dataset.maphong)"
                                                 title="Xóa phòng vật lý">
                                             <i class="bi bi-trash"></i>
                                         </button>
@@ -216,12 +219,12 @@
                 </div>
 
                 <!-- Pagination Footer -->
-                <div class="p-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center flex-wrap gap-2"
+                <div class="p-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2 bg-light bg-opacity-50"
                      th:if="${totalPages > 0}">
                     <div class="text-muted small">
-                        Hiển thị trang <span class="fw-bold text-white" th:text="${currentPage + 1}">1</span> /
-                        <span class="fw-bold text-white" th:text="${totalPages}">5</span>
-                        (Tổng cộng <span class="fw-bold text-gold" th:text="${totalElements}">30</span> phòng)
+                        Hiển thị trang <span class="fw-bold text-dark" th:text="${currentPage + 1}">1</span> /
+                        <span class="fw-bold text-dark" th:text="${totalPages}">5</span>
+                        (Tổng cộng <span class="fw-bold text-success" th:text="${totalElements}">30</span> phòng)
                     </div>
 
                     <nav th:if="${totalPages > 1}" aria-label="Room Pagination">
@@ -272,21 +275,21 @@
             <!-- Modal Xác Nhận Xóa Phòng Vật Lý -->
             <div class="modal fade" id="deleteRoomModal" tabindex="-1" aria-labelledby="deleteRoomModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content" style="background: #0d281e; border: 1px solid rgba(239, 68, 68, 0.4);">
+                    <div class="modal-content border-0 shadow">
                         <form id="deleteRoomForm" method="post" action="">
-                            <div class="modal-header border-bottom border-danger border-opacity-25">
-                                <h5 class="modal-title text-danger fw-bold" id="deleteRoomModalLabel">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title fw-bold" id="deleteRoomModalLabel">
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa phòng vật lý
                                 </h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body text-white">
-                                <p>Bạn có chắc chắn muốn xóa vĩnh viễn phòng <strong id="deleteRoomDisplay" class="text-gold"></strong> (<span id="deleteRoomCode" class="font-monospace"></span>)?</p>
+                            <div class="modal-body text-dark p-4">
+                                <p class="mb-3">Bạn có chắc chắn muốn xóa vĩnh viễn phòng <strong id="deleteRoomDisplay" class="text-danger"></strong> (<span id="deleteRoomCode" class="font-monospace fw-bold"></span>)?</p>
                                 <div class="alert alert-warning py-2 small mb-0">
                                     <i class="bi bi-info-circle-fill me-1"></i> Lưu ý: Không thể xóa phòng đã có lịch sử phân phòng hoặc đang có khách lưu trú.
                                 </div>
                             </div>
-                            <div class="modal-footer border-top border-secondary border-opacity-25">
+                            <div class="modal-footer bg-light">
                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
                                 <button type="submit" class="btn btn-danger fw-bold px-3">
                                     <i class="bi bi-trash-fill me-1"></i>Đồng ý Xóa
@@ -298,7 +301,7 @@
             </div>
         </main>
     </div>
-    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>

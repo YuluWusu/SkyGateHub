@@ -1,5 +1,3 @@
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
-
 .skygate-navbar .nav-admin-dropdown {
     display: none !important;
 }
@@ -11,13 +9,32 @@
 .skygate-sidebar {
     width: 280px;
     min-width: 280px;
+    max-width: 280px;
     background: #ffffff !important;
-    backdrop-filter: blur(16px);
     border-right: 1px solid #e2e8f0 !important;
     padding: 1.25rem 1rem !important;
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.02);
+    position: sticky;
+    top: 57px;
+    height: calc(100vh - 57px);
+    max-height: calc(100vh - 57px);
+    align-self: flex-start;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.sidebar-scrollable {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    min-height: 0;
+}
+
+main.flex-grow-1 {
+    min-width: 0;
 }
 
 .sidebar-brand-box {
@@ -66,16 +83,27 @@
 }
 
 .sidebar-section-header {
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     text-transform: uppercase;
-    letter-spacing: 0.7px;
-    font-weight: 700;
-    color: #64748b;
-    padding: 0 8px;
-    margin-bottom: 0.4rem;
+    letter-spacing: 0.75px;
+    font-weight: 800;
+    color: #065f46 !important;
+    background: linear-gradient(90deg, #ecfdf5 0%, #f0fdf4 100%);
+    border-left: 3.5px solid #059669;
+    padding: 7px 10px;
+    border-radius: 0 8px 8px 0;
+    margin-top: 0.5rem;
+    margin-bottom: 0.45rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(5, 150, 105, 0.08);
+    transition: all 0.2s ease;
+}
+
+.sidebar-section-header:hover {
+    background: #e6fbf0;
+    border-left-color: #047857;
 }
 
 .sidebar-link {
