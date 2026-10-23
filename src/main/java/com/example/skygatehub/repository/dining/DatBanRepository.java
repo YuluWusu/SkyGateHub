@@ -20,6 +20,10 @@ public interface DatBanRepository extends JpaRepository<DatBan, Long> {
 
     List<DatBan> findByNgayAnAndDichVuCaAn_CaAn_MaCaAn(LocalDate ngayAn, String maCaAn);
 
+    List<DatBan> findByNgayAn(LocalDate ngayAn);
+
+    List<DatBan> findByNgayAnAndTrangThaiNot(LocalDate ngayAn, TrangThaiDatBan trangThai);
+
     Page<DatBan> findByTrangThai(TrangThaiDatBan trangThai, Pageable pageable);
 }
 
