@@ -38,5 +38,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
     boolean existsByDatPhong_MaDatPhong(String maDatPhong);
 
     boolean existsByDatBan_MaDatBan(String maDatBan);
+
+    List<CheckIn> findTop20ByLoaiCheckInOrderByThoiGianCheckInDesc(LoaiCheckIn loaiCheckIn);
 }
 
