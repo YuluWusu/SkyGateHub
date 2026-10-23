@@ -35,9 +35,6 @@ public class AdminTableAssignmentController {
 
     private final TableAssignmentService tableAssignmentService;
 
-    /**
-     * Sơ đồ bàn ăn và điều phối xếp bàn (table-assignment.html)
-     */
     @GetMapping({"/table-assignment", "/table-assignments"})
     public String showTableAssignment(
             @RequestParam(value = "date", required = false)
@@ -222,9 +219,6 @@ public class AdminTableAssignmentController {
         return buildRedirectUrl(returnDate, returnCaAn);
     }
 
-    /**
-     * Màn hình Lịch ca ăn (meal-schedule.html)
-     */
     @GetMapping({"/meal-schedule", "/meal-schedules"})
     public String showMealSchedule(
             @RequestParam(value = "date", required = false)
