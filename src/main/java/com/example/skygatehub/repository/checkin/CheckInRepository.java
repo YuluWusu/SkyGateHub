@@ -39,6 +39,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
 
     boolean existsByDatBan_MaDatBan(String maDatBan);
 
-    List<CheckIn> findTop20ByLoaiCheckInOrderByThoiGianCheckInDesc(LoaiCheckIn loaiCheckIn);
+    @Query("SELECT c FROM CheckIn c WHERE c.loaiCheckIn = :loaiCheckIn ORDER BY c.thoiGianCheckIn DESC")
+    List<CheckIn> findRecentByLoaiCheckIn(@Param("loaiCheckIn") LoaiCheckIn loaiCheckIn, Pageable pageable);
 }
 
