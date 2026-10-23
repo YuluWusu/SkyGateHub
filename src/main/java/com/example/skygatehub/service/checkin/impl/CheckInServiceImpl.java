@@ -241,6 +241,7 @@ public class CheckInServiceImpl implements CheckInService {
     @Override
     @Transactional(readOnly = true)
     public List<CheckIn> getRecentTicketCheckIns(int limit) {
-        return checkInRepository.findTop20ByLoaiCheckInOrderByThoiGianCheckInDesc(LoaiCheckIn.VE);
+        int pageSize = limit > 0 ? limit : 20;
+        return checkInRepository.findRecentByLoaiCheckIn(LoaiCheckIn.VE, org.springframework.data.domain.PageRequest.of(0, pageSize));
     }
 }
