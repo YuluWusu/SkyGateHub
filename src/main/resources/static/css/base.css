@@ -714,10 +714,16 @@ select.form-control option, select.form-select option {
     border-radius: 9999px;
 }
 
+.skygate-navbar .dropdown {
+    position: relative !important;
+}
+
 .skygate-navbar .dropdown-menu {
+    position: absolute !important;
     left: 0 !important;
     right: auto !important;
     top: 100% !important;
+    transform: none !important;
     margin-top: 8px !important;
     min-width: 210px !important;
     border-radius: 12px !important;
