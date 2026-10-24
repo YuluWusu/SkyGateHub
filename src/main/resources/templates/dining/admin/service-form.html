@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit ? 'Chỉnh sửa dịch vụ ăn uống' : 'Thêm mới dịch vụ ăn uống'} + ' — SkyGateHub'"></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">
+                        <i class="bi" th:classappend="${isEdit} ? 'bi-pencil-square text-info' : 'bi-plus-circle-fill text-gold'"></i>
+                        <span th:text="${isEdit ? 'Chỉnh sửa dịch vụ ăn uống' : 'Thêm mới dịch vụ ăn uống'}">Thêm mới dịch vụ ăn uống</span>
+                    </h3>
+                    <p class="text-muted mb-0 small">Khai báo thông tin dịch vụ, giá và các ca ăn được phục vụ</p>
+                </div>
+                <a th:href="@{/admin/dining/services}" class="btn btn-outline-secondary px-3 py-2">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+                </a>
+            </div>
+
+            <div class="card p-4 p-md-5 w-100 shadow-sm"
+                 style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-lg);">
+
+                <form th:action="${isEdit} ? @{'/admin/dining/services/edit/' + ${serviceRequest.id}} : @{/admin/dining/services/create}"
+                      th:object="${serviceRequest}"
+                      method="post"
+                      novalidate>
+
+                    <input type="hidden" th:field="*{id}" th:if="${isEdit}">
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-4">
+                            <label for="maDichVu" class="form-label fw-semibold text-dark">
+                                Mã dịch vụ <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="maDichVu" th:field="*{maDichVu}"
+                                   class="form-control font-monospace"
+                                   th:classappend="${#fields.hasErrors('maDichVu')} ? 'is-invalid'"
+                                   placeholder="Ví dụ: DV_BUFFET_SANG"
+                                   th:readonly="${isEdit}" required>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${#fields.hasErrors('maDichVu')}"
+                                 th:errors="*{maDichVu}">Lỗi mã dịch vụ</div>
+                            <small class="text-muted small" th:if="${!isEdit}">Mã duy nhất, tối đa 20 ký tự, tự động viết hoa.</small>
+                            <small class="text-muted small" th:if="${isEdit}">Mã được tham chiếu ở nhiều bảng nên không thể sửa.</small>
+                        </div>
+
+                        <div class="col-12 col-md-5">
+                            <label for="tenDichVu" class="form-label fw-semibold text-dark">
+                                Tên dịch vụ <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="tenDichVu" th:field="*{tenDichVu}"
+                                   class="form-control fw-bold"
+                                   th:classappend="${#fields.hasErrors('tenDichVu')} ? 'is-invalid'"
+                                   placeholder="Ví dụ: Buffet sáng" required>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${#fields.hasErrors('tenDichVu')}"
+                                 th:errors="*{tenDichVu}">Lỗi tên dịch vụ</div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label for="loaiDichVu" class="form-label fw-semibold text-dark">
+                                Loại dịch vụ <span class="text-danger">*</span>
+                            </label>
+                            <select id="loaiDichVu" th:field="*{loaiDichVu}" class="form-select"
+                                    th:classappend="${#fields.hasErrors('loaiDichVu')} ? 'is-invalid'" required>
+                                <option value="">-- Chọn loại --</option>
+                                <option th:each="l : ${loaiList}" th:value="${l.name()}" th:text="${l.nhan}"></option>
+                            </select>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${#fields.hasErrors('loaiDichVu')}"
+                                 th:errors="*{loaiDichVu}">Vui lòng chọn loại</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-4">
+                            <label for="giaDichVu" class="form-label fw-semibold text-dark">Giá dịch vụ (đ)</label>
+                            <input type="number" id="giaDichVu" th:field="*{giaDichVu}"
+                                   class="form-control" min="0" step="1000"
+                                   th:classappend="${#fields.hasErrors('giaDichVu')} ? 'is-invalid'"
+                                   placeholder="Để trống nếu chưa có giá">
+                            <div class="invalid-feedback d-block"
+                                 th:if="${#fields.hasErrors('giaDichVu')}"
+                                 th:errors="*{giaDichVu}">Lỗi giá</div>
+                        </div>
+
+                        <div class="col-12 col-md-8">
+                            <label for="moTa" class="form-label fw-semibold text-dark">Mô tả</label>
+                            <textarea id="moTa" th:field="*{moTa}" rows="3" class="form-control"
+                                      th:classappend="${#fields.hasErrors('moTa')} ? 'is-invalid'"
+                                      placeholder="Mô tả ngắn về dịch vụ (tối đa 500 ký tự)"></textarea>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${#fields.hasErrors('moTa')}"
+                                 th:errors="*{moTa}">Lỗi mô tả</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="trangThai" th:field="*{trangThai}">
+                            <label class="form-check-label fw-semibold text-dark" for="trangThai">Đang kinh doanh</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-dark">Ca ăn phục vụ</label>
+                        <div class="row g-2">
+                            <div class="col-12 col-md-4" th:each="ca, st : ${caAnList}">
+                                <div class="form-check border rounded px-5 py-2">
+                                    <input class="form-check-input" type="checkbox"
+                                           th:id="${'ca_' + st.index}"
+                                           th:field="*{maCaAnList}"
+                                           th:value="${ca.maCaAn}">
+                                    <label class="form-check-label text-dark" th:for="${'ca_' + st.index}">
+                                        <span class="fw-semibold" th:text="${ca.tenCaAn}">Ca sáng</span>
+                                        <span class="text-muted small"
+                                              th:if="${ca.gioBatDau != null and ca.gioKetThuc != null}"
+                                              th:text="${'(' + #temporals.format(ca.gioBatDau, 'HH:mm') + ' - ' + #temporals.format(ca.gioKetThuc, 'HH:mm') + ')'}"></span>
+                                        <span class="text-danger small" th:if="${!ca.trangThai}">(đang tắt)</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12 text-muted small" th:if="${#lists.isEmpty(caAnList)}">Chưa có ca ăn nào.</div>
+                        </div>
+                        <small class="text-muted small">Bỏ chọn một ca chỉ ngừng phục vụ ở ca đó, lịch sử đặt bàn vẫn được giữ.</small>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                        <a th:href="@{/admin/dining/services}" class="btn btn-outline-secondary px-4 py-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-gold fw-bold px-4 py-2 shadow-sm">
+                            <i class="bi bi-check-lg me-1"></i>
+                            <span th:text="${isEdit ? 'Lưu thay đổi' : 'Thêm dịch vụ'}">Lưu dịch vụ</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

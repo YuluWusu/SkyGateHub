@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,11 +59,11 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
             bookingsOnDate = datBanRepository.findByNgayAn(date);
         }
 
-        // Tạo map: maBanAn -> DatBan
+        // Tạo map: maBanAn -> DatBan; bàn có nhiều lượt thì chọn lượt theo mức ưu tiên
         Map<String, DatBan> tableToBooking = new HashMap<>();
         for (DatBan db : bookingsOnDate) {
             if (db.getBanAn() != null && db.getTrangThai() != TrangThaiDatBan.DA_HUY) {
-                tableToBooking.put(db.getBanAn().getMaBanAn(), db);
+                tableToBooking.merge(db.getBanAn().getMaBanAn(), db, TableAssignmentServiceImpl::pickBooking);
             }
         }
 
@@ -133,6 +134,39 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
         return cells;
     }
 
+    private static String maCaAnCua(DatBan db) {
+        return (db.getDichVuCaAn() != null && db.getDichVuCaAn().getCaAn() != null)
+                ? db.getDichVuCaAn().getCaAn().getMaCaAn() : null;
+    }
+
+    // Ưu tiên: DA_CHECK_IN > chờ nhận bàn (ca bắt đầu sớm nhất) > DA_HOAN_THANH
+    private static DatBan pickBooking(DatBan a, DatBan b) {
+        int rankA = bookingRank(a);
+        int rankB = bookingRank(b);
+        if (rankA != rankB) {
+            return rankA < rankB ? a : b;
+        }
+        if (rankA == 1) {
+            LocalTime timeA = gioBatDau(a);
+            LocalTime timeB = gioBatDau(b);
+            if (timeA == null) return timeB == null ? a : b;
+            if (timeB == null) return a;
+            return timeB.isBefore(timeA) ? b : a;
+        }
+        return a;
+    }
+
+    private static int bookingRank(DatBan db) {
+        if (db.getTrangThai() == TrangThaiDatBan.DA_CHECK_IN) return 0;
+        if (db.getTrangThai() == TrangThaiDatBan.DA_HOAN_THANH) return 2;
+        return 1;
+    }
+
+    private static LocalTime gioBatDau(DatBan db) {
+        return (db.getDichVuCaAn() != null && db.getDichVuCaAn().getCaAn() != null)
+                ? db.getDichVuCaAn().getCaAn().getGioBatDau() : null;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<DatBan> getPendingBookings(LocalDate targetDate, String maCaAn) {
@@ -156,8 +190,10 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
         DatBan db = datBanRepository.findByMaDatBan(maDatBan)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt bàn: " + maDatBan));
 
-        String caAnCode = (db.getDichVuCaAn() != null && db.getDichVuCaAn().getCaAn() != null)
-                ? db.getDichVuCaAn().getCaAn().getMaCaAn() : "CA_TRUA";
+        String caAnCode = maCaAnCua(db);
+        if (caAnCode == null) {
+            throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] chưa có ca ăn, không thể tìm bàn trống.");
+        }
 
         return banAnRepository.findAvailableTables(db.getSoKhach(), db.getNgayAn(), caAnCode);
     }
@@ -170,8 +206,27 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
         BanAn ba = banAnRepository.findByMaBanAn(maBanAn)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn ăn: " + maBanAn));
 
+        if (db.getTrangThai() != TrangThaiDatBan.CHO_XAC_NHAN && db.getTrangThai() != TrangThaiDatBan.DA_XAC_NHAN) {
+            throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] đang ở trạng thái "
+                    + db.getTrangThai() + ", không thể xếp bàn.");
+        }
+
         if (ba.getTrangThai() == TrangThaiBanAn.BAO_TRI) {
             throw new IllegalStateException("Bàn [" + ba.getSoBan() + "] đang bảo trì, không thể phân!");
+        }
+
+        if (db.getSoKhach() != null && ba.getSucChua() != null && ba.getSucChua() < db.getSoKhach()) {
+            throw new IllegalStateException("Bàn " + ba.getSoBan() + " chỉ có " + ba.getSucChua()
+                    + " chỗ, lượt đặt có " + db.getSoKhach() + " khách.");
+        }
+
+        String maCaAn = maCaAnCua(db);
+        if (maCaAn == null) {
+            throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] chưa có ca ăn, không thể xếp bàn.");
+        }
+        if (datBanRepository.countTrungBan(ba.getMaBanAn(), db.getNgayAn(), maCaAn, db.getMaDatBan()) > 0) {
+            throw new IllegalStateException("Bàn " + ba.getSoBan() + " đã có lượt đặt khác trong ca "
+                    + maCaAn + " ngày " + db.getNgayAn() + ".");
         }
 
         db.setBanAn(ba);
@@ -187,8 +242,13 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
         DatBan db = datBanRepository.findByMaDatBan(maDatBan)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt bàn: " + maDatBan));
 
-        if (db.getTrangThai() == TrangThaiDatBan.DA_CHECK_IN) {
-            throw new IllegalStateException("Khách đã Check-in nhận bàn này, không thể hủy xếp bàn!");
+        if (db.getTrangThai() != TrangThaiDatBan.CHO_XAC_NHAN && db.getTrangThai() != TrangThaiDatBan.DA_XAC_NHAN) {
+            throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] đang ở trạng thái "
+                    + db.getTrangThai() + ", không thể hủy xếp bàn!");
+        }
+
+        if (db.getBanAn() == null) {
+            throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] chưa được xếp bàn.");
         }
 
         db.setBanAn(null);
@@ -214,23 +274,47 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
             throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] đã bị hủy, không thể Check-in.");
         }
 
-        // Cập nhật trạng thái đặt bàn
-        db.setTrangThai(TrangThaiDatBan.DA_CHECK_IN);
-        datBanRepository.save(db);
+        if (db.getTrangThai() == TrangThaiDatBan.DA_HOAN_THANH) {
+            throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] đã hoàn tất, không thể Check-in.");
+        }
 
-        // Đổi trạng thái bàn vật lý sang Đang sử dụng
+        if (db.getTrangThai() != TrangThaiDatBan.CHO_XAC_NHAN && db.getTrangThai() != TrangThaiDatBan.DA_XAC_NHAN) {
+            throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] đang ở trạng thái "
+                    + db.getTrangThai() + ", không thể Check-in.");
+        }
+
+        if (!LocalDate.now().equals(db.getNgayAn())) {
+            throw new IllegalStateException("Lượt đặt bàn dành cho ngày " + db.getNgayAn()
+                    + ", không check-in hôm nay được.");
+        }
+
         BanAn ba = db.getBanAn();
-        ba.setTrangThai(TrangThaiBanAn.DANG_SU_DUNG);
-        banAnRepository.save(ba);
+        if (ba.getTrangThai() == TrangThaiBanAn.BAO_TRI) {
+            throw new IllegalStateException("Bàn [" + ba.getSoBan() + "] đang bảo trì, không thể Check-in.");
+        }
 
-        // Tìm nhân viên
+        List<DatBan> dangAn = datBanRepository.findByBanAn_MaBanAnAndTrangThaiAndMaDatBanNot(
+                ba.getMaBanAn(), TrangThaiDatBan.DA_CHECK_IN, maDatBan);
+        if (!dangAn.isEmpty()) {
+            throw new IllegalStateException("Bàn " + ba.getSoBan() + " đang có khách của lượt "
+                    + dangAn.get(0).getMaDatBan() + ", hãy hoàn tất bàn trước.");
+        }
+
         NguoiDung nv = null;
         if (maNhanVien != null && !maNhanVien.trim().isEmpty()) {
             nv = nguoiDungRepository.findByMaNguoiDung(maNhanVien.trim()).orElse(null);
         }
         if (nv == null) {
-            nv = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
+            throw new IllegalStateException("Không xác định được nhân viên thực hiện check-in.");
         }
+
+        // Cập nhật trạng thái đặt bàn
+        db.setTrangThai(TrangThaiDatBan.DA_CHECK_IN);
+        datBanRepository.save(db);
+
+        // Đổi trạng thái bàn vật lý sang Đang sử dụng
+        ba.setTrangThai(TrangThaiBanAn.DANG_SU_DUNG);
+        banAnRepository.save(ba);
 
         // Ghi nhận bản ghi Check-in vào bảng CHECK_IN
         CheckIn ci = new CheckIn();
@@ -254,13 +338,22 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
         DatBan db = datBanRepository.findByMaDatBan(maDatBan)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt bàn: " + maDatBan));
 
+        if (db.getTrangThai() != TrangThaiDatBan.DA_CHECK_IN) {
+            throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] chưa Check-in (trạng thái "
+                    + db.getTrangThai() + "), không thể hoàn tất bàn.");
+        }
+
         db.setTrangThai(TrangThaiDatBan.DA_HOAN_THANH);
         datBanRepository.save(db);
 
         BanAn ba = db.getBanAn();
-        if (ba != null) {
-            ba.setTrangThai(TrangThaiBanAn.SAN_SANG);
-            banAnRepository.save(ba);
+        if (ba != null && ba.getTrangThai() == TrangThaiBanAn.DANG_SU_DUNG) {
+            boolean conKhach = !datBanRepository.findByBanAn_MaBanAnAndTrangThaiAndMaDatBanNot(
+                    ba.getMaBanAn(), TrangThaiDatBan.DA_CHECK_IN, maDatBan).isEmpty();
+            if (!conKhach) {
+                ba.setTrangThai(TrangThaiBanAn.SAN_SANG);
+                banAnRepository.save(ba);
+            }
         }
 
         log.info("[COMPLETE-TABLE] Trả bàn thành công đơn đặt bàn {}", maDatBan);

@@ -6,11 +6,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum LoaiDichVuAn {
-    BUFFET_SANG("Buffet sáng"),
-    SET_TRUA("Set trưa"),
-    SET_TOI_THUONG("Set tối thường"),
-    SET_TOI_DAC_SAN("Set tối đặc sản");
+    BUFFET("Buffet"),
+    SET_MENU("Set menu"),
+    A_LA_CARTE("Gọi món"),
+    DO_UONG("Đồ uống");
 
     private final String nhan;
 }
-

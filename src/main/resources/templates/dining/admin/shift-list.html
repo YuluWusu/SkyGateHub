@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Ca ăn — SkyGateHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">
+                        <i class="bi bi-clock-history text-gold me-2"></i>Quản lý Ca ăn
+                    </h3>
+                    <p class="text-muted mb-0 small">Các ca phục vụ trong ngày (sáng, trưa, tối...) và số món đang phục vụ ở mỗi ca</p>
+                </div>
+                <a th:href="@{/admin/dining/shifts/create}" class="btn btn-gold fw-bold px-3 py-2 shadow-sm">
+                    <i class="bi bi-plus-circle-fill me-1"></i> Thêm ca ăn
+                </a>
+            </div>
+
+            <div class="card overflow-hidden shadow-sm" style="border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light border-bottom">
+                            <tr>
+                                <th class="text-dark fw-bold" style="width: 140px;">Mã ca</th>
+                                <th class="text-dark fw-bold">Tên ca</th>
+                                <th class="text-dark fw-bold" style="width: 160px;">Khung giờ</th>
+                                <th class="text-dark fw-bold" style="width: 180px;">Số món đang phục vụ</th>
+                                <th class="text-dark fw-bold" style="width: 140px;">Trạng thái</th>
+                                <th class="text-end pe-4 text-dark fw-bold" style="width: 180px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(caAnList)}">
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                    Chưa có ca ăn nào.
+                                </td>
+                            </tr>
+                            <tr th:each="c : ${caAnList}">
+                                <td class="fw-bold text-primary font-monospace small" th:text="${c.maCaAn}">SANG</td>
+                                <td class="fw-bold text-dark" th:text="${c.tenCaAn}">Bữa sáng</td>
+                                <td class="text-dark">
+                                    <span th:if="${c.gioBatDau != null or c.gioKetThuc != null}">
+                                        <span th:text="${c.gioBatDau != null ? #temporals.format(c.gioBatDau, 'HH:mm') : '-'}">06:00</span>
+                                        &ndash;
+                                        <span th:text="${c.gioKetThuc != null ? #temporals.format(c.gioKetThuc, 'HH:mm') : '-'}">10:00</span>
+                                    </span>
+                                    <span th:if="${c.gioBatDau == null and c.gioKetThuc == null}">-</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/dining/services(maCaAn=${c.maCaAn})}"
+                                       class="text-decoration-none fw-semibold"
+                                       th:with="soMon=${dishCountByCa.get(c.maCaAn) != null ? dishCountByCa.get(c.maCaAn) : 0}">
+                                        <span th:text="${soMon}">0</span> món
+                                        <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span th:if="${c.trangThai}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-semibold">Đang mở</span>
+                                    <span th:unless="${c.trangThai}" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 fw-semibold">Đang tắt</span>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="d-inline-flex gap-1">
+                                        <a th:href="@{'/admin/dining/shifts/edit/' + ${c.id}}"
+                                           class="btn btn-sm btn-outline-primary" title="Chỉnh sửa ca ăn">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form th:action="@{'/admin/dining/shifts/toggle/' + ${c.id}}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm"
+                                                    th:classappend="${c.trangThai} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                                    th:title="${c.trangThai} ? 'Tắt ca ăn' : 'Mở ca ăn'">
+                                                <i class="bi" th:classappend="${c.trangThai} ? 'bi-toggle-on' : 'bi-toggle-off'"></i>
+                                            </button>
+                                        </form>
+                                        <form th:action="@{'/admin/dining/shifts/delete/' + ${c.id}}" method="post" class="d-inline"
+                                              th:data-name="${c.tenCaAn}"
+                                              onsubmit="return confirm('Xóa ca ăn ' + this.dataset.name + '?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa ca ăn">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 package com.example.skygatehub.common.network.server;
 
 import com.example.skygatehub.common.enums.LoaiCheckIn;
+import com.example.skygatehub.common.enums.TrangThaiBanAn;
 import com.example.skygatehub.common.enums.TrangThaiCheckIn;
 import com.example.skygatehub.common.enums.TrangThaiDatBan;
 import com.example.skygatehub.common.enums.TrangThaiVe;
@@ -26,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -294,8 +296,25 @@ public class CheckInClientHandler implements Runnable {
             if (db.getTrangThai() == TrangThaiDatBan.DA_HUY) {
                 return "410 GONE Đặt bàn [" + maDatBan + "] đã bị hủy.";
             }
+            if (db.getTrangThai() == TrangThaiDatBan.DA_HOAN_THANH) {
+                return "409 CONFLICT Đặt bàn [" + maDatBan + "] đã hoàn tất.";
+            }
+            if (db.getBanAn() == null) {
+                return "409 CONFLICT Đặt bàn [" + maDatBan + "] chưa được xếp bàn.";
+            }
+            if (db.getBanAn().getTrangThai() == TrangThaiBanAn.BAO_TRI) {
+                return "409 CONFLICT Bàn [" + db.getBanAn().getSoBan() + "] đang bảo trì.";
+            }
+            if (!LocalDate.now().equals(db.getNgayAn())) {
+                return "409 CONFLICT Đặt bàn [" + maDatBan + "] dành cho ngày " + db.getNgayAn() + ".";
+            }
+            if (!datBanRepository.findByBanAn_MaBanAnAndTrangThaiAndMaDatBanNot(
+                    db.getBanAn().getMaBanAn(), TrangThaiDatBan.DA_CHECK_IN, maDatBan).isEmpty()) {
+                return "409 CONFLICT Bàn [" + db.getBanAn().getSoBan() + "] đang có khách của lượt khác.";
+            }
 
             db.setTrangThai(TrangThaiDatBan.DA_CHECK_IN);
+            db.getBanAn().setTrangThai(TrangThaiBanAn.DANG_SU_DUNG);
             datBanRepository.save(db);
 
             CheckIn ci = new CheckIn();

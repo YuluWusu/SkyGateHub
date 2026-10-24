@@ -253,7 +253,8 @@
                                     <!-- Case 1: Chờ khách nhận bàn -> Check-in hoặc Hủy gán -->
                                     <th:block th:if="${c.isDaXep()}">
                                         <form th:action="@{/admin/dining/check-in}" method="post" class="d-inline"
-                                              onsubmit="return confirm('Xác nhận khách đã đến và Check-in nhận bàn ' + /*[[${c.soBan}]]*/ 'này?');">
+                                              th:data-so-ban="${c.soBan}"
+                                              onsubmit="return confirm('Xác nhận khách đã đến và Check-in nhận bàn ' + this.dataset.soBan + '?');">
                                             <input type="hidden" name="maDatBan" th:value="${c.maDatBan}">
                                             <input type="hidden" name="returnDate" th:value="${targetDate}">
                                             <input type="hidden" name="returnCaAn" th:value="${selectedCaAn}">
@@ -263,7 +264,8 @@
                                         </form>
 
                                         <form th:action="@{/admin/dining/unassign}" method="post" class="d-inline"
-                                              onsubmit="return confirm('Hủy xếp bàn ' + /*[[${c.soBan}]]*/ 'này?');">
+                                              th:data-so-ban="${c.soBan}"
+                                              onsubmit="return confirm('Hủy xếp bàn ' + this.dataset.soBan + '?');">
                                             <input type="hidden" name="maDatBan" th:value="${c.maDatBan}">
                                             <input type="hidden" name="returnDate" th:value="${targetDate}">
                                             <input type="hidden" name="returnCaAn" th:value="${selectedCaAn}">
@@ -276,7 +278,8 @@
                                     <!-- Case 2: Khách đang dùng bữa -> Trả bàn / Hoàn tất -->
                                     <th:block th:if="${c.isDangAn()}">
                                         <form th:action="@{/admin/dining/complete}" method="post" class="d-inline"
-                                              onsubmit="return confirm('Xác nhận khách đã dùng xong bữa và hoàn tất trả bàn ' + /*[[${c.soBan}]]*/ 'này?');">
+                                              th:data-so-ban="${c.soBan}"
+                                              onsubmit="return confirm('Xác nhận khách đã dùng xong bữa và hoàn tất trả bàn ' + this.dataset.soBan + '?');">
                                             <input type="hidden" name="maDatBan" th:value="${c.maDatBan}">
                                             <input type="hidden" name="returnDate" th:value="${targetDate}">
                                             <input type="hidden" name="returnCaAn" th:value="${selectedCaAn}">
