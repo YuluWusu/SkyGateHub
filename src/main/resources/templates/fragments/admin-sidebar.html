@@ -1,6 +1,6 @@
-<div xmlns:th="http://www.thymeleaf.org" class="skygate-sidebar">
-    <div class="sidebar-brand-box">
-        <a th:href="@{/admin/rooms}" class="d-flex align-items-center gap-2 text-decoration-none">
+<div xmlns:th="http://www.thymeleaf.org" class="skygate-sidebar" id="adminSidebar">
+    <div class="sidebar-brand-box d-flex align-items-center justify-content-between">
+        <a th:href="@{/admin/dashboard}" class="d-flex align-items-center gap-2 text-decoration-none">
             <img th:src="@{/images/logo/images-removebg-preview.png}"
                  onerror="this.onerror=null; this.src='/images/logo/logo.png';"
                  alt="Logo" style="height: 36px; width: auto; object-fit: contain;">
@@ -9,9 +9,26 @@
                 <span>Cổng Trời Đông Giang</span>
             </div>
         </a>
+        <button class="btn btn-sm btn-light border d-lg-none py-1 px-2 text-secondary" id="adminSidebarClose" type="button" aria-label="Đóng menu">
+            <i class="bi bi-x-lg"></i>
+        </button>
     </div>
 
     <div class="sidebar-scrollable" style="flex: 1; overflow-y: auto; padding-right: 2px;">
+        <div class="sidebar-section">
+            <div class="sidebar-section-header">
+                <span><i class="bi bi-speedometer2 me-1 text-success"></i>Hệ Thống</span>
+            </div>
+            <a th:href="@{/admin/dashboard}" class="sidebar-link">
+                <span><i class="bi bi-grid-1x2-fill me-2 text-success"></i>Tổng quan Dashboard</span>
+                <span class="badge bg-success bg-opacity-10 text-success" style="font-size: 0.65rem;">Chính</span>
+            </a>
+            <a th:href="@{/admin/revenue}" class="sidebar-link">
+                <span><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Báo cáo doanh thu</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 0.65rem;">Mới</span>
+            </a>
+        </div>
+
         <div class="sidebar-section">
             <div class="sidebar-section-header">
                 <span><i class="bi bi-ticket-perforated-fill me-1 text-success"></i>Vé &amp; Tài Khoản</span>
@@ -20,7 +37,7 @@
                 <span>Quản trị người dùng</span>
             </a>
             <a th:href="@{/admin/tickets}" class="sidebar-link">
-                <span>Danh mục vé & combo</span>
+                <span>Danh mục vé &amp; combo</span>
             </a>
             <a th:href="@{/admin/ticket-prices}" class="sidebar-link">
                 <span>Bảng giá theo ngày / lễ</span>
@@ -38,7 +55,7 @@
                 <span>Danh sách phòng vật lý</span>
             </a>
             <a th:href="@{/admin/room-types}" class="sidebar-link">
-                <span>Hạng phòng & Khu lưu trú</span>
+                <span>Hạng phòng &amp; Khu lưu trú</span>
             </a>
         </div>
 
@@ -70,14 +87,11 @@
             <a th:href="@{/admin/checkin}" class="sidebar-link">
                 <span>Trạm soát vé cổng (Check-in)</span>
             </a>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV5: Đơn hàng & Soát vé', 'Quản lý đơn đặt tổng hợp', 'DON_DAT, CHI_TIET_DON')">
+            <a th:href="@{/admin/orders}" class="sidebar-link">
                 <span>Quản lý đơn đặt</span>
             </a>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV5: Đơn hàng & Soát vé', 'Lịch sử thanh toán & cọc', 'THANH_TOAN')">
-                <span>Lịch sử thanh toán</span>
-            </a>
-            <a href="javascript:void(0)" class="sidebar-link placeholder-link" onclick="notifyMemberModule('TV5: Đơn hàng & Soát vé', 'Báo cáo doanh thu & công suất', 'DON_DAT, THANH_TOAN')">
-                <span>Báo cáo doanh thu</span>
+            <a th:href="@{/admin/payments}" class="sidebar-link">
+                <span>Lịch sử thanh toán &amp; cọc</span>
             </a>
         </div>
     </div>
@@ -92,39 +106,67 @@
                 <div style="width: 32px; height: 32px; border-radius: 50%; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">
                     AD
                 </div>
-                <div>
-                    <div class="fw-bold" style="font-size: 0.85rem; color: #0f172a;" th:if="${currentUser != null}" th:text="${currentUser.hoTen}">Quản trị viên</div>
+                <div style="min-width: 0;">
+                    <div class="fw-bold text-truncate" style="font-size: 0.85rem; color: #0f172a; max-width: 130px;" th:if="${currentUser != null}" th:text="${currentUser.hoTen}">Quản trị viên</div>
                     <div style="font-size: 0.72rem; color: #059669; font-weight: 600;">Trực tuyến</div>
                 </div>
             </div>
-            <button type="button" onclick="if(window.openAdminLogoutModal) window.openAdminLogoutModal();" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal" class="btn btn-sm btn-outline-danger" style="padding: 2px 8px; font-size: 0.75rem;">Thoát</button>
+            <button type="button" onclick="if(window.openAdminLogoutModal) window.openAdminLogoutModal();" class="btn btn-sm btn-outline-danger" style="padding: 2px 8px; font-size: 0.75rem;">Thoát</button>
         </div>
-    </div>
-
-    <div id="sidebarNoticeToast" class="sidebar-toast">
-        <div style="font-weight: 700; color: #f59e0b; margin-bottom: 4px;" id="toastModuleTitle">Thông báo phân hệ</div>
-        <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;" id="toastModuleContent">Nội dung</div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname;
-            document.querySelectorAll('.skygate-sidebar .sidebar-link:not(.placeholder-link)').forEach(function(link) {
+
+            // Highlight active link
+            document.querySelectorAll('.skygate-sidebar .sidebar-link').forEach(function(link) {
                 const href = link.getAttribute('href');
-                if (href && href !== '/' && currentPath.startsWith(href)) {
-                    link.classList.add('active');
+                if (href) {
+                    if (currentPath === href) {
+                        link.classList.add('active');
+                    } else if (href !== '/admin' && href !== '/admin/dashboard' && currentPath.startsWith(href)) {
+                        link.classList.add('active');
+                    }
                 }
             });
-        });
 
-        function notifyMemberModule(moduleName, featureName, tableNames) {
-            const toast = document.getElementById('sidebarNoticeToast');
-            document.getElementById('toastModuleTitle').textContent = featureName + ' (' + moduleName + ')';
-            document.getElementById('toastModuleContent').innerHTML = 'Chức năng thuộc phạm vi phụ trách của <strong>' + moduleName + '</strong> (Bảng dữ liệu: <code>' + tableNames + '</code>) đang được thành viên dự án hoàn thiện.';
-            toast.classList.add('show');
-            setTimeout(function() {
-                toast.classList.remove('show');
-            }, 4500);
-        }
+            // Mobile sidebar drawer logic
+            const sidebar = document.getElementById('adminSidebar');
+            const toggleBtn = document.getElementById('adminSidebarToggle');
+            const closeBtn = document.getElementById('adminSidebarClose');
+
+            // Tạo backdrop overlay trên body nếu chưa có
+            let backdrop = document.getElementById('adminSidebarBackdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.id = 'adminSidebarBackdrop';
+                backdrop.className = 'admin-sidebar-backdrop';
+                document.body.appendChild(backdrop);
+            }
+
+            function openSidebar() {
+                if (sidebar) sidebar.classList.add('show');
+                if (backdrop) backdrop.classList.add('show');
+                document.body.classList.add('sidebar-open');
+            }
+
+            function closeSidebar() {
+                if (sidebar) sidebar.classList.remove('show');
+                if (backdrop) backdrop.classList.remove('show');
+                document.body.classList.remove('sidebar-open');
+            }
+
+            if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+            if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+            // Đóng sidebar khi click vào link trên màn hình mobile
+            if (window.innerWidth < 992) {
+                document.querySelectorAll('.skygate-sidebar .sidebar-link').forEach(function(link) {
+                    link.addEventListener('click', closeSidebar);
+                });
+            }
+        });
     </script>
 </div>

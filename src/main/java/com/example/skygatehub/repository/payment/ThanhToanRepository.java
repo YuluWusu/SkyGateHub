@@ -28,6 +28,21 @@ public interface ThanhToanRepository extends JpaRepository<ThanhToan, Long> {
            "WHERE t.donDat.maDonDat = :maDonDat AND t.trangThai = 'DA_THANH_TOAN'")
     BigDecimal sumPaidByDonDat(@Param("maDonDat") String maDonDat);
 
-    Page<ThanhToan> findByTrangThai(TrangThaiThanhToan trangThai, Pageable pageable);
+    List<ThanhToan> findAllByDonDat_MaDonDat(String maDonDat);
+
+    List<ThanhToan> findTop8ByOrderByThoiGianTaoDesc();
+
+    Page<ThanhToan> findAllByOrderByThoiGianTaoDesc(Pageable pageable);
+
+    Page<ThanhToan> findByTrangThaiOrderByThoiGianTaoDesc(TrangThaiThanhToan trangThai, Pageable pageable);
+
+    @Query("SELECT COALESCE(SUM(t.soTien), 0) FROM ThanhToan t WHERE t.trangThai = com.example.skygatehub.common.enums.TrangThaiThanhToan.DA_THANH_TOAN")
+    BigDecimal sumAllPaid();
+
+    @Query("SELECT COALESCE(SUM(t.soTien), 0) FROM ThanhToan t WHERE t.trangThai = com.example.skygatehub.common.enums.TrangThaiThanhToan.CHO_THANH_TOAN")
+    BigDecimal sumAllPending();
+
+    Page<ThanhToan> findByMaThanhToanContainingIgnoreCaseOrMaGiaoDichContainingIgnoreCaseOrDonDat_MaDonDatContainingIgnoreCaseOrderByThoiGianTaoDesc(
+            String maThanhToan, String maGiaoDich, String maDonDat, Pageable pageable);
 }
 

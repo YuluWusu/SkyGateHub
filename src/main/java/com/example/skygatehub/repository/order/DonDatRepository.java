@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -42,5 +43,24 @@ public interface DonDatRepository extends JpaRepository<DonDat, Long> {
      * Dùng cho scheduled task quét đơn hết hạn thanh toán
      */
     List<DonDat> findByTrangThaiDonAndThoiGianDatBefore(TrangThaiDon trangThaiDon, LocalDateTime thoiGian);
+
+    long countByTrangThaiDon(TrangThaiDon trangThaiDon);
+
+    long countByTrangThaiThanhToan(com.example.skygatehub.common.enums.TrangThaiThanhToanDon trangThaiThanhToan);
+
+    @Query("SELECT COALESCE(SUM(d.tongTien), 0) FROM DonDat d WHERE d.trangThaiDon <> com.example.skygatehub.common.enums.TrangThaiDon.DA_HUY")
+    BigDecimal sumTotalRevenue();
+
+    @Query("SELECT COALESCE(SUM(d.tongTien), 0) FROM DonDat d WHERE d.trangThaiThanhToan = com.example.skygatehub.common.enums.TrangThaiThanhToanDon.DA_THANH_TOAN")
+    BigDecimal sumPaidRevenue();
+
+    Page<DonDat> findAllByOrderByThoiGianDatDesc(Pageable pageable);
+
+    List<DonDat> findTop8ByOrderByThoiGianDatDesc();
+
+    Page<DonDat> findByTrangThaiThanhToanOrderByThoiGianDatDesc(com.example.skygatehub.common.enums.TrangThaiThanhToanDon trangThaiThanhToan, Pageable pageable);
+
+    Page<DonDat> findByMaDonDatContainingIgnoreCaseOrHoTenKhachContainingIgnoreCaseOrSdtKhachContainingIgnoreCaseOrderByThoiGianDatDesc(
+            String maDonDat, String hoTenKhach, String sdtKhach, Pageable pageable);
 }
 

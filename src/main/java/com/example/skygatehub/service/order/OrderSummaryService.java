@@ -27,7 +27,7 @@ public class OrderSummaryService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
 
         // Lấy các thanh toán liên quan
-        List<ThanhToan> payments = thanhToanRepository.findAllByDonDat_MaDonDat(orderId);
+        List<ThanhToan> payments = thanhToanRepository.findByDonDat_MaDonDatOrderByThoiGianTaoAsc(orderId);
 
         // Tổng hợp trạng thái thanh toán (có thể có nhiều trạng thái)
         String paymentStatus = payments.stream()
@@ -43,8 +43,8 @@ public class OrderSummaryService {
         // Tạo DTO trả về
         OrderSummaryResponse response = new OrderSummaryResponse();
         response.setOrderId(donDat.getMaDonDat());
-        response.setTotalAmount(donDat.getTongTienDangLuu()); // hoặc trường tổng tiền thực tế
-        response.setCreatedAt(donDat.getThoiGianTao());
+        response.setTotalAmount(donDat.getTongTien()); // hoặc trường tổng tiền thực tế
+        response.setCreatedAt(donDat.getThoiGianDat());
         response.setPaymentStatus(paymentStatus);
         // TODO: map chi tiết đơn sang OrderItem nếu cần
         response.setItems(Collections.emptyList());

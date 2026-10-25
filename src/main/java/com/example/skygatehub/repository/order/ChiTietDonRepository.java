@@ -25,5 +25,9 @@ public interface ChiTietDonRepository extends JpaRepository<ChiTietDon, Long> {
     @Query("SELECT COALESCE(SUM(c.soLuong * c.donGia), 0) FROM ChiTietDon c " +
            "WHERE c.donDat.maDonDat = :maDonDat AND c.trangThai = 'HIEU_LUC'")
     BigDecimal calculateTotalHieuLuc(@Param("maDonDat") String maDonDat);
+
+    @Query("SELECT COALESCE(SUM(c.soLuong * c.donGia), 0) FROM ChiTietDon c " +
+           "WHERE c.loaiDichVu = :loaiDichVu AND c.trangThai = com.example.skygatehub.common.enums.TrangThaiChiTiet.HIEU_LUC")
+    BigDecimal sumRevenueByLoaiDichVu(@Param("loaiDichVu") com.example.skygatehub.common.enums.LoaiDichVuDon loaiDichVu);
 }
 

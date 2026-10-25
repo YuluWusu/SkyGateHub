@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Doanh thu & Đối soát — SkyGateHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-2 p-sm-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <!-- Page Title & Header Actions -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">
+                        <i class="bi bi-graph-up-arrow text-primary me-2"></i>Báo cáo Doanh thu &amp; Dòng tiền
+                    </h3>
+                    <p class="text-muted mb-0 small">
+                        Bảng thống kê doanh thu toàn khu du lịch, đối soát thực thu, tiền cọc và phân bổ theo từng mảng dịch vụ
+                    </p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-outline-secondary fw-semibold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-1" onclick="window.print()">
+                        <i class="bi bi-printer"></i> In báo cáo
+                    </button>
+                    <a th:href="@{/admin/payments}" class="btn btn-primary fw-bold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-credit-card-2-front"></i> Lịch sử thanh toán &amp; cọc
+                    </a>
+                </div>
+            </div>
+
+            <!-- Financial Summary Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="stat-metric-card h-100" style="border-left: 4px solid #3b82f6 !important;">
+                        <div class="stat-metric-label">Tổng Doanh Thu Đơn</div>
+                        <div class="stat-metric-val text-primary" th:text="${#numbers.formatDecimal(totalRevenue, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                        <div class="stat-metric-sub">Tổng giá trị đơn đặt hợp lệ</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="stat-metric-card h-100" style="border-left: 4px solid #10b981 !important;">
+                        <div class="stat-metric-label">Thực Thu Thành Công</div>
+                        <div class="stat-metric-val text-success" th:text="${#numbers.formatDecimal(totalPaid, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                        <div class="stat-metric-sub">Đã quyết toán vào tài khoản</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="stat-metric-card h-100" style="border-left: 4px solid #f59e0b !important;">
+                        <div class="stat-metric-label">Tiền Cọc &amp; Đang Chờ</div>
+                        <div class="stat-metric-val text-warning" th:text="${#numbers.formatDecimal(totalPending, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                        <div class="stat-metric-sub">Giao dịch chờ thanh toán / xác nhận</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="stat-metric-card h-100" style="border-left: 4px solid #ef4444 !important;">
+                        <div class="stat-metric-label">Còn Phải Thu</div>
+                        <div class="stat-metric-val text-danger" th:text="${#numbers.formatDecimal(remainingToCollect, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                        <div class="stat-metric-sub">Chênh lệch cần thu tại quầy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Breakdown by Category -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 mb-4" style="border: 1px solid #e2e8f0 !important;">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-pie-chart-fill text-success me-2"></i>Phân bổ nguồn thu theo nhóm sản phẩm &amp; dịch vụ
+                </h5>
+                <div class="progress mb-3" style="height: 16px; border-radius: 999px;">
+                    <div class="progress-bar bg-success" role="progressbar" th:style="'width: ' + ${percentPhong} + '%;'" th:title="'Lưu trú: ' + ${percentPhong} + '%'"></div>
+                    <div class="progress-bar bg-info" role="progressbar" th:style="'width: ' + ${percentVe} + '%;'" th:title="'Vé: ' + ${percentVe} + '%'"></div>
+                    <div class="progress-bar bg-warning" role="progressbar" th:style="'width: ' + ${percentAnUong} + '%;'" th:title="'Ẩm thực: ' + ${percentAnUong} + '%'"></div>
+                </div>
+                <div class="row g-3 text-center">
+                    <div class="col-12 col-md-4">
+                        <div class="p-3 rounded-3" style="background: #ecfdf5; border: 1px solid #a7f3d0;">
+                            <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                                <span class="badge bg-success rounded-circle p-1"></span>
+                                <span class="fw-bold text-dark">Lưu trú &amp; Khách sạn</span>
+                            </div>
+                            <div class="fs-5 fw-bold text-success" th:text="${#numbers.formatDecimal(revenuePhong, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                            <small class="text-muted">Chiếm <strong th:text="${percentPhong}">0</strong>% tổng doanh số</small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="p-3 rounded-3" style="background: #f0f9ff; border: 1px solid #bae6fd;">
+                            <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                                <span class="badge bg-info rounded-circle p-1"></span>
+                                <span class="fw-bold text-dark">Vé tham quan &amp; Combo</span>
+                            </div>
+                            <div class="fs-5 fw-bold text-info" th:text="${#numbers.formatDecimal(revenueVe, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                            <small class="text-muted">Chiếm <strong th:text="${percentVe}">0</strong>% tổng doanh số</small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="p-3 rounded-3" style="background: #fffbeb; border: 1px solid #fde68a;">
+                            <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                                <span class="badge bg-warning rounded-circle p-1"></span>
+                                <span class="fw-bold text-dark">Nhà hàng &amp; Ẩm thực</span>
+                            </div>
+                            <div class="fs-5 fw-bold text-warning" th:text="${#numbers.formatDecimal(revenueAnUong, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                            <small class="text-muted">Chiếm <strong th:text="${percentAnUong}">0</strong>% tổng doanh số</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Orders Table -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="border: 1px solid #e2e8f0 !important;">
+                <div class="p-3 p-md-4 border-bottom bg-light">
+                    <form th:action="@{/admin/revenue}" method="get" class="row g-2 align-items-center">
+                        <div class="col-12 col-md-4">
+                            <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo mã đơn, họ tên, SĐT khách...">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <select name="status" class="form-select">
+                                <option value="ALL" th:selected="${currentStatus == 'ALL'}">Tất cả trạng thái thanh toán</option>
+                                <option value="CHUA_THANH_TOAN" th:selected="${currentStatus == 'CHUA_THANH_TOAN'}">Chưa thanh toán</option>
+                                <option value="DA_DAT_COC" th:selected="${currentStatus == 'DA_DAT_COC'}">Đã đặt cọc</option>
+                                <option value="DA_THANH_TOAN" th:selected="${currentStatus == 'DA_THANH_TOAN'}">Đã thanh toán đủ</option>
+                                <option value="DA_HOAN_TIEN" th:selected="${currentStatus == 'DA_HOAN_TIEN'}">Đã hoàn tiền</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary fw-semibold px-3 flex-grow-1">
+                                <i class="bi bi-funnel me-1"></i> Lọc
+                            </button>
+                            <a th:href="@{/admin/revenue}" class="btn btn-outline-secondary px-3">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Ngày đặt</th>
+                                <th class="text-end">Tổng tiền</th>
+                                <th class="text-center">Trạng thái đơn</th>
+                                <th class="text-center">Thanh toán</th>
+                                <th class="text-center pe-3">Chi tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${ordersPage.content.isEmpty()}">
+                                <td colspan="7" class="text-center text-muted py-4">Không tìm thấy đơn hàng nào phù hợp với điều kiện lọc.</td>
+                            </tr>
+                            <tr th:each="order : ${ordersPage.content}">
+                                <td class="ps-3 fw-bold text-dark" th:text="${order.maDonDat}">DD001</td>
+                                <td>
+                                    <div class="fw-semibold text-dark" th:text="${order.hoTenKhach}">Nguyễn Văn A</div>
+                                    <small class="text-muted" th:text="${order.sdtKhach}">0901234567</small>
+                                </td>
+                                <td class="text-muted small" th:text="${#temporals.format(order.thoiGianDat, 'dd/MM/yyyy HH:mm')}">25/10/2026</td>
+                                <td class="text-end fw-bold text-success" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'POINT', 0, 'COMMA')} + ' đ'">1.000.000 đ</td>
+                                <td class="text-center">
+                                    <span th:if="${order.trangThaiDon.name() == 'CHO_XAC_NHAN'}" class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                    <span th:if="${order.trangThaiDon.name() == 'DA_XAC_NHAN'}" class="badge bg-primary">Đã xác nhận</span>
+                                    <span th:if="${order.trangThaiDon.name() == 'DA_HOAN_THANH'}" class="badge bg-success">Hoàn thành</span>
+                                    <span th:if="${order.trangThaiDon.name() == 'DA_HUY'}" class="badge bg-danger">Đã hủy</span>
+                                </td>
+                                <td class="text-center">
+                                    <span th:if="${order.trangThaiThanhToan.name() == 'CHUA_THANH_TOAN'}" class="badge bg-secondary">Chưa trả</span>
+                                    <span th:if="${order.trangThaiThanhToan.name() == 'DA_DAT_COC'}" class="badge bg-info text-dark">Đã cọc</span>
+                                    <span th:if="${order.trangThaiThanhToan.name() == 'DA_THANH_TOAN'}" class="badge bg-success">Đã trả đủ</span>
+                                    <span th:if="${order.trangThaiThanhToan.name() == 'DA_HOAN_TIEN'}" class="badge bg-danger">Hoàn tiền</span>
+                                </td>
+                                <td class="text-center pe-3">
+                                    <a th:href="@{/admin/orders/{id}(id=${order.maDonDat})}" class="btn btn-sm btn-light border py-1 px-2" title="Xem chi tiết đơn">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="p-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2" th:if="${ordersPage.totalPages > 1}">
+                    <span class="small text-muted">
+                        Trang <strong th:text="${ordersPage.number + 1}">1</strong> / <strong th:text="${ordersPage.totalPages}">1</strong> (Tổng <span th:text="${ordersPage.totalElements}">0</span> đơn)
+                    </span>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" th:classappend="${ordersPage.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/revenue(page=${ordersPage.number - 1}, status=${currentStatus}, keyword=${keyword})}">&laquo;</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}" th:classappend="${i == ordersPage.number} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/revenue(page=${i}, status=${currentStatus}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${ordersPage.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/revenue(page=${ordersPage.number + 1}, status=${currentStatus}, keyword=${keyword})}">&raquo;</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Reconciliation View V_DON_DAT_TONG_HOP (if available) -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e2e8f0 !important;" th:if="${reconciliations != null && !reconciliations.isEmpty()}">
+                <div class="p-3 p-md-4 border-bottom bg-light">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-shield-check text-success me-2"></i>Bảng đối soát dòng tiền cơ sở dữ liệu (View V_DON_DAT_TONG_HOP)
+                    </h5>
+                    <small class="text-muted">Đối soát tự động giữa số tiền đang lưu, tổng chi tiết hiệu lực, số tiền đã thu và số tiền còn thiếu</small>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Mã đơn đặt</th>
+                                <th>Mã đơn hàng</th>
+                                <th class="text-end">Tiền lưu</th>
+                                <th class="text-end">Chi tiết hiệu lực</th>
+                                <th class="text-end">Đã thu</th>
+                                <th class="text-end">Đã hoàn</th>
+                                <th class="text-end">Còn phải thu</th>
+                                <th class="text-center pe-3">Trạng thái tính</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="rec : ${reconciliations}">
+                                <td class="ps-3 fw-bold text-dark" th:text="${rec.maDonDat}">DD001</td>
+                                <td class="text-muted" th:text="${rec.maDonHang}">DH-001</td>
+                                <td class="text-end fw-semibold" th:text="${rec.tongTienDangLuu != null ? #numbers.formatDecimal(rec.tongTienDangLuu, 0, 'POINT', 0, 'COMMA') + ' đ' : '-'}">-</td>
+                                <td class="text-end fw-semibold text-info" th:text="${rec.tongChiTietHieuLuc != null ? #numbers.formatDecimal(rec.tongChiTietHieuLuc, 0, 'POINT', 0, 'COMMA') + ' đ' : '-'}">-</td>
+                                <td class="text-end fw-bold text-success" th:text="${rec.daThu != null ? #numbers.formatDecimal(rec.daThu, 0, 'POINT', 0, 'COMMA') + ' đ' : '-'}">-</td>
+                                <td class="text-end text-danger" th:text="${rec.daHoan != null ? #numbers.formatDecimal(rec.daHoan, 0, 'POINT', 0, 'COMMA') + ' đ' : '-'}">-</td>
+                                <td class="text-end fw-bold text-danger" th:text="${rec.conPhaiThuTheoSoDangLuu != null ? #numbers.formatDecimal(rec.conPhaiThuTheoSoDangLuu, 0, 'POINT', 0, 'COMMA') + ' đ' : '-'}">-</td>
+                                <td class="text-center pe-3">
+                                    <span class="badge bg-secondary" th:text="${rec.trangThaiThanhToanTinh}">CHUA_THANH_TOAN</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

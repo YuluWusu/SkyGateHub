@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Chi tiết đơn ' + ${order.maDonDat} + ' — SkyGateHub'"></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-2 p-sm-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <a th:href="@{/admin/orders}" class="btn btn-outline-secondary btn-sm rounded-circle p-2" title="Quay lại danh sách">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h3 class="fw-bold text-dark mb-0" style="letter-spacing: -0.5px;">
+                            Đơn đặt: <span class="text-success" th:text="${order.maDonDat}">DD001</span>
+                        </h3>
+                        <small class="text-muted" th:text="'Mã đơn hàng nội bộ: ' + ${order.maDonHang}">Mã đơn hàng: DH-123</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Form đổi trạng thái đơn -->
+                    <form th:action="@{/admin/orders/{id}/status(id=${order.maDonDat})}" method="post" class="d-flex align-items-center gap-2">
+                        <select name="trangThaiDon" class="form-select form-select-sm" style="min-width: 160px;">
+                            <option value="CHO_XAC_NHAN" th:selected="${order.trangThaiDon.name() == 'CHO_XAC_NHAN'}">Chờ xác nhận</option>
+                            <option value="DA_XAC_NHAN" th:selected="${order.trangThaiDon.name() == 'DA_XAC_NHAN'}">Đã xác nhận</option>
+                            <option value="DA_HOAN_THANH" th:selected="${order.trangThaiDon.name() == 'DA_HOAN_THANH'}">Đã hoàn thành</option>
+                            <option value="DA_HUY" th:selected="${order.trangThaiDon.name() == 'DA_HUY'}">Đã hủy đơn</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary fw-semibold text-nowrap">
+                            <i class="bi bi-check-lg me-1"></i>Lưu trạng thái
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- Customer Info -->
+                <div class="col-12 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 h-100" style="border: 1px solid #e2e8f0 !important;">
+                        <h5 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-person-circle text-primary me-2"></i>Thông tin Khách hàng
+                        </h5>
+                        <div class="d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Họ và tên:</span>
+                                <strong class="text-dark" th:text="${order.hoTenKhach}">Nguyễn Văn A</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Số điện thoại:</span>
+                                <strong class="text-dark" th:text="${order.sdtKhach}">0901234567</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Email liên hệ:</span>
+                                <span class="text-dark" th:text="${order.emailKhach != null ? order.emailKhach : 'Chưa cập nhật'}">email@example.com</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Mã QR Check-in:</span>
+                                <span class="badge bg-light text-dark font-monospace border" th:text="${order.maQr != null ? order.maQr : 'Chưa tạo'}">QR-123</span>
+                            </div>
+                            <div class="py-1">
+                                <span class="text-muted d-block mb-1">Ghi chú của khách:</span>
+                                <div class="p-2 rounded bg-light text-secondary small" th:text="${order.ghiChu != null && !order.ghiChu.isEmpty() ? order.ghiChu : 'Không có ghi chú.'}">Không có ghi chú.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Financial Info -->
+                <div class="col-12 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 h-100" style="border: 1px solid #e2e8f0 !important;">
+                        <h5 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-receipt text-success me-2"></i>Thông tin Thanh toán
+                        </h5>
+                        <div class="d-flex flex-column gap-2" style="font-size: 0.9rem;">
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Thời gian đặt:</span>
+                                <strong class="text-dark" th:text="${#temporals.format(order.thoiGianDat, 'dd/MM/yyyy HH:mm:ss')}">25/10/2026</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Tổng tiền đơn hàng:</span>
+                                <span class="fs-5 fw-bold text-success" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'POINT', 0, 'COMMA')} + ' đ'">1.000.000 đ</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Tiền cọc yêu cầu:</span>
+                                <span class="fw-semibold text-warning" th:text="${order.tienCocYeuCau != null ? #numbers.formatDecimal(order.tienCocYeuCau, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-muted">Trạng thái đơn:</span>
+                                <div>
+                                    <span th:if="${order.trangThaiDon.name() == 'CHO_XAC_NHAN'}" class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                    <span th:if="${order.trangThaiDon.name() == 'DA_XAC_NHAN'}" class="badge bg-primary">Đã xác nhận</span>
+                                    <span th:if="${order.trangThaiDon.name() == 'DA_HOAN_THANH'}" class="badge bg-success">Đã hoàn thành</span>
+                                    <span th:if="${order.trangThaiDon.name() == 'DA_HUY'}" class="badge bg-danger">Đã hủy</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between py-1">
+                                <span class="text-muted">Trạng thái thanh toán:</span>
+                                <div>
+                                    <span th:if="${order.trangThaiThanhToan.name() == 'CHUA_THANH_TOAN'}" class="badge bg-secondary">Chưa thanh toán</span>
+                                    <span th:if="${order.trangThaiThanhToan.name() == 'DA_DAT_COC'}" class="badge bg-info text-dark">Đã đặt cọc</span>
+                                    <span th:if="${order.trangThaiThanhToan.name() == 'DA_THANH_TOAN'}" class="badge bg-success">Đã thanh toán đủ</span>
+                                    <span th:if="${order.trangThaiThanhToan.name() == 'DA_HOAN_TIEN'}" class="badge bg-danger">Đã hoàn tiền</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="border: 1px solid #e2e8f0 !important;">
+                <div class="p-3 p-md-4 border-bottom bg-light">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-box-seam text-primary me-2"></i>Chi tiết các mục dịch vụ trong đơn (CHI_TIET_DON)
+                    </h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Mã CT</th>
+                                <th>Tên sản phẩm / Dịch vụ</th>
+                                <th>Loại</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                                <th>Ngày sử dụng</th>
+                                <th class="text-center pe-3">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${chiTietList == null || chiTietList.isEmpty()}">
+                                <td colspan="8" class="text-center text-muted py-3">Không có chi tiết dịch vụ nào.</td>
+                            </tr>
+                            <tr th:each="item : ${chiTietList}">
+                                <td class="ps-3 font-monospace text-muted" th:text="${item.maChiTiet}">CT001</td>
+                                <td class="fw-semibold text-dark" th:text="${item.tenSanPham}">Vé tham quan Cổng Trời</td>
+                                <td>
+                                    <span th:if="${item.loaiDichVu.name() == 'VE'}" class="badge bg-info text-dark">Vé &amp; Combo</span>
+                                    <span th:if="${item.loaiDichVu.name() == 'PHONG'}" class="badge bg-success">Lưu trú</span>
+                                    <span th:if="${item.loaiDichVu.name() == 'AN_UONG'}" class="badge bg-warning text-dark">Ẩm thực</span>
+                                </td>
+                                <td class="text-center fw-bold" th:text="${item.soLuong}">1</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(item.donGia, 0, 'POINT', 0, 'COMMA')} + ' đ'">200.000 đ</td>
+                                <td class="text-end fw-bold text-success" th:text="${#numbers.formatDecimal(item.soLuong * item.donGia, 0, 'POINT', 0, 'COMMA')} + ' đ'">200.000 đ</td>
+                                <td class="text-muted small" th:text="${item.ngaySuDung != null ? #temporals.format(item.ngaySuDung, 'dd/MM/yyyy') : '-'}">-</td>
+                                <td class="text-center pe-3">
+                                    <span class="badge bg-success" th:text="${item.trangThai}">HIEU_LUC</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payment History for this Order -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid #e2e8f0 !important;">
+                <div class="p-3 p-md-4 border-bottom bg-light">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-credit-card text-success me-2"></i>Lịch sử các đợt thanh toán của đơn
+                    </h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Mã thanh toán</th>
+                                <th>Loại giao dịch</th>
+                                <th>Phương thức</th>
+                                <th class="text-end">Số tiền</th>
+                                <th>Thời gian tạo</th>
+                                <th>Thời gian thanh toán</th>
+                                <th class="text-center pe-3">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${thanhToanList == null || thanhToanList.isEmpty()}">
+                                <td colspan="7" class="text-center text-muted py-3">Chưa có giao dịch thanh toán nào được thực hiện cho đơn này.</td>
+                            </tr>
+                            <tr th:each="pay : ${thanhToanList}">
+                                <td class="ps-3 fw-bold text-dark font-monospace" th:text="${pay.maThanhToan}">PAY-001</td>
+                                <td th:text="${pay.loaiGiaoDich}">THANH_TOAN</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border" th:text="${pay.phuongThucThanhToan != null ? pay.phuongThucThanhToan.name() : 'TIEN_MAT'}">VNPAY</span>
+                                </td>
+                                <td class="text-end fw-bold text-success" th:text="${#numbers.formatDecimal(pay.soTien, 0, 'POINT', 0, 'COMMA')} + ' đ'">500.000 đ</td>
+                                <td class="text-muted small" th:text="${#temporals.format(pay.thoiGianTao, 'dd/MM/yyyy HH:mm')}">25/10/2026</td>
+                                <td class="text-muted small" th:text="${pay.thoiGianThanhToan != null ? #temporals.format(pay.thoiGianThanhToan, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                                <td class="text-center pe-3">
+                                    <span th:if="${pay.trangThai.name() == 'DA_THANH_TOAN'}" class="badge bg-success">Đã thanh toán</span>
+                                    <span th:if="${pay.trangThai.name() == 'CHO_THANH_TOAN'}" class="badge bg-warning text-dark">Chờ thanh toán</span>
+                                    <span th:if="${pay.trangThai.name() == 'THAT_BAI'}" class="badge bg-danger">Thất bại</span>
+                                    <span th:if="${pay.trangThai.name() == 'DA_HUY'}" class="badge bg-secondary">Đã hủy</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

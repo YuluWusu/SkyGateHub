@@ -359,3 +359,102 @@ main.flex-grow-1 {
     transform: translateY(0);
     opacity: 1;
 }
+
+/* ==========================================================================
+   ADMIN PORTAL — RESPONSIVE CHO MOBILE & TABLET (< 992px)
+   ========================================================================== */
+
+@media (max-width: 991.98px) {
+    /* Drawer Sidebar */
+    .skygate-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: -320px !important;
+        width: 290px !important;
+        min-width: 290px !important;
+        max-width: 290px !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        z-index: 1060 !important;
+        box-shadow: 4px 0 30px rgba(0, 0, 0, 0.25) !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background: #ffffff !important;
+    }
+
+    .skygate-sidebar.show {
+        left: 0 !important;
+    }
+
+    /* Backdrop che mờ nền khi mở menu mobile */
+    .admin-sidebar-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        z-index: 1050;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .admin-sidebar-backdrop.show {
+        display: block;
+        opacity: 1;
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    /* Tối ưu không gian nội dung chính trên điện thoại */
+    main.flex-grow-1 {
+        width: 100% !important;
+        min-width: 0 !important;
+        padding: 0.85rem !important;
+    }
+
+    .admin-content-header h3 {
+        font-size: 1.25rem !important;
+    }
+
+    /* Bảng dữ liệu tự động cuộn ngang mượt mà trên mobile */
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Các thẻ chỉ số thống kê trên màn hình nhỏ */
+    .stat-metric-card {
+        padding: 1rem;
+        min-height: auto;
+    }
+
+    .stat-metric-val {
+        font-size: 1.25rem !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    main.flex-grow-1 {
+        padding: 0.65rem !important;
+    }
+
+    .admin-tabs {
+        gap: 4px;
+    }
+
+    .admin-tab-btn {
+        padding: 8px 12px;
+        font-size: 0.82rem;
+    }
+
+    .btn {
+        font-size: 0.85rem;
+    }
+}
+

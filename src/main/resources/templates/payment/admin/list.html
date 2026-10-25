@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử Thanh toán &amp; Cọc — SkyGateHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/logo/favicon.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div th:replace="~{fragments/admin-topbar :: admin_topbar}"></div>
+    <div class="d-flex flex-grow-1">
+        <div th:replace="~{fragments/admin-sidebar :: div}"></div>
+        <main class="flex-grow-1 p-2 p-sm-3 p-md-4">
+            <div th:replace="~{fragments/flash-messages :: div}"></div>
+
+            <!-- Page Title -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.5px;">
+                        <i class="bi bi-credit-card-2-front-fill text-success me-2"></i>Lịch sử Thanh toán &amp; Tiền cọc
+                    </h3>
+                    <p class="text-muted mb-0 small">
+                        Nhật ký các đợt giao dịch thanh toán, đặt cọc và đối soát dòng tiền theo từng đơn đặt dịch vụ
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/admin/revenue}" class="btn btn-outline-success fw-semibold">
+                        <i class="bi bi-graph-up-arrow me-1"></i> Báo cáo doanh thu
+                    </a>
+                </div>
+            </div>
+
+            <!-- Payment Summary Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-6">
+                    <div class="stat-metric-card" style="border-left: 4px solid #10b981 !important;">
+                        <div class="stat-metric-label">Tổng thực thu thành công</div>
+                        <div class="stat-metric-val text-success" th:text="${#numbers.formatDecimal(totalPaid, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                        <div class="stat-metric-sub">Giao dịch có trạng thái DA_THANH_TOAN</div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <div class="stat-metric-card" style="border-left: 4px solid #f59e0b !important;">
+                        <div class="stat-metric-label">Tổng đang chờ thanh toán</div>
+                        <div class="stat-metric-val text-warning" th:text="${#numbers.formatDecimal(totalPending, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                        <div class="stat-metric-sub">Giao dịch có trạng thái CHO_THANH_TOAN</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Table -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="border: 1px solid #e2e8f0 !important;">
+                <div class="p-3 p-md-4 border-bottom bg-light">
+                    <form th:action="@{/admin/payments}" method="get" class="row g-2 align-items-center">
+                        <div class="col-12 col-md-5">
+                            <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo mã thanh toán, mã đơn đặt, mã giao dịch...">
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <select name="status" class="form-select">
+                                <option value="ALL" th:selected="${currentStatus == 'ALL'}">Tất cả trạng thái</option>
+                                <option value="DA_THANH_TOAN" th:selected="${currentStatus == 'DA_THANH_TOAN'}">Đã thanh toán (Thành công)</option>
+                                <option value="CHO_THANH_TOAN" th:selected="${currentStatus == 'CHO_THANH_TOAN'}">Chờ thanh toán</option>
+                                <option value="THAT_BAI" th:selected="${currentStatus == 'THAT_BAI'}">Thất bại</option>
+                                <option value="DA_HUY" th:selected="${currentStatus == 'DA_HUY'}">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary fw-semibold px-3 flex-grow-1">
+                                <i class="bi bi-funnel me-1"></i> Lọc
+                            </button>
+                            <a th:href="@{/admin/payments}" class="btn btn-outline-secondary px-3">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Mã thanh toán</th>
+                                <th>Đơn đặt</th>
+                                <th>Loại GD</th>
+                                <th>Phương thức</th>
+                                <th class="text-end">Số tiền</th>
+                                <th>Thời gian tạo</th>
+                                <th>Thời gian TT</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th class="text-center pe-3">Cập nhật nhanh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${paymentsPage.content.isEmpty()}">
+                                <td colspan="9" class="text-center text-muted py-4">Không tìm thấy giao dịch thanh toán nào phù hợp.</td>
+                            </tr>
+                            <tr th:each="pay : ${paymentsPage.content}">
+                                <td class="ps-3 fw-bold text-dark font-monospace" th:text="${pay.maThanhToan}">PAY-001</td>
+                                <td>
+                                    <a th:if="${pay.donDat != null}" th:href="@{/admin/orders/{id}(id=${pay.donDat.maDonDat})}" class="fw-semibold text-decoration-none text-primary" th:text="${pay.donDat.maDonDat}">DD001</a>
+                                    <span th:if="${pay.donDat == null}" class="text-muted">-</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border" th:text="${pay.loaiGiaoDich}">THANH_TOAN</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-success border border-success" th:text="${pay.phuongThucThanhToan != null ? pay.phuongThucThanhToan.name() : 'TIEN_MAT'}">VNPAY</span>
+                                </td>
+                                <td class="text-end fw-bold text-success fs-6" th:text="${#numbers.formatDecimal(pay.soTien, 0, 'POINT', 0, 'COMMA')} + ' đ'">500.000 đ</td>
+                                <td class="text-muted small" th:text="${#temporals.format(pay.thoiGianTao, 'dd/MM/yyyy HH:mm')}">25/10/2026</td>
+                                <td class="text-muted small" th:text="${pay.thoiGianThanhToan != null ? #temporals.format(pay.thoiGianThanhToan, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                                <td class="text-center">
+                                    <span th:if="${pay.trangThai.name() == 'DA_THANH_TOAN'}" class="badge bg-success">Đã thanh toán</span>
+                                    <span th:if="${pay.trangThai.name() == 'CHO_THANH_TOAN'}" class="badge bg-warning text-dark">Chờ thanh toán</span>
+                                    <span th:if="${pay.trangThai.name() == 'THAT_BAI'}" class="badge bg-danger">Thất bại</span>
+                                    <span th:if="${pay.trangThai.name() == 'DA_HUY'}" class="badge bg-secondary">Đã hủy</span>
+                                </td>
+                                <td class="text-center pe-3">
+                                    <form th:action="@{/admin/payments/{id}/quick-status(id=${pay.maThanhToan})}" method="post" class="d-inline-flex align-items-center gap-1">
+                                        <select name="status" class="form-select form-select-sm" style="font-size: 0.78rem; padding: 2px 6px;">
+                                            <option value="DA_THANH_TOAN" th:selected="${pay.trangThai.name() == 'DA_THANH_TOAN'}">Xác nhận ĐÃ TT</option>
+                                            <option value="CHO_THANH_TOAN" th:selected="${pay.trangThai.name() == 'CHO_THANH_TOAN'}">Chờ TT</option>
+                                            <option value="DA_HUY" th:selected="${pay.trangThai.name() == 'DA_HUY'}">Hủy GD</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.78rem;" title="Lưu">
+                                            <i class="bi bi-check2"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="p-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2" th:if="${paymentsPage.totalPages > 1}">
+                    <span class="small text-muted">
+                        Trang <strong th:text="${paymentsPage.number + 1}">1</strong> / <strong th:text="${paymentsPage.totalPages}">1</strong>
+                    </span>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" th:classappend="${paymentsPage.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/payments(page=${paymentsPage.number - 1}, status=${currentStatus}, keyword=${keyword})}">&laquo;</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, paymentsPage.totalPages - 1)}" th:classappend="${i == paymentsPage.number} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/payments(page=${i}, status=${currentStatus}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${paymentsPage.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/payments(page=${paymentsPage.number + 1}, status=${currentStatus}, keyword=${keyword})}">&raquo;</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
