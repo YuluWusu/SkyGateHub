@@ -65,5 +65,66 @@ public class ThanhToan {
         if (trangThai == null) trangThai = TrangThaiThanhToan.CHO_THANH_TOAN;
         if (thoiGianTao == null) thoiGianTao = LocalDateTime.now();
     }
+    // Convenience methods for PaymentServiceImpl compatibility
+    public void setOrderId(String orderId) {
+        // Assuming DonDat entity has a setter for orderId (maDonDat)
+        if (this.donDat == null) {
+            this.donDat = new DonDat();
+        }
+        this.donDat.setMaDonDat(orderId);
+    }
+
+    public String getOrderId() {
+        return this.donDat != null ? this.donDat.getMaDonDat() : null;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.soTien = amount;
+    }
+
+    public BigDecimal getAmount() {
+        return this.soTien;
+    }
+
+    public void setPaymentMethod(String method) {
+        if (method != null) {
+            this.phuongThucThanhToan = PhuongThucThanhToan.valueOf(method);
+        }
+    }
+
+    public String getPaymentMethod() {
+        return this.phuongThucThanhToan != null ? this.phuongThucThanhToan.name() : null;
+    }
+
+    // Description field is not present in the entity; placeholder method
+    public void setDescription(String description) {
+        // No persistent field; method kept for compatibility
+    }
+
+    public String getDescription() {
+        return null;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.maThanhToan = paymentId;
+    }
+
+    public String getPaymentId() {
+        return this.maThanhToan;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return this.thoiGianTao;
+    }
+
+    public void setStatus(String status) {
+        if (status != null) {
+            this.trangThai = TrangThaiThanhToan.valueOf(status);
+        }
+    }
+
+    public String getStatus() {
+        return this.trangThai != null ? this.trangThai.name() : null;
+    }
 }
 
