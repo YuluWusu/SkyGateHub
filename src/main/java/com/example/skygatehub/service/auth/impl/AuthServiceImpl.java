@@ -3,7 +3,6 @@ package com.example.skygatehub.service.auth.impl;
 import com.example.skygatehub.common.security.CurrentUser;
 import com.example.skygatehub.common.security.PasswordHasher;
 import com.example.skygatehub.dto.auth.LoginRequest;
-import com.example.skygatehub.dto.auth.RegisterRequest;
 import com.example.skygatehub.entity.account.NguoiDung;
 import com.example.skygatehub.entity.account.NguoiDungVaiTro;
 import com.example.skygatehub.entity.account.VaiTro;
@@ -83,54 +82,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public NguoiDung dangKy(RegisterRequest yeuCau) {
-        if (yeuCau == null || yeuCau.getTenDangNhap() == null || yeuCau.getMatKhau() == null) {
-            throw new IllegalArgumentException("Thông tin đăng ký không hợp lệ");
-        }
-
-        String tenDangNhap = yeuCau.getTenDangNhap().trim();
-        if (nguoiDungRepository.existsByTenDangNhap(tenDangNhap)) {
-            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại: " + tenDangNhap);
-        }
-
-        String maNguoiDung = "ND" + System.currentTimeMillis() % 1000000;
-        while (nguoiDungRepository.findByMaNguoiDung(maNguoiDung).isPresent()) {
-            maNguoiDung = "ND" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        }
-
-        NguoiDung nguoiDungMoi = new NguoiDung();
-        nguoiDungMoi.setMaNguoiDung(maNguoiDung);
-        nguoiDungMoi.setTenDangNhap(tenDangNhap);
-        nguoiDungMoi.setMatKhauHash(passwordHasher.encode(yeuCau.getMatKhau().trim()));
-        nguoiDungMoi.setHoTen(yeuCau.getHoTen() != null ? yeuCau.getHoTen().trim() : tenDangNhap);
-        nguoiDungMoi.setEmail(yeuCau.getEmail() != null ? yeuCau.getEmail().trim() : null);
-        nguoiDungMoi.setSoDienThoai(yeuCau.getSoDienThoai() != null ? yeuCau.getSoDienThoai().trim() : null);
-        nguoiDungMoi.setTrangThai(true);
-        nguoiDungMoi.setCanDoiMatKhau(false);
-        nguoiDungMoi.setNgayTao(LocalDateTime.now());
-        nguoiDungMoi.setNgayCapNhat(LocalDateTime.now());
-
-        NguoiDung nguoiDungDaLuu = nguoiDungRepository.save(nguoiDungMoi);
-
-        String maVaiTro = yeuCau.getMaVaiTro();
-        if (maVaiTro != null && !maVaiTro.trim().isEmpty()) {
-            Optional<VaiTro> vaiTroOptional = vaiTroRepository.findByMaVaiTro(maVaiTro.trim());
-            if (vaiTroOptional.isEmpty()) {
-                vaiTroOptional = vaiTroRepository.findByTenVaiTro(maVaiTro.trim());
-            }
-            if (vaiTroOptional.isPresent()) {
-                NguoiDungVaiTro nguoiDungVaiTro = new NguoiDungVaiTro();
-                nguoiDungVaiTro.setMaNguoiDung(nguoiDungDaLuu.getMaNguoiDung());
-                nguoiDungVaiTro.setMaVaiTro(vaiTroOptional.get().getMaVaiTro());
-                nguoiDungVaiTro.setNgayGan(LocalDateTime.now());
-                nguoiDungVaiTroRepository.save(nguoiDungVaiTro);
-            }
-        }
-
-        return nguoiDungDaLuu;
-    }
-
-    @Override
     public boolean doiMatKhau(String maNguoiDung, String matKhauCu, String matKhauMoi) {
         Optional<NguoiDung> nguoiDungOptional = nguoiDungRepository.findByMaNguoiDung(maNguoiDung);
         if (nguoiDungOptional.isEmpty()) {
@@ -184,10 +135,6 @@ public class AuthServiceImpl implements AuthService {
         return dangNhap(request);
     }
 
-    @Override
-    public NguoiDung register(RegisterRequest request) {
-        return dangKy(request);
-    }
 
     @Override
     public boolean changePassword(String maNguoiDung, String oldPassword, String newPassword) {

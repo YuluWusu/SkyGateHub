@@ -3,7 +3,6 @@ package com.example.skygatehub.controller.auth;
 import com.example.skygatehub.common.constant.SessionKeys;
 import com.example.skygatehub.common.security.CurrentUser;
 import com.example.skygatehub.dto.auth.LoginRequest;
-import com.example.skygatehub.dto.auth.RegisterRequest;
 import com.example.skygatehub.service.auth.AuthService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -164,19 +163,5 @@ public class AuthController {
         }
         dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Đã đăng xuất và chuyển về giao diện Khách hàng.");
         return "redirect:/";
-    }
-
-    @GetMapping("/register")
-    public String hienThiTrangDangKy(RedirectAttributes dieuHuong) {
-        dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR,
-                "Hệ thống chỉ dành cho cán bộ & nhân viên được cấp tài khoản bởi Ban Quản Trị. Quý du khách vui lòng đặt dịch vụ trực tiếp mà không cần đăng ký tài khoản.");
-        return "redirect:/login";
-    }
-
-    @PostMapping("/register")
-    public String xuLyDangKy(RedirectAttributes dieuHuong) {
-        dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR,
-                "Chức năng đăng ký công khai đã ngừng hoạt động. Tài khoản chỉ được cấp bởi Ban Quản Trị.");
-        return "redirect:/login";
     }
 }
