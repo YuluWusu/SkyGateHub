@@ -34,6 +34,7 @@ import java.util.Optional;
 public class AdminPaymentController {
 
     private final ThanhToanRepository thanhToanRepository;
+    private final com.example.skygatehub.common.concurrent.AsyncTaskService asyncTaskService;
 
     /**
      * Web UI: Hiển thị danh sách lịch sử thanh toán & đặt cọc
@@ -97,6 +98,11 @@ public class AdminPaymentController {
             entity.setTrangThai(newStatus);
             if (newStatus == TrangThaiThanhToan.DA_THANH_TOAN) {
                 entity.setThoiGianThanhToan(LocalDateTime.now());
+                if (entity.getDonDat() != null) {
+                    String email = (entity.getDonDat().getEmailKhach() != null && !entity.getDonDat().getEmailKhach().isBlank())
+                            ? entity.getDonDat().getEmailKhach() : "guest@skygatehub.vn";
+                    asyncTaskService.sendPaymentConfirmationEmailAsync(email, entity.getDonDat().getMaDonHang(), entity.getSoTien());
+                }
             }
             thanhToanRepository.save(entity);
             redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Đã cập nhật trạng thái thanh toán: " + newStatus.name());
@@ -139,6 +145,11 @@ public class AdminPaymentController {
             entity.setTrangThai(newStatus);
             if (newStatus == TrangThaiThanhToan.DA_THANH_TOAN) {
                 entity.setThoiGianThanhToan(LocalDateTime.now());
+                if (entity.getDonDat() != null) {
+                    String email = (entity.getDonDat().getEmailKhach() != null && !entity.getDonDat().getEmailKhach().isBlank())
+                            ? entity.getDonDat().getEmailKhach() : "guest@skygatehub.vn";
+                    asyncTaskService.sendPaymentConfirmationEmailAsync(email, entity.getDonDat().getMaDonHang(), entity.getSoTien());
+                }
             }
             thanhToanRepository.save(entity);
         } catch (IllegalArgumentException e) {

@@ -26,6 +26,10 @@ public interface VeRepository extends JpaRepository<Ve, Long> {
      * Khóa bi quan chống race condition khi quét mã QR vé đồng thời ở nhiều cổng check-in.
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT v FROM Ve v WHERE v.maVe = :maVe")
+    Optional<Ve> findByMaVeWithLock(@Param("maVe") String maVe);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT v FROM Ve v WHERE v.maVeChuoi = :maVeChuoi")
     Optional<Ve> findByMaVeChuoiWithLock(@Param("maVeChuoi") String maVeChuoi);
 

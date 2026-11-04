@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +56,7 @@ class TicketPricingServiceTest {
         holidayPrice.setDonGia(new BigDecimal("200000"));
         holidayPrice.setUuTien(10);
 
-        when(bangGiaVeRepository.findValidPrices(eq(ticketCode), eq(holidayDate)))
+        when(bangGiaVeRepository.timBangGiaHopLe(eq(ticketCode), eq(holidayDate)))
                 .thenReturn(List.of(holidayPrice));
 
         BigDecimal calculatedPrice = ticketPricingService.calculateTicketPrice(ticketCode, holidayDate);
@@ -71,7 +70,7 @@ class TicketPricingServiceTest {
         String ticketCode = "LV001";
 
         when(ngayDacBietRepository.existsByNgayApDungAndTrangThai(regularDate, true)).thenReturn(false);
-        when(bangGiaVeRepository.findValidPrices(eq(ticketCode), eq(regularDate))).thenReturn(List.of());
+        when(bangGiaVeRepository.timBangGiaHopLe(eq(ticketCode), eq(regularDate))).thenReturn(List.of());
 
         LoaiVe ticket = new LoaiVe();
         ticket.setMaLoaiVe(ticketCode);

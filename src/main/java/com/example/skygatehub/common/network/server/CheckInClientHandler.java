@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -42,6 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CheckInClientHandler implements Runnable {
 
     private static final AtomicInteger CLIENT_COUNTER = new AtomicInteger(1);
+    private static final ConcurrentHashMap<String, Object> TICKET_LOCKS = new ConcurrentHashMap<>();
 
     private final Socket clientSocket;
     private final DonDatRepository donDatRepository;
@@ -120,6 +122,9 @@ public class CheckInClientHandler implements Runnable {
 
     private String handleCommand(String command, String[] parts) {
         switch (command) {
+            case "PING":
+                return "200 PONG ServerThread=" + Thread.currentThread().getName() + " ClientId=" + clientId + " Tram=" + stationName;
+
             case "AUTH":
                 if (parts.length < 2) return "400 ERROR Thiếu tên trạm: Cú pháp: AUTH <STATION_NAME>";
                 this.stationName = parts[1];
@@ -151,7 +156,7 @@ public class CheckInClientHandler implements Runnable {
                 return "200 STATS TongLuotCheckIn=" + totalCheckins + " Tram=" + stationName;
 
             default:
-                return "404 UNKNOWN Lệnh không hợp lệ. Các lệnh hỗ trợ: AUTH, LOOKUP, CHECKIN_VE, CHECKIN_PHONG, CHECKIN_AN, STATS, QUIT";
+                return "404 UNKNOWN Lệnh không hợp lệ. Các lệnh hỗ trợ: PING, AUTH, LOOKUP, CHECKIN_VE, CHECKIN_PHONG, CHECKIN_AN, STATS, QUIT";
         }
     }
 
@@ -203,51 +208,58 @@ public class CheckInClientHandler implements Runnable {
     }
 
     /**
-     * Check-in vé dùng Pessimistic Lock chống quét trùng (Tiêu chí 5.2).
+     * Check-in vé dùng Pessimistic Lock kết hợp khóa đồng bộ chống quét trùng (Tiêu chí 5.2).
      */
     private String xuLyCheckinVe(String maVeHoacChuoi) {
-        TransactionTemplate mauGiaoDich = new TransactionTemplate(transactionManager);
-        return mauGiaoDich.execute(trangThaiGiaoDich -> {
-            Optional<Ve> veOptional = veRepository.findByMaVeChuoiWithLock(maVeHoacChuoi);
-            if (veOptional.isEmpty()) {
-                veOptional = veRepository.findByMaVe(maVeHoacChuoi);
-            }
-            if (veOptional.isEmpty()) {
-                return "404 NOT_FOUND Mã vé không tồn tại: " + maVeHoacChuoi;
-            }
+        Object lockObj = TICKET_LOCKS.computeIfAbsent(maVeHoacChuoi.trim(), k -> new Object());
+        synchronized (lockObj) {
+            TransactionTemplate mauGiaoDich = new TransactionTemplate(transactionManager);
+            return mauGiaoDich.execute(trangThaiGiaoDich -> {
+                Optional<Ve> veOptional = veRepository.findByMaVeChuoiWithLock(maVeHoacChuoi);
+                if (veOptional.isEmpty()) {
+                    veOptional = veRepository.findByMaVeWithLock(maVeHoacChuoi);
+                }
+                if (veOptional.isEmpty()) {
+                    veOptional = veRepository.findByMaVe(maVeHoacChuoi);
+                }
+                if (veOptional.isEmpty()) {
+                    return "404 NOT_FOUND Mã vé không tồn tại: " + maVeHoacChuoi;
+                }
 
-            Ve ve = veOptional.get();
-            if (ve.getTrangThai() == TrangThaiVe.DA_SU_DUNG) {
-                return "409 CONFLICT_ALREADY_USED Vé [" + ve.getMaVe() + "] đã được sử dụng lúc " + ve.getThoiGianSuDung();
-            }
-            if (ve.getTrangThai() == TrangThaiVe.DA_HUY) {
-                return "410 GONE Vé [" + ve.getMaVe() + "] đã bị hủy, không thể check-in.";
-            }
+                Ve ve = veOptional.get();
+                if (ve.getTrangThai() == TrangThaiVe.DA_SU_DUNG) {
+                    return "409 CONFLICT_ALREADY_USED Vé [" + ve.getMaVe() + "] đã được sử dụng lúc " + ve.getThoiGianSuDung();
+                }
+                if (ve.getTrangThai() == TrangThaiVe.DA_HUY) {
+                    return "410 GONE Vé [" + ve.getMaVe() + "] đã bị hủy, không thể check-in.";
+                }
 
-            // Cập nhật trạng thái vé
-            ve.setTrangThai(TrangThaiVe.DA_SU_DUNG);
-            ve.setThoiGianSuDung(LocalDateTime.now());
-            veRepository.save(ve);
+                // Cập nhật trạng thái vé
+                ve.setTrangThai(TrangThaiVe.DA_SU_DUNG);
+                ve.setThoiGianSuDung(LocalDateTime.now());
+                veRepository.save(ve);
 
-            // Tạo bản ghi CheckIn
-            CheckIn banGhiCheckIn = new CheckIn();
-            banGhiCheckIn.setMaCheckIn("CI-VE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-            banGhiCheckIn.setDonDat(ve.getChiTietDon().getDonDat());
-            banGhiCheckIn.setLoaiCheckIn(LoaiCheckIn.VE);
-            banGhiCheckIn.setVe(ve);
+                // Tạo bản ghi CheckIn
+                CheckIn banGhiCheckIn = new CheckIn();
+                banGhiCheckIn.setMaCheckIn("CI-VE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                banGhiCheckIn.setDonDat(ve.getChiTietDon().getDonDat());
+                banGhiCheckIn.setLoaiCheckIn(LoaiCheckIn.VE);
+                banGhiCheckIn.setVe(ve);
 
-            // Gán nhân viên mặc định (User đầu tiên hoặc Quản trị)
-            NguoiDung nhanVien = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
-            banGhiCheckIn.setNhanVien(nhanVien);
-            banGhiCheckIn.setSoLuong(1);
-            banGhiCheckIn.setThoiGianCheckIn(LocalDateTime.now());
-            banGhiCheckIn.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
-            banGhiCheckIn.setGhiChu("Check-in qua Socket tại trạm: " + stationName);
-            checkInRepository.save(banGhiCheckIn);
+                // Gán nhân viên mặc định (User đầu tiên hoặc Quản trị)
+                NguoiDung nhanVien = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
+                banGhiCheckIn.setNhanVien(nhanVien);
+                banGhiCheckIn.setSoLuong(1);
+                banGhiCheckIn.setThoiGianCheckIn(LocalDateTime.now());
+                banGhiCheckIn.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
+                banGhiCheckIn.setGhiChu("Check-in qua Socket tại trạm: " + stationName);
+                checkInRepository.save(banGhiCheckIn);
 
-            log.info("[CHECKIN-VE-SUCCESS] Trạm {} check-in thành công vé: {}", stationName, ve.getMaVe());
-            return "200 CHECKIN_SUCCESS MaCheckIn=" + banGhiCheckIn.getMaCheckIn() + " MaVe=" + ve.getMaVe() + " LoaiVe=" + ve.getLoaiVe().getTenLoaiVe();
-        });
+                log.info("[THREAD: {}] [CHECKIN-VE-SUCCESS] Trạm {} check-in thành công vé: {}",
+                        Thread.currentThread().getName(), stationName, ve.getMaVe());
+                return "200 CHECKIN_SUCCESS MaCheckIn=" + banGhiCheckIn.getMaCheckIn() + " MaVe=" + ve.getMaVe() + " LoaiVe=" + ve.getLoaiVe().getTenLoaiVe();
+            });
+        }
     }
 
     /**

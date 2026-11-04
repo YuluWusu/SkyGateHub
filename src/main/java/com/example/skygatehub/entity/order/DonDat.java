@@ -72,6 +72,12 @@ public class DonDat {
     @Column(name = "NGAY_CAP_NHAT", nullable = false)
     private LocalDateTime ngayCapNhat;
 
+    @OneToMany(mappedBy = "donDat", fetch = FetchType.LAZY)
+    private java.util.List<ChiTietDon> chiTietDons = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "donDat", fetch = FetchType.LAZY)
+    private java.util.List<com.example.skygatehub.entity.payment.ThanhToan> thanhToans = new java.util.ArrayList<>();
+
     @PrePersist
     public void prePersist() {
         if (thoiGianDat == null) thoiGianDat = LocalDateTime.now();

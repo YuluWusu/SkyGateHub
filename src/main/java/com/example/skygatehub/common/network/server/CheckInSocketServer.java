@@ -10,6 +10,7 @@ import com.example.skygatehub.service.room.RoomOperationService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,9 +21,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Socket Server phục vụ check-in đồng thời đa trạm (Tiêu chí 5.3 - 0,4 điểm).
+ * Socket Server phục vụ check-in đồng thời đa trạm (Tiêu chí 5.3 - 0,5 điểm, Tiêu chí 5.4 - 0,3 điểm).
  * Chạy ngầm trên cổng 9090 bằng ExecutorService, phục vụ tối thiểu 3 Client đồng thời.
  */
 @Component
@@ -30,8 +32,9 @@ import java.util.concurrent.Executors;
 @Slf4j
 public class CheckInSocketServer {
 
+    @Setter
     @Value("${socket.server.port:9090}")
-    private int port;
+    private int port = 9090;
 
     private final DonDatRepository donDatRepository;
     private final VeRepository veRepository;
@@ -48,10 +51,11 @@ public class CheckInSocketServer {
 
     @PostConstruct
     public void startServer() {
-        // Cấp phát ThreadPool phục vụ tối thiểu 3 Client đồng thời (Tiêu chí 5.3)
+        AtomicInteger workerSeq = new AtomicInteger(1);
+        // Cấp phát ThreadPool phục vụ đồng thời nhiều Client (Tiêu chí 5.3, 5.4)
         this.threadPool = Executors.newFixedThreadPool(10, r -> {
             Thread t = new Thread(r);
-            t.setName("SocketWorker-" + t.getId());
+            t.setName("SocketWorker-" + workerSeq.getAndIncrement());
             t.setDaemon(true);
             return t;
         });
@@ -62,12 +66,20 @@ public class CheckInSocketServer {
         serverThread.start();
     }
 
+    public int getBoundPort() {
+        return (serverSocket != null && serverSocket.isBound()) ? serverSocket.getLocalPort() : port;
+    }
+
+    public boolean isRunning() {
+        return running && serverSocket != null && !serverSocket.isClosed();
+    }
+
     private void listen() {
         try {
             serverSocket = new ServerSocket(port);
             running = true;
             log.info("[THREAD: {}] === CheckInSocketServer đã khởi động thành công trên cổng TCP {} ===",
-                    Thread.currentThread().getName(), port);
+                    Thread.currentThread().getName(), serverSocket.getLocalPort());
 
             while (running) {
                 try {

@@ -4,7 +4,7 @@ import com.example.skygatehub.dto.dining.DichVuAnRequest;
 import com.example.skygatehub.entity.dining.CaAn;
 import com.example.skygatehub.entity.dining.DichVuAnUong;
 import com.example.skygatehub.entity.dining.DichVuCaAn;
-import com.example.skygatehub.enums.dining.LoaiDichVuAn;
+import com.example.skygatehub.common.enums.LoaiDichVuAn;
 import com.example.skygatehub.repository.dining.CaAnRepository;
 import com.example.skygatehub.repository.dining.DichVuAnUongRepository;
 import com.example.skygatehub.repository.dining.DichVuCaAnRepository;

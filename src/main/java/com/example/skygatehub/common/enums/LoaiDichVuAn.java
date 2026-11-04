@@ -1,4 +1,4 @@
-package com.example.skygatehub.enums.dining;
+package com.example.skygatehub.common.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,3 +13,4 @@ public enum LoaiDichVuAn {
 
     private final String nhan;
 }
+

@@ -1,11 +1,11 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 1;
 
-DROP DATABASE IF EXISTS `QL_Cong_Troi_Dong_Giang`;
-CREATE DATABASE `QL_Cong_Troi_Dong_Giang`
+DROP DATABASE IF EXISTS `QL_CONG_TROI_DONG_GIANG`;
+CREATE DATABASE `QL_CONG_TROI_DONG_GIANG`
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_0900_ai_ci;
-USE `QL_Cong_Troi_Dong_Giang`;
+USE `QL_CONG_TROI_DONG_GIANG`;
 
 CREATE TABLE IF NOT EXISTS `NGUOI_DUNG` (
   `ID` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -681,7 +681,7 @@ VALUES
   ('HUY01', 'Huy truoc it nhat 14 ngay', 14, NULL, 'HOAN_TIEN', NULL, 1, 'Chinh sach theo yeu cau da trao doi; so tien hoan can tinh/duyet trong Java.'),
   ('HUY02', 'Huy dung moc 7 ngay', 7, 7, 'MAT_COC', 0, 1, 'Chi ap dung dung moc 7 ngay; moc khac chua duoc tu dong suy dien.');
 
-SELECT 'QL_Cong_Troi_Dong_Giang schema da khoi tao' AS `KET_QUA`, DATABASE() AS `DATABASE_DANG_DUNG`;
+SELECT 'QL_CONG_TROI_DONG_GIANG schema da khoi tao' AS `KET_QUA`, DATABASE() AS `DATABASE_DANG_DUNG`;
 SELECT `MA_VAI_TRO`, `TEN_VAI_TRO` FROM `VAI_TRO` ORDER BY `MA_VAI_TRO`;
 SELECT `MA_CHINH_SACH_HUY`, `SO_NGAY_TU`, `SO_NGAY_DEN`, `HANH_DONG`, `TRANG_THAI`
 FROM `CHINH_SACH_HUY` ORDER BY `MA_CHINH_SACH_HUY`;

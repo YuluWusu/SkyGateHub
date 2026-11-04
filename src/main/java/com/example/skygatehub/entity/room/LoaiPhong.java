@@ -60,6 +60,9 @@ public class LoaiPhong {
     @Column(name = "NGAY_TAO", nullable = false, updatable = false)
     private LocalDateTime ngayTao;
 
+    @OneToMany(mappedBy = "loaiPhong", fetch = FetchType.LAZY)
+    private java.util.List<Phong> phongs = new java.util.ArrayList<>();
+
     @PrePersist
     public void prePersist() {
         if (trangThai == null) trangThai = false;

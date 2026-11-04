@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class CheckInServiceImpl implements CheckInService {
     private final NguoiDungRepository nguoiDungRepository;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+    private final ConcurrentHashMap<String, Object> ticketLocks = new ConcurrentHashMap<>();
 
     @Override
     @Transactional(readOnly = true)
@@ -165,54 +167,63 @@ public class CheckInServiceImpl implements CheckInService {
             throw new IllegalArgumentException("Mã vé không được để trống!");
         }
 
-        Ve ve = veRepository.findByMaVe(maVe.trim())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin vé có mã: " + maVe));
+        String normalizedCode = maVe.trim();
+        Object lockObj = ticketLocks.computeIfAbsent(normalizedCode, k -> new Object());
+        String threadName = Thread.currentThread().getName();
 
-        if (ve.getTrangThai() == TrangThaiVe.DA_SU_DUNG) {
-            String timeStr = (ve.getThoiGianSuDung() != null) ? ve.getThoiGianSuDung().format(TIME_FMT) : "trước đó";
-            throw new IllegalStateException("CẢNH BÁO QUÉT TRÙNG: Vé [" + maVe + "] đã được sử dụng lúc " + timeStr + "!");
+        // Đồng bộ hóa đa tầng: Khóa đối tượng theo mã vé + Khóa bi quan JPA PESSIMISTIC_WRITE (Tiêu chí 5.2)
+        synchronized (lockObj) {
+            Ve ve = veRepository.findByMaVeWithLock(normalizedCode)
+                    .or(() -> veRepository.findByMaVe(normalizedCode))
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin vé có mã: " + normalizedCode));
+
+            if (ve.getTrangThai() == TrangThaiVe.DA_SU_DUNG) {
+                String timeStr = (ve.getThoiGianSuDung() != null) ? ve.getThoiGianSuDung().format(TIME_FMT) : "trước đó";
+                log.warn("[THREAD: {}] [CHECKIN-VE-BLOCKED] Chặn quét trùng mã vé: {}", threadName, normalizedCode);
+                throw new IllegalStateException("CẢNH BÁO QUÉT TRÙNG: Vé [" + normalizedCode + "] đã được sử dụng lúc " + timeStr + "!");
+            }
+
+            if (ve.getTrangThai() == TrangThaiVe.DA_HUY) {
+                throw new IllegalStateException("Vé [" + normalizedCode + "] đã bị hủy bỏ, không có giá trị vào cổng!");
+            }
+
+            DonDat donDat = ve.getChiTietDon().getDonDat();
+            if (donDat.getTrangThaiDon() == TrangThaiDon.DA_HUY) {
+                throw new IllegalStateException("Đơn hàng [" + donDat.getMaDonHang() + "] đã bị hủy, không thể sử dụng vé!");
+            }
+
+            // Cập nhật trạng thái vé
+            ve.setTrangThai(TrangThaiVe.DA_SU_DUNG);
+            ve.setThoiGianSuDung(LocalDateTime.now());
+            veRepository.save(ve);
+
+            // Tìm nhân viên soát vé
+            NguoiDung nhanVien = null;
+            if (maNhanVien != null && !maNhanVien.trim().isEmpty()) {
+                nhanVien = nguoiDungRepository.findByMaNguoiDung(maNhanVien.trim()).orElse(null);
+            }
+            if (nhanVien == null) {
+                nhanVien = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
+            }
+
+            // Ghi nhận bản ghi Check-in vào bảng CHECK_IN
+            CheckIn checkIn = new CheckIn();
+            checkIn.setMaCheckIn("CI-V-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            checkIn.setDonDat(donDat);
+            checkIn.setLoaiCheckIn(LoaiCheckIn.VE);
+            checkIn.setVe(ve);
+            checkIn.setNhanVien(nhanVien);
+            checkIn.setSoLuong(1);
+            checkIn.setThoiGianCheckIn(LocalDateTime.now());
+            checkIn.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
+            checkIn.setGhiChu((ghiChu != null && !ghiChu.trim().isEmpty()) ? ghiChu.trim() : ("Soát vé vào cổng: " + ve.getMaVe()));
+
+            CheckIn savedCheckIn = checkInRepository.save(checkIn);
+            log.info("[THREAD: {}] [CHECKIN-VE] Check-in thành công vé: {} cho khách {} (Mã CI: {})",
+                    threadName, ve.getMaVe(), donDat.getHoTenKhach(), savedCheckIn.getMaCheckIn());
+
+            return savedCheckIn;
         }
-
-        if (ve.getTrangThai() == TrangThaiVe.DA_HUY) {
-            throw new IllegalStateException("Vé [" + maVe + "] đã bị hủy bỏ, không có giá trị vào cổng!");
-        }
-
-        DonDat donDat = ve.getChiTietDon().getDonDat();
-        if (donDat.getTrangThaiDon() == TrangThaiDon.DA_HUY) {
-            throw new IllegalStateException("Đơn hàng [" + donDat.getMaDonHang() + "] đã bị hủy, không thể sử dụng vé!");
-        }
-
-        // Cập nhật trạng thái vé
-        ve.setTrangThai(TrangThaiVe.DA_SU_DUNG);
-        ve.setThoiGianSuDung(LocalDateTime.now());
-        veRepository.save(ve);
-
-        // Tìm nhân viên soát vé
-        NguoiDung nhanVien = null;
-        if (maNhanVien != null && !maNhanVien.trim().isEmpty()) {
-            nhanVien = nguoiDungRepository.findByMaNguoiDung(maNhanVien.trim()).orElse(null);
-        }
-        if (nhanVien == null) {
-            nhanVien = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
-        }
-
-        // Ghi nhận bản ghi Check-in vào bảng CHECK_IN
-        CheckIn checkIn = new CheckIn();
-        checkIn.setMaCheckIn("CI-V-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        checkIn.setDonDat(donDat);
-        checkIn.setLoaiCheckIn(LoaiCheckIn.VE);
-        checkIn.setVe(ve);
-        checkIn.setNhanVien(nhanVien);
-        checkIn.setSoLuong(1);
-        checkIn.setThoiGianCheckIn(LocalDateTime.now());
-        checkIn.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
-        checkIn.setGhiChu((ghiChu != null && !ghiChu.trim().isEmpty()) ? ghiChu.trim() : ("Soát vé vào cổng: " + ve.getMaVe()));
-
-        CheckIn savedCheckIn = checkInRepository.save(checkIn);
-        log.info("[CHECKIN-VE] Check-in thành công vé: {} cho khách {} (Mã CI: {})",
-                ve.getMaVe(), donDat.getHoTenKhach(), savedCheckIn.getMaCheckIn());
-
-        return savedCheckIn;
     }
 
     @Override

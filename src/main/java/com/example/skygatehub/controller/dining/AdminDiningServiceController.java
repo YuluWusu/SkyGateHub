@@ -4,7 +4,7 @@ import com.example.skygatehub.common.constant.SessionKeys;
 import com.example.skygatehub.common.security.RequireRole;
 import com.example.skygatehub.dto.dining.DichVuAnRequest;
 import com.example.skygatehub.entity.dining.DichVuAnUong;
-import com.example.skygatehub.enums.dining.LoaiDichVuAn;
+import com.example.skygatehub.common.enums.LoaiDichVuAn;
 import com.example.skygatehub.service.dining.DichVuAnService;
 import com.example.skygatehub.service.dining.TableAssignmentService;
 import jakarta.validation.Valid;
