@@ -42,6 +42,23 @@ public class ChiTietDon {
     @Column(name = "MA_DON_DAT", insertable = false, updatable = false)
     private String maDonDat;
 
+    public void setDonDat(DonDat donDat) {
+        this.donDat = donDat;
+        if (donDat != null && donDat.getMaDonDat() != null) {
+            this.maDonDat = donDat.getMaDonDat();
+        }
+    }
+
+    public String getMaDonDat() {
+        if (this.maDonDat != null) {
+            return this.maDonDat;
+        }
+        if (this.donDat != null) {
+            return this.donDat.getMaDonDat();
+        }
+        return null;
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(name = "LOAI_DICH_VU", length = 20, nullable = false)
     private LoaiDichVuDon loaiDichVu;
@@ -84,9 +101,13 @@ public class ChiTietDon {
     private LocalDateTime ngayTao;
 
     @PrePersist
+    @PreUpdate
     public void prePersist() {
         if (trangThai == null) trangThai = TrangThaiChiTiet.HIEU_LUC;
         if (ngayTao == null) ngayTao = LocalDateTime.now();
+        if (this.maDonDat == null && this.donDat != null) {
+            this.maDonDat = this.donDat.getMaDonDat();
+        }
     }
 }
 

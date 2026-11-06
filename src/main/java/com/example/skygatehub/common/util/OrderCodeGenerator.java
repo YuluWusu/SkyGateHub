@@ -37,12 +37,12 @@ public class OrderCodeGenerator {
     }
 
     /**
-     * Sinh mã đơn hàng hiển thị MA_DON_HANG (VD: CTDG-261104-1001 <= 30)
+     * Sinh mã đơn hàng hiển thị MA_DON_HANG (VD: CTDG-261107005512-1001 <= 30 ký tự)
      */
     public static String generateMaDonHang(String prefix) {
         String p = (prefix != null && !prefix.isBlank()) ? prefix : "CTDG";
         int seq = SEQ_DON_HANG.updateAndGet(val -> (val >= 9999) ? 1000 : val + 1);
-        return p + "-" + LocalDateTime.now().format(DATE_FORMAT) + "-" + seq;
+        return p + "-" + LocalDateTime.now().format(TS_FORMAT) + "-" + seq;
     }
 
     /**

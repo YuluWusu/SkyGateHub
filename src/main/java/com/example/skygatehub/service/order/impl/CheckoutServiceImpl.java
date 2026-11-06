@@ -152,6 +152,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                         ChiTietDon ctd = new ChiTietDon();
                         ctd.setMaChiTiet(OrderCodeGenerator.generateMaChiTiet());
                         ctd.setDonDat(donDat);
+                        ctd.setMaDonDat(donDat.getMaDonDat());
                         ctd.setLoaiDichVu(LoaiDichVuDon.VE);
                         ctd.setLoaiVe(loaiVe);
                         ctd.setTenSanPham(loaiVe.getTenLoaiVe());
@@ -217,6 +218,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                         ChiTietDon ctd = new ChiTietDon();
                         ctd.setMaChiTiet(OrderCodeGenerator.generateMaChiTiet());
                         ctd.setDonDat(donDat);
+                        ctd.setMaDonDat(donDat.getMaDonDat());
                         ctd.setLoaiDichVu(LoaiDichVuDon.PHONG);
                         ctd.setLoaiPhong(lp);
                         ctd.setTenSanPham(lp.getTenLoaiPhong() + " (" + nights + " đêm)");
@@ -260,6 +262,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                         ChiTietDon ctd = new ChiTietDon();
                         ctd.setMaChiTiet(OrderCodeGenerator.generateMaChiTiet());
                         ctd.setDonDat(donDat);
+                        ctd.setMaDonDat(donDat.getMaDonDat());
                         ctd.setLoaiDichVu(LoaiDichVuDon.AN_UONG);
                         ctd.setDichVuAnUong(dva);
                         ctd.setTenSanPham(dva.getTenDichVu());
@@ -310,11 +313,17 @@ public class CheckoutServiceImpl implements CheckoutService {
         donDat.setTienCocYeuCau(tienCocYeuCau);
 
         // Lưu đơn đặt và các chi tiết liên quan
-        donDatRepository.save(donDat);
-        chiTietDonRepository.saveAll(chiTietList);
-        veRepository.saveAll(veList);
-        datPhongRepository.saveAll(datPhongList);
-        datBanRepository.saveAll(datBanList);
+        donDatRepository.saveAndFlush(donDat);
+        chiTietDonRepository.saveAllAndFlush(chiTietList);
+        if (!veList.isEmpty()) {
+            veRepository.saveAllAndFlush(veList);
+        }
+        if (!datPhongList.isEmpty()) {
+            datPhongRepository.saveAllAndFlush(datPhongList);
+        }
+        if (!datBanList.isEmpty()) {
+            datBanRepository.saveAllAndFlush(datBanList);
+        }
 
         // 7. Tạo bản ghi giao dịch đặt cọc ThanhToan
         PhuongThucThanhToan pttt = PhuongThucThanhToan.CHUYEN_KHOAN;
