@@ -62,6 +62,21 @@ public interface BanAnRepository extends JpaRepository<BanAn, Long> {
     );
 
     /**
+     * Số khách lớn nhất trong các đặt bàn còn hiệu lực từ một ngày trở đi (0 nếu không có).
+     */
+    @Query("""
+        SELECT COALESCE(MAX(d.soKhach), 0) FROM DatBan d
+        WHERE d.banAn.maBanAn = :ma
+          AND d.ngayAn >= :from
+          AND d.trangThai NOT IN :excluded
+    """)
+    int maxSoKhachActiveFrom(
+            @Param("ma") String ma,
+            @Param("from") LocalDate from,
+            @Param("excluded") Collection<TrangThaiDatBan> excluded
+    );
+
+    /**
      * Mã các lượt đặt bàn đang ở một trạng thái (vd DA_CHECK_IN) trên một bàn.
      */
     @Query("SELECT d.maDatBan FROM DatBan d WHERE d.banAn.maBanAn = :ma AND d.trangThai = :trangThai")
@@ -77,18 +92,19 @@ public interface BanAnRepository extends JpaRepository<BanAn, Long> {
     Page<BanAn> findByTrangThai(TrangThaiBanAn trangThai, Pageable pageable);
 
     /**
-     * Tìm bàn ăn trống cho ca ăn và ngày ăn cụ thể (chưa bị giữ chỗ bởi DAT_BAN chưa hủy).
+     * Tìm bàn ăn trống cho ca ăn và ngày ăn cụ thể (chưa bị giữ chỗ bởi DAT_BAN chưa hủy, chưa hoàn thành).
+     * Bàn đang có khách hôm nay vẫn xếp được cho ngày khác; check-in sẽ chặn nếu bàn còn khách.
      */
     @Query("""
         SELECT b FROM BanAn b
         WHERE b.sucChua >= :soKhach
-          AND b.trangThai = 'SAN_SANG'
+          AND b.trangThai <> 'BAO_TRI'
           AND NOT EXISTS (
             SELECT db FROM DatBan db
             WHERE db.banAn.maBanAn = b.maBanAn
               AND db.ngayAn = :ngayAn
               AND db.dichVuCaAn.caAn.maCaAn = :maCaAn
-              AND db.trangThai <> 'DA_HUY'
+              AND db.trangThai NOT IN ('DA_HUY', 'DA_HOAN_THANH')
           )
         ORDER BY b.sucChua ASC
     """)

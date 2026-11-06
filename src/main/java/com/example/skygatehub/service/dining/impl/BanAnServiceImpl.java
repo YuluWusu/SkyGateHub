@@ -80,6 +80,14 @@ public class BanAnServiceImpl implements BanAnService {
             throw new IllegalArgumentException("Số bàn đã được đặt cho bàn khác: " + soBan);
         }
 
+        if (request.getSucChua() != null && request.getSucChua() < b.getSucChua()) {
+            int khachLonNhat = banAnRepository.maxSoKhachActiveFrom(b.getMaBanAn(), LocalDate.now(), TRANG_THAI_KET_THUC);
+            if (request.getSucChua() < khachLonNhat) {
+                throw new IllegalStateException("Không thể giảm sức chứa bàn [" + soBan + "] xuống " + request.getSucChua()
+                        + " vì bàn còn lượt đặt từ hôm nay trở đi với tối đa " + khachLonNhat + " khách.");
+            }
+        }
+
         TrangThaiBanAn requested = request.getTrangThai() != null ? request.getTrangThai() : b.getTrangThai();
         if (requested == TrangThaiBanAn.DANG_SU_DUNG && b.getTrangThai() != TrangThaiBanAn.DANG_SU_DUNG) {
             throw new IllegalArgumentException("Không thể đặt trạng thái đang phục vụ thủ công. Trạng thái này do check-in bàn thiết lập.");

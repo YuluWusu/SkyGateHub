@@ -17,6 +17,16 @@ public interface DichVuCaAnRepository extends JpaRepository<DichVuCaAn, Long> {
 
     List<DichVuCaAn> findByDichVuAnUong_MaDichVu(String maDichVu);
 
+    /** Link đang bật tới ca đang bật, dùng để lọc món theo ca ở form đặt. */
+    @Query("""
+            SELECT l FROM DichVuCaAn l
+            JOIN FETCH l.caAn c
+            JOIN FETCH l.dichVuAnUong d
+            WHERE d.maDichVu IN :maDichVuList AND l.trangThai = true AND c.trangThai = true
+            ORDER BY c.gioBatDau, c.maCaAn
+            """)
+    List<DichVuCaAn> findCaDangMoByMaDichVuIn(@Param("maDichVuList") Collection<String> maDichVuList);
+
     List<DichVuCaAn> findByCaAn_MaCaAn(String maCaAn);
 
     @Query("""

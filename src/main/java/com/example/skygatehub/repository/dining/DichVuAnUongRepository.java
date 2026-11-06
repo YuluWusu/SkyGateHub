@@ -41,6 +41,19 @@ public interface DichVuAnUongRepository extends JpaRepository<DichVuAnUong, Long
                                     @Param("trangThai") Boolean trangThai,
                                     Pageable pageable);
 
+    /** Món đang bán, có giá, và có ít nhất một ca đang mở phục vụ. */
+    @Query("""
+            SELECT d FROM DichVuAnUong d
+            WHERE d.trangThai = true AND d.giaDichVu IS NOT NULL
+              AND EXISTS (
+                    SELECT l FROM DichVuCaAn l
+                    WHERE l.dichVuAnUong.maDichVu = d.maDichVu
+                      AND l.trangThai = true
+                      AND l.caAn.trangThai = true)
+            ORDER BY d.maDichVu
+            """)
+    List<DichVuAnUong> findDatDuoc();
+
     @Query("SELECT COUNT(c) FROM ChiTietDon c WHERE c.dichVuAnUong.maDichVu = :maDichVu")
     long countChiTietDonByMaDichVu(@Param("maDichVu") String maDichVu);
 

@@ -25,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/dining")
@@ -46,7 +47,14 @@ public class AdminTableAssignmentController {
 
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
 
-        List<TableMapCell> cells = tableAssignmentService.buildTableMap(targetDate, caAn, khuVuc, status);
+        // Truy vấn một lần với mọi trạng thái; KPI tính trên toàn bộ bàn, lưới chỉ hiện bàn theo bộ lọc
+        List<TableMapCell> allCells = tableAssignmentService.buildTableMap(targetDate, caAn, khuVuc, null);
+        List<TableMapCell> cells = allCells;
+        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status.trim())) {
+            cells = allCells.stream()
+                    .filter(c -> status.trim().equalsIgnoreCase(c.getTrangThaiHienThi()))
+                    .collect(Collectors.toList());
+        }
         List<DatBan> pendingBookings = tableAssignmentService.getPendingBookings(targetDate, caAn);
         List<CaAn> caAnList = tableAssignmentService.getAllCaAn();
         List<String> khuVucList = tableAssignmentService.getAllKhuVuc();
@@ -59,11 +67,11 @@ public class AdminTableAssignmentController {
         }
 
         // Thống kê nhanh KPI bàn
-        long tongBan = cells.size();
-        long banTrong = cells.stream().filter(TableMapCell::isTrong).count();
-        long banChoKhach = cells.stream().filter(TableMapCell::isDaXep).count();
-        long banDangAn = cells.stream().filter(TableMapCell::isDangAn).count();
-        long banBaoTri = cells.stream().filter(TableMapCell::isBaoTri).count();
+        long tongBan = allCells.size();
+        long banTrong = allCells.stream().filter(TableMapCell::isTrong).count();
+        long banChoKhach = allCells.stream().filter(TableMapCell::isDaXep).count();
+        long banDangAn = allCells.stream().filter(TableMapCell::isDangAn).count();
+        long banBaoTri = allCells.stream().filter(TableMapCell::isBaoTri).count();
 
         model.addAttribute("targetDate", targetDate);
         model.addAttribute("targetDateFormatted", targetDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
@@ -72,6 +80,7 @@ public class AdminTableAssignmentController {
         model.addAttribute("selectedStatus", status);
 
         model.addAttribute("cells", cells);
+        model.addAttribute("allCells", allCells);
         model.addAttribute("cellsByKhu", cellsByKhu);
         model.addAttribute("pendingBookings", pendingBookings);
         model.addAttribute("caAnList", caAnList);
@@ -134,7 +143,8 @@ public class AdminTableAssignmentController {
         String staffCode = (user != null) ? user.getMaNguoiDung() : null;
 
         try {
-            tableAssignmentService.assignTableToBooking(request.getMaDatBan(), request.getMaBanAn(), staffCode);
+            tableAssignmentService.assignTableToBooking(request.getMaDatBan(), request.getMaBanAn(), staffCode,
+                    request.getGhiChu());
             redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS,
                     "Xếp bàn thành công cho đơn [" + request.getMaDatBan() + "] vào bàn " + request.getMaBanAn());
         } catch (Exception ex) {

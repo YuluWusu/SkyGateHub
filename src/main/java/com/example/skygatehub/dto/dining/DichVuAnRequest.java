@@ -2,6 +2,7 @@ package com.example.skygatehub.dto.dining;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,7 +33,8 @@ public class DichVuAnRequest {
     @Size(max = 500, message = "Mô tả tối đa 500 ký tự")
     private String moTa;
 
-    @DecimalMin(value = "0", message = "Giá dịch vụ không được âm")
+    @NotNull(message = "Giá dịch vụ không được để trống")
+    @DecimalMin(value = "0", inclusive = false, message = "Giá dịch vụ phải lớn hơn 0")
     private BigDecimal giaDichVu;
 
     private Boolean trangThai = true;

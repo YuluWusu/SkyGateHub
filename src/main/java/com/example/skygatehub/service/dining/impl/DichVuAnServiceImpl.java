@@ -55,13 +55,15 @@ public class DichVuAnServiceImpl implements DichVuAnService {
             throw new IllegalArgumentException("Mã dịch vụ đã tồn tại: " + ma);
         }
         String loai = validateLoai(request.getLoaiDichVu());
+        List<String> maCaAnList = chuanHoaMaCaAn(request.getMaCaAnList());
+        kiemTraCaPhucVu(request, maCaAnList);
 
         DichVuAnUong dv = new DichVuAnUong();
         dv.setMaDichVu(ma);
         applyFields(dv, request, loai);
 
         DichVuAnUong saved = dichVuAnUongRepository.save(dv);
-        syncCaAn(saved, request.getMaCaAnList());
+        syncCaAn(saved, maCaAnList);
         log.info("Tạo mới dịch vụ ăn uống {}: {}", ma, dv.getTenDichVu());
         return saved;
     }
@@ -70,12 +72,14 @@ public class DichVuAnServiceImpl implements DichVuAnService {
     public DichVuAnUong update(Long id, DichVuAnRequest request) {
         DichVuAnUong dv = getById(id);
         String loai = validateLoai(request.getLoaiDichVu());
+        List<String> maCaAnList = chuanHoaMaCaAn(request.getMaCaAnList());
+        kiemTraCaPhucVu(request, maCaAnList);
 
         // Không đổi mã dịch vụ vì mã được tham chiếu qua khóa ngoại
         applyFields(dv, request, loai);
 
         DichVuAnUong saved = dichVuAnUongRepository.save(dv);
-        syncCaAn(saved, request.getMaCaAnList());
+        syncCaAn(saved, maCaAnList);
         log.info("Cập nhật dịch vụ ăn uống ID {}: {}", id, dv.getTenDichVu());
         return saved;
     }
@@ -83,7 +87,11 @@ public class DichVuAnServiceImpl implements DichVuAnService {
     @Override
     public void toggleTrangThai(Long id) {
         DichVuAnUong dv = getById(id);
-        dv.setTrangThai(!Boolean.TRUE.equals(dv.getTrangThai()));
+        boolean moBan = !Boolean.TRUE.equals(dv.getTrangThai());
+        if (moBan) {
+            kiemTraCoTheMoBan(dv);
+        }
+        dv.setTrangThai(moBan);
         dichVuAnUongRepository.save(dv);
         log.info("Đổi trạng thái dịch vụ {} thành {}", dv.getMaDichVu(), dv.getTrangThai());
     }
@@ -136,6 +144,26 @@ public class DichVuAnServiceImpl implements DichVuAnService {
         return result;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<DichVuAnUong> getDichVuDatDuoc() {
+        return dichVuAnUongRepository.findDatDuoc();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, List<String>> getMaCaAnDatDuoc(Collection<String> maDichVuList) {
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        if (maDichVuList == null || maDichVuList.isEmpty()) {
+            return result;
+        }
+        for (DichVuCaAn l : dichVuCaAnRepository.findCaDangMoByMaDichVuIn(maDichVuList)) {
+            result.computeIfAbsent(l.getDichVuAnUong().getMaDichVu(), k -> new ArrayList<>())
+                    .add(l.getCaAn().getMaCaAn());
+        }
+        return result;
+    }
+
     private void applyFields(DichVuAnUong dv, DichVuAnRequest request, String loai) {
         dv.setTenDichVu(request.getTenDichVu().trim());
         dv.setLoaiDichVu(loai);
@@ -143,6 +171,27 @@ public class DichVuAnServiceImpl implements DichVuAnService {
         dv.setMoTa(moTa != null && !moTa.trim().isEmpty() ? moTa.trim() : null);
         dv.setGiaDichVu(request.getGiaDichVu());
         dv.setTrangThai(request.getTrangThai() != null ? request.getTrangThai() : true);
+    }
+
+    // Món đang bán phải có ít nhất một ca phục vụ
+    private void kiemTraCaPhucVu(DichVuAnRequest request, List<String> maCaAnList) {
+        boolean dangBan = !Boolean.FALSE.equals(request.getTrangThai());
+        if (dangBan && maCaAnList.isEmpty()) {
+            throw new IllegalArgumentException("Món đang kinh doanh phải có ít nhất một ca phục vụ.");
+        }
+    }
+
+    // Mở bán cần có giá hợp lệ và ít nhất một ca đang mở
+    private void kiemTraCoTheMoBan(DichVuAnUong dv) {
+        if (dv.getGiaDichVu() == null || dv.getGiaDichVu().signum() <= 0) {
+            throw new IllegalStateException("Món chưa có giá, không thể mở bán.");
+        }
+        boolean coCaDangMo = dichVuCaAnRepository.findByDichVuAnUong_MaDichVu(dv.getMaDichVu()).stream()
+                .anyMatch(l -> Boolean.TRUE.equals(l.getTrangThai())
+                        && l.getCaAn() != null && Boolean.TRUE.equals(l.getCaAn().getTrangThai()));
+        if (!coCaDangMo) {
+            throw new IllegalStateException("Món chưa gắn ca đang mở, không thể mở bán.");
+        }
     }
 
     private String validateLoai(String loai) {
@@ -155,16 +204,22 @@ public class DichVuAnServiceImpl implements DichVuAnService {
         throw new IllegalArgumentException("Loại dịch vụ không hợp lệ: " + loai);
     }
 
-    // Link không còn được chọn chỉ tắt, không xóa, vì DAT_BAN có khóa ngoại tới cặp dịch vụ-ca
-    private void syncCaAn(DichVuAnUong dv, List<String> maCaAnList) {
-        Set<String> wanted = new LinkedHashSet<>();
+    // Bỏ mã rỗng và mã trùng, giữ thứ tự chọn
+    private List<String> chuanHoaMaCaAn(List<String> maCaAnList) {
+        Set<String> ketQua = new LinkedHashSet<>();
         if (maCaAnList != null) {
             for (String ma : maCaAnList) {
                 if (ma != null && !ma.trim().isEmpty()) {
-                    wanted.add(ma.trim());
+                    ketQua.add(ma.trim());
                 }
             }
         }
+        return new ArrayList<>(ketQua);
+    }
+
+    // Link không còn được chọn chỉ tắt, không xóa, vì DAT_BAN có khóa ngoại tới cặp dịch vụ-ca
+    private void syncCaAn(DichVuAnUong dv, List<String> maCaAnList) {
+        Set<String> wanted = new LinkedHashSet<>(maCaAnList);
 
         List<DichVuCaAn> existing = dichVuCaAnRepository.findByDichVuAnUong_MaDichVu(dv.getMaDichVu());
 

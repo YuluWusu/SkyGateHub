@@ -89,9 +89,9 @@
                         <div class="col-12 col-md-4">
                             <label for="giaDichVu" class="form-label fw-semibold text-dark">Giá dịch vụ (đ)</label>
                             <input type="number" id="giaDichVu" th:field="*{giaDichVu}"
-                                   class="form-control" min="0" step="1000"
+                                   class="form-control" min="1000" step="1000" required
                                    th:classappend="${#fields.hasErrors('giaDichVu')} ? 'is-invalid'"
-                                   placeholder="Để trống nếu chưa có giá">
+                                   placeholder="Nhập giá bán">
                             <div class="invalid-feedback d-block"
                                  th:if="${#fields.hasErrors('giaDichVu')}"
                                  th:errors="*{giaDichVu}">Lỗi giá</div>

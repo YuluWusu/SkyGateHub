@@ -27,9 +27,9 @@ public interface TableAssignmentService {
     List<BanAn> getAvailableTablesForBooking(String maDatBan);
 
     /**
-     * Thực hiện gán bàn ăn vật lý cho đơn đặt bàn.
+     * Thực hiện gán bàn ăn vật lý cho đơn đặt bàn. Ghi chú (nếu có) được nối vào ghi chú của lượt đặt.
      */
-    void assignTableToBooking(String maDatBan, String maBanAn, String maNhanVien);
+    void assignTableToBooking(String maDatBan, String maBanAn, String maNhanVien, String ghiChu);
 
     /**
      * Hủy xếp bàn đã gán cho đơn đặt bàn.

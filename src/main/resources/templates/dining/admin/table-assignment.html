@@ -169,6 +169,8 @@
                             <option value="TRONG" th:selected="${selectedStatus == 'TRONG'}">Bàn trống</option>
                             <option value="DA_XEP_CHO_KHACH" th:selected="${selectedStatus == 'DA_XEP_CHO_KHACH'}">Chờ khách</option>
                             <option value="DANG_AN" th:selected="${selectedStatus == 'DANG_AN'}">Đang ăn</option>
+                            <option value="BAO_TRI" th:selected="${selectedStatus == 'BAO_TRI'}">Bảo trì</option>
+                            <option value="CAN_GIAI_PHONG" th:selected="${selectedStatus == 'CAN_GIAI_PHONG'}">Cần giải phóng</option>
                         </select>
                     </div>
                     <div class="col-12 col-md-1 d-grid">
@@ -217,7 +219,7 @@
                                     </div>
 
                                     <!-- Body: Guest details if assigned / occupied -->
-                                    <div th:if="${!c.isTrong() and !c.isBaoTri()}" class="py-2 border-top border-bottom my-2 small">
+                                    <div th:if="${!c.isTrong() and !c.isBaoTri() and !c.isCanGiaiPhong()}" class="py-2 border-top border-bottom my-2 small">
                                         <div class="mb-1">
                                             <span class="text-muted">Khách:</span>
                                             <strong class="text-dark" th:text="${c.hoTenKhach}">Nguyễn Văn A</strong>
@@ -245,6 +247,12 @@
                                     <div th:if="${c.isTrong()}" class="py-4 text-center text-muted small">
                                         <i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>
                                         Bàn sạch • Sẵn sàng đón khách
+                                    </div>
+
+                                    <!-- Bàn đang đánh dấu có khách nhưng không có lượt đặt nào -->
+                                    <div th:if="${c.isCanGiaiPhong()}" class="py-4 text-center text-muted small">
+                                        <i class="bi bi-exclamation-circle fs-3 text-dark d-block mb-1"></i>
+                                        Bàn đang đánh dấu có khách nhưng không có lượt đặt nào
                                     </div>
                                 </div>
 
@@ -297,6 +305,17 @@
                                                 onclick="openAssignModal('', this.dataset.maban, this.dataset.soban)">
                                             <i class="bi bi-pin-angle me-1"></i>Xếp khách
                                         </button>
+                                    </th:block>
+
+                                    <!-- Case 4: Bàn đang đánh dấu có khách nhưng không có lượt đặt -> Giải phóng -->
+                                    <th:block th:if="${c.isCanGiaiPhong()}">
+                                        <form th:action="@{/admin/dining/tables/release/{id}(id=${c.id})}" method="post" class="d-inline"
+                                              th:data-so-ban="${c.soBan}"
+                                              onsubmit="return confirm('Giải phóng bàn ' + this.dataset.soBan + ' về trạng thái sẵn sàng?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-dark fw-semibold">
+                                                <i class="bi bi-unlock me-1"></i>Giải phóng
+                                            </button>
+                                        </form>
                                     </th:block>
                                 </div>
                             </div>
@@ -368,15 +387,16 @@
                                     <label class="form-label small fw-semibold text-muted">Chọn bàn ăn vật lý:</label>
                                     <select name="maBanAn" id="modalMaBanAn" class="form-select" required>
                                         <option value="">-- Chọn bàn ăn --</option>
-                                        <th:block th:each="c : ${cells}">
+                                        <th:block th:each="c : ${allCells}">
                                             <option th:if="${c.isTrong()}" th:value="${c.maBanAn}" th:text="'Bàn ' + ${c.soBan} + ' (' + ${c.khuVuc} + ' - Sức chứa ' + ${c.sucChua} + ' khách)'"></option>
                                         </th:block>
                                     </select>
+                                    <div id="modalBanThongBao" class="form-text"></div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label small fw-semibold text-muted">Ghi chú phục vụ:</label>
-                                    <input type="text" name="ghiChu" class="form-control" placeholder="Ví dụ: Cần ghế trẻ em, bàn cạnh cửa sổ...">
+                                    <input type="text" name="ghiChu" id="modalGhiChu" class="form-control" maxlength="500" placeholder="Ví dụ: Cần ghế trẻ em, bàn cạnh cửa sổ...">
                                 </div>
                             </div>
                             <div class="modal-footer border-top">
@@ -392,17 +412,94 @@
 
     <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function openAssignModal(maDatBan, maBanAn, soBan) {
-            if (maDatBan) {
-                document.getElementById('modalMaDatBan').value = maDatBan;
-            }
-            if (maBanAn) {
-                document.getElementById('modalMaBanAn').value = maBanAn;
-            }
-            const modal = new bootstrap.Modal(document.getElementById('assignTableModal'));
-            modal.show();
+    <script th:inline="javascript">
+        const availableTablesUrl = /*[[@{/admin/dining/available-tables}]]*/ '/admin/dining/available-tables';
+        const modalMaDatBan = document.getElementById('modalMaDatBan');
+        const modalMaBanAn = document.getElementById('modalMaBanAn');
+        const modalGhiChu = document.getElementById('modalGhiChu');
+        const modalThongBao = document.getElementById('modalBanThongBao');
+        // Bản sao danh sách bàn trống do server dựng lúc tải trang
+        const optionBanMacDinh = Array.from(modalMaBanAn.options).map(o => o.cloneNode(true));
+        let lanTaiBan = 0;
+
+        function datOptionBan(danhSach) {
+            modalMaBanAn.replaceChildren(...danhSach);
         }
+
+        function khoiPhucOptionBan() {
+            datOptionBan(optionBanMacDinh.map(o => o.cloneNode(true)));
+        }
+
+        function hienThongBaoBan(noiDung, laLoi) {
+            modalThongBao.textContent = noiDung;
+            modalThongBao.classList.toggle('text-danger', laLoi);
+        }
+
+        // Lấy bàn còn trống, đủ sức chứa cho đơn đang nhập trong ô mã đơn
+        function taiBanPhuHop(maBanChon) {
+            const maDatBan = modalMaDatBan.value.trim();
+            const lan = ++lanTaiBan;
+            if (!maDatBan) {
+                khoiPhucOptionBan();
+                hienThongBaoBan('', false);
+                return;
+            }
+            hienThongBaoBan('Đang tải danh sách bàn...', false);
+            fetch(availableTablesUrl + '?maDatBan=' + encodeURIComponent(maDatBan), {
+                headers: { 'Accept': 'application/json' }
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('HTTP ' + res.status);
+                    }
+                    return res.json();
+                })
+                .then(danhSach => {
+                    if (lan !== lanTaiBan) {
+                        return;
+                    }
+                    const giuLai = maBanChon || modalMaBanAn.value;
+                    const options = [optionBanMacDinh[0].cloneNode(true)];
+                    danhSach.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b.maBanAn;
+                        opt.textContent = 'Bàn ' + b.soBan + ' (' + b.khuVuc + ' - Sức chứa ' + b.sucChua + ' khách)';
+                        options.push(opt);
+                    });
+                    datOptionBan(options);
+                    modalMaBanAn.value = giuLai;
+                    if (modalMaBanAn.value !== giuLai) {
+                        modalMaBanAn.value = '';
+                    }
+                    hienThongBaoBan(danhSach.length === 0 ? 'Không còn bàn phù hợp' : '', danhSach.length === 0);
+                })
+                .catch(() => {
+                    if (lan !== lanTaiBan) {
+                        return;
+                    }
+                    khoiPhucOptionBan();
+                    hienThongBaoBan('Không tải được danh sách bàn phù hợp, đang hiện danh sách bàn trống mặc định.', true);
+                });
+        }
+
+        function openAssignModal(maDatBan, maBanAn, soBan) {
+            modalGhiChu.value = '';
+            if (maDatBan) {
+                modalMaDatBan.value = maDatBan;
+                taiBanPhuHop(maBanAn);
+            } else {
+                lanTaiBan++;
+                modalMaDatBan.value = '';
+                khoiPhucOptionBan();
+                hienThongBaoBan('', false);
+                if (maBanAn) {
+                    modalMaBanAn.value = maBanAn;
+                }
+            }
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('assignTableModal')).show();
+        }
+
+        modalMaDatBan.addEventListener('change', () => taiBanPhuHop(''));
     </script>
 </body>
 </html>

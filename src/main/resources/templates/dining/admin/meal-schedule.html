@@ -124,10 +124,16 @@
                                                 <div class="small text-muted" th:if="${db.donDat != null}" th:text="${db.donDat.sdtKhach}">0905123456</div>
                                             </td>
                                             <td>
-                                                <span th:if="${db.dichVuCaAn != null and db.dichVuCaAn.dichVuAnUong != null}"
-                                                      class="fw-semibold text-dark"
-                                                      th:text="${db.dichVuCaAn.dichVuAnUong.tenDichVu}">Buffet trưa</span>
-                                                <span th:unless="${db.dichVuCaAn != null and db.dichVuCaAn.dichVuAnUong != null}" class="text-muted">-</span>
+                                                <th:block th:if="${row.monTheoDatBan.containsKey(db.maDatBan) and !row.monTheoDatBan.get(db.maDatBan).isEmpty()}">
+                                                    <div th:each="mon : ${row.monTheoDatBan.get(db.maDatBan)}"
+                                                         class="fw-semibold text-dark" th:text="${mon}">Buffet trưa x 2</div>
+                                                </th:block>
+                                                <th:block th:unless="${row.monTheoDatBan.containsKey(db.maDatBan) and !row.monTheoDatBan.get(db.maDatBan).isEmpty()}">
+                                                    <span th:if="${db.dichVuCaAn != null and db.dichVuCaAn.dichVuAnUong != null}"
+                                                          class="fw-semibold text-dark"
+                                                          th:text="${db.dichVuCaAn.dichVuAnUong.tenDichVu}">Buffet trưa</span>
+                                                    <span th:unless="${db.dichVuCaAn != null and db.dichVuCaAn.dichVuAnUong != null}" class="text-muted">-</span>
+                                                </th:block>
                                             </td>
                                             <td class="text-center">
                                                 <span class="badge bg-light text-dark border px-2 py-1 fs-6" th:text="${db.soKhach} + ' người'">4 người</span>

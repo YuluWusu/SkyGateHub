@@ -28,4 +28,10 @@ public interface DichVuAnService {
 
     /** maDichVu -> tên các ca đang bật. */
     Map<String, List<String>> getTenCaAnTheoDichVu(Collection<String> maDichVuList);
+
+    /** Món khách đặt được: đang bán, có giá, có ít nhất một ca đang mở. */
+    List<DichVuAnUong> getDichVuDatDuoc();
+
+    /** maDichVu -> mã các ca đang mở (link bật, ca bật). */
+    Map<String, List<String>> getMaCaAnDatDuoc(Collection<String> maDichVuList);
 }

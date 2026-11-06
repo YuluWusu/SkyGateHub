@@ -28,8 +28,10 @@ public interface DatBanRepository extends JpaRepository<DatBan, Long> {
 
     Page<DatBan> findByTrangThai(TrangThaiDatBan trangThai, Pageable pageable);
 
+    List<DatBan> findByTrangThai(TrangThaiDatBan trangThai);
+
     /**
-     * Đếm lượt đặt khác (không hủy) đang giữ cùng bàn, cùng ngày, cùng ca ăn.
+     * Đếm lượt đặt khác (không hủy, chưa hoàn thành) đang giữ cùng bàn, cùng ngày, cùng ca ăn.
      */
     @Query("""
         SELECT COUNT(d) FROM DatBan d
@@ -37,7 +39,9 @@ public interface DatBanRepository extends JpaRepository<DatBan, Long> {
           AND d.ngayAn = :ngayAn
           AND d.dichVuCaAn.caAn.maCaAn = :maCaAn
           AND d.maDatBan <> :maDatBan
-          AND d.trangThai <> com.example.skygatehub.common.enums.TrangThaiDatBan.DA_HUY
+          AND d.trangThai NOT IN (
+              com.example.skygatehub.common.enums.TrangThaiDatBan.DA_HUY,
+              com.example.skygatehub.common.enums.TrangThaiDatBan.DA_HOAN_THANH)
     """)
     long countTrungBan(
             @Param("maBanAn") String maBanAn,

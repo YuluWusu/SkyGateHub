@@ -14,13 +14,14 @@ import lombok.Setter;
 @Builder
 public class TableMapCell {
 
+    private Long id;
     private String maBanAn;
     private String soBan;
     private String khuVuc;
     private Integer sucChua;
     private TrangThaiBanAn trangThaiVatLy;
 
-    // Trạng thái hiển thị trong sơ đồ: TRONG, DA_XEP_CHO_KHACH, DANG_AN, BAO_TRI
+    // Trạng thái hiển thị trong sơ đồ: TRONG, DA_XEP_CHO_KHACH, DANG_AN, BAO_TRI, CAN_GIAI_PHONG
     private String trangThaiHienThi;
     private String cssBadge;
     private String badgeText;
@@ -50,5 +51,9 @@ public class TableMapCell {
 
     public boolean isBaoTri() {
         return "BAO_TRI".equalsIgnoreCase(trangThaiHienThi);
+    }
+
+    public boolean isCanGiaiPhong() {
+        return "CAN_GIAI_PHONG".equalsIgnoreCase(trangThaiHienThi);
     }
 }

@@ -1,9 +1,14 @@
 package com.example.skygatehub.service.dining.impl;
 
 import com.example.skygatehub.common.enums.LoaiCheckIn;
+import com.example.skygatehub.common.enums.LoaiDichVuDon;
 import com.example.skygatehub.common.enums.TrangThaiBanAn;
 import com.example.skygatehub.common.enums.TrangThaiCheckIn;
+import com.example.skygatehub.common.enums.TrangThaiChiTiet;
 import com.example.skygatehub.common.enums.TrangThaiDatBan;
+import com.example.skygatehub.common.enums.TrangThaiDon;
+import com.example.skygatehub.common.enums.TrangThaiQuyenLoi;
+import com.example.skygatehub.common.enums.TrangThaiThanhToanDon;
 import com.example.skygatehub.dto.dining.MealScheduleRow;
 import com.example.skygatehub.dto.dining.TableMapCell;
 import com.example.skygatehub.entity.account.NguoiDung;
@@ -11,14 +16,21 @@ import com.example.skygatehub.entity.checkin.CheckIn;
 import com.example.skygatehub.entity.dining.BanAn;
 import com.example.skygatehub.entity.dining.CaAn;
 import com.example.skygatehub.entity.dining.DatBan;
+import com.example.skygatehub.entity.order.ChiTietDon;
+import com.example.skygatehub.entity.order.DonDat;
+import com.example.skygatehub.entity.order.QuyenLoiDon;
 import com.example.skygatehub.repository.account.NguoiDungRepository;
 import com.example.skygatehub.repository.checkin.CheckInRepository;
 import com.example.skygatehub.repository.dining.BanAnRepository;
 import com.example.skygatehub.repository.dining.CaAnRepository;
 import com.example.skygatehub.repository.dining.DatBanRepository;
+import com.example.skygatehub.repository.dining.DichVuCaAnRepository;
+import com.example.skygatehub.repository.order.ChiTietDonRepository;
+import com.example.skygatehub.repository.order.QuyenLoiDonRepository;
 import com.example.skygatehub.service.dining.TableAssignmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +51,11 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
     private final CaAnRepository caAnRepository;
     private final CheckInRepository checkInRepository;
     private final NguoiDungRepository nguoiDungRepository;
+    private final QuyenLoiDonRepository quyenLoiDonRepository;
+    private final DichVuCaAnRepository dichVuCaAnRepository;
+    private final ChiTietDonRepository chiTietDonRepository;
+
+    private static final int GHI_CHU_TOI_DA = 500;
 
     @Override
     @Transactional(readOnly = true)
@@ -67,9 +84,20 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
             }
         }
 
+        // Hôm nay: khách đang ngồi (kể cả ca khác hoặc lượt quên trả từ hôm trước) vẫn phải hiện để trả bàn
+        boolean laHomNay = LocalDate.now().equals(date);
+        if (laHomNay) {
+            for (DatBan db : datBanRepository.findByTrangThai(TrangThaiDatBan.DA_CHECK_IN)) {
+                if (db.getBanAn() != null) {
+                    tableToBooking.merge(db.getBanAn().getMaBanAn(), db, TableAssignmentServiceImpl::pickBooking);
+                }
+            }
+        }
+
         List<TableMapCell> cells = new ArrayList<>();
         for (BanAn b : allTables) {
             TableMapCell cell = TableMapCell.builder()
+                    .id(b.getId())
                     .maBanAn(b.getMaBanAn())
                     .soBan(b.getSoBan())
                     .khuVuc(b.getKhuVuc())
@@ -102,7 +130,7 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
                     }
                     cell.setGhiChu(db.getGhiChu());
 
-                    if (db.getTrangThai() == TrangThaiDatBan.DA_CHECK_IN || b.getTrangThai() == TrangThaiBanAn.DANG_SU_DUNG) {
+                    if (db.getTrangThai() == TrangThaiDatBan.DA_CHECK_IN) {
                         cell.setTrangThaiHienThi("DANG_AN");
                         cell.setCssBadge("bg-danger");
                         cell.setBadgeText("Đang dùng bữa");
@@ -115,6 +143,10 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
                         cell.setCssBadge("bg-warning text-dark");
                         cell.setBadgeText("Chờ khách nhận bàn");
                     }
+                } else if (laHomNay && b.getTrangThai() == TrangThaiBanAn.DANG_SU_DUNG) {
+                    cell.setTrangThaiHienThi("CAN_GIAI_PHONG");
+                    cell.setCssBadge("bg-dark");
+                    cell.setBadgeText("Cần giải phóng");
                 } else {
                     cell.setTrangThaiHienThi("TRONG");
                     cell.setCssBadge("bg-success");
@@ -179,7 +211,7 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
         }
 
         return list.stream()
-                .filter(b -> b.getTrangThai() != TrangThaiDatBan.DA_HUY && b.getTrangThai() != TrangThaiDatBan.DA_HOAN_THANH)
+                .filter(b -> b.getTrangThai() == TrangThaiDatBan.CHO_XAC_NHAN || b.getTrangThai() == TrangThaiDatBan.DA_XAC_NHAN)
                 .sorted(Comparator.comparing(DatBan::getMaDatBan))
                 .collect(Collectors.toList());
     }
@@ -199,12 +231,17 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
     }
 
     @Override
-    public void assignTableToBooking(String maDatBan, String maBanAn, String maNhanVien) {
+    public void assignTableToBooking(String maDatBan, String maBanAn, String maNhanVien, String ghiChu) {
         DatBan db = datBanRepository.findByMaDatBan(maDatBan)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt bàn: " + maDatBan));
 
         BanAn ba = banAnRepository.findByMaBanAn(maBanAn)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bàn ăn: " + maBanAn));
+
+        DonDat don = db.getDonDat();
+        if (don.getTrangThaiDon() == TrangThaiDon.DA_HUY) {
+            throw new IllegalStateException("Đơn [" + don.getMaDonHang() + "] đã bị hủy, không thể xếp bàn.");
+        }
 
         if (db.getTrangThai() != TrangThaiDatBan.CHO_XAC_NHAN && db.getTrangThai() != TrangThaiDatBan.DA_XAC_NHAN) {
             throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] đang ở trạng thái "
@@ -233,7 +270,18 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
         if (db.getTrangThai() == TrangThaiDatBan.CHO_XAC_NHAN) {
             db.setTrangThai(TrangThaiDatBan.DA_XAC_NHAN);
         }
-        datBanRepository.save(db);
+        if (ghiChu != null && !ghiChu.trim().isEmpty()) {
+            String moi = ghiChu.trim();
+            String cu = db.getGhiChu();
+            String gop = (cu == null || cu.trim().isEmpty()) ? moi : cu + " | " + moi;
+            db.setGhiChu(gop.length() > GHI_CHU_TOI_DA ? gop.substring(0, GHI_CHU_TOI_DA) : gop);
+        }
+        try {
+            datBanRepository.saveAndFlush(db);
+        } catch (DataIntegrityViolationException ex) {
+            throw new IllegalStateException("Bàn " + ba.getSoBan()
+                    + " vừa được xếp cho lượt khác, vui lòng chọn bàn khác.", ex);
+        }
         log.info("[ASSIGN-TABLE] Phân bàn {} thành công cho đơn đặt bàn {}", ba.getSoBan(), maDatBan);
     }
 
@@ -261,6 +309,15 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
     public String checkInTable(String maDatBan, String maNhanVien) {
         DatBan db = datBanRepository.findByMaDatBan(maDatBan)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt bàn: " + maDatBan));
+
+        DonDat don = db.getDonDat();
+        if (don.getTrangThaiDon() == TrangThaiDon.DA_HUY) {
+            throw new IllegalStateException("Đơn [" + don.getMaDonHang() + "] đã bị hủy, không thể Check-in.");
+        }
+        if (don.getTrangThaiThanhToan() == TrangThaiThanhToanDon.CHUA_THANH_TOAN
+                || don.getTrangThaiThanhToan() == TrangThaiThanhToanDon.DA_HOAN_TIEN) {
+            throw new IllegalStateException("Đơn [" + don.getMaDonHang() + "] chưa đặt cọc, không thể Check-in.");
+        }
 
         if (db.getBanAn() == null) {
             throw new IllegalStateException("Đơn đặt bàn [" + maDatBan + "] chưa được xếp bàn vật lý. Vui lòng xếp bàn trước khi Check-in!");
@@ -312,6 +369,8 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
         db.setTrangThai(TrangThaiDatBan.DA_CHECK_IN);
         datBanRepository.save(db);
 
+        tieuThuQuyenLoiCombo(db);
+
         // Đổi trạng thái bàn vật lý sang Đang sử dụng
         ba.setTrangThai(TrangThaiBanAn.DANG_SU_DUNG);
         banAnRepository.save(ba);
@@ -331,6 +390,36 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
 
         log.info("[CHECKIN-AN] Check-in thành công đơn đặt bàn {} vào bàn {}", maDatBan, ba.getSoBan());
         return ba.getSoBan();
+    }
+
+    /**
+     * Đặt bàn từ combo gộp nhiều suất cùng ca: check-in là dùng hết quyền lợi ăn uống của ca đó.
+     */
+    private void tieuThuQuyenLoiCombo(DatBan db) {
+        if (db.getQuyenLoiDon() == null) {
+            return;
+        }
+        String maCaAn = maCaAnCua(db);
+        if (maCaAn == null) {
+            return;
+        }
+        List<QuyenLoiDon> quyenLois = quyenLoiDonRepository.findByChiTietDon_DonDat_MaDonDatAndTrangThai(
+                db.getDonDat().getMaDonDat(), TrangThaiQuyenLoi.HIEU_LUC);
+        for (QuyenLoiDon ql : quyenLois) {
+            if (!"AN_UONG".equals(ql.getLoaiThanhPhanChup()) || !Boolean.TRUE.equals(ql.getTheoDoiSuDung())) {
+                continue;
+            }
+            if (ql.getThanhPhanDichVu() == null || ql.getThanhPhanDichVu().getDichVuAnUong() == null) {
+                continue;
+            }
+            String maMon = ql.getThanhPhanDichVu().getDichVuAnUong().getMaDichVu();
+            if (dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn(maMon, maCaAn).isEmpty()) {
+                continue;
+            }
+            ql.setSoLuongDaDung(ql.getSoLuongToiDa());
+            ql.setTrangThai(TrangThaiQuyenLoi.DA_DUNG_HET);
+            quyenLoiDonRepository.save(ql);
+        }
     }
 
     @Override
@@ -364,8 +453,11 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
     @Transactional(readOnly = true)
     public List<MealScheduleRow> getMealSchedule(LocalDate targetDate) {
         LocalDate date = (targetDate != null) ? targetDate : LocalDate.now();
-        List<CaAn> caAnList = caAnRepository.findAll();
+        List<CaAn> caAnList = sortedCaAn();
         List<DatBan> allBookings = datBanRepository.findByNgayAn(date);
+        Map<String, List<ChiTietDon>> chiTietTheoDon = new HashMap<>();
+        Map<String, List<QuyenLoiDon>> quyenLoiTheoDon = new HashMap<>();
+        Map<String, Boolean> linkCache = new HashMap<>();
 
         List<MealScheduleRow> schedule = new ArrayList<>();
         for (CaAn ca : caAnList) {
@@ -398,6 +490,13 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
                     .danhSachDatBan(forThisShift)
                     .build();
 
+            for (DatBan db : forThisShift) {
+                List<String> mon = tinhMonCuaDatBan(db, ca.getMaCaAn(), chiTietTheoDon, quyenLoiTheoDon, linkCache);
+                if (!mon.isEmpty()) {
+                    row.getMonTheoDatBan().put(db.getMaDatBan(), mon);
+                }
+            }
+
             schedule.add(row);
         }
 
@@ -407,7 +506,57 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
     @Override
     @Transactional(readOnly = true)
     public List<CaAn> getAllCaAn() {
-        return caAnRepository.findAll();
+        return sortedCaAn();
+    }
+
+    // Ca theo giờ bắt đầu, ca chưa có giờ xuống cuối
+    private List<CaAn> sortedCaAn() {
+        return caAnRepository.findAll().stream()
+                .sorted(Comparator.comparing(CaAn::getGioBatDau, Comparator.nullsLast(Comparator.naturalOrder())))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Món của một lượt đặt bàn: dòng ăn uống của đơn và suất ăn trong combo, chỉ lấy món có link tới ca đó.
+     * Dữ liệu của đơn được nạp một lần rồi dùng lại cho các lượt cùng đơn.
+     */
+    private List<String> tinhMonCuaDatBan(DatBan db, String maCaAn,
+                                          Map<String, List<ChiTietDon>> chiTietTheoDon,
+                                          Map<String, List<QuyenLoiDon>> quyenLoiTheoDon,
+                                          Map<String, Boolean> linkCache) {
+        List<String> mon = new ArrayList<>();
+        if (db.getDonDat() == null || db.getNgayAn() == null) {
+            return mon;
+        }
+        String maDonDat = db.getDonDat().getMaDonDat();
+
+        for (ChiTietDon ct : chiTietTheoDon.computeIfAbsent(maDonDat, chiTietDonRepository::findByDonDat_MaDonDat)) {
+            if (ct.getLoaiDichVu() == LoaiDichVuDon.AN_UONG
+                    && ct.getTrangThai() == TrangThaiChiTiet.HIEU_LUC
+                    && db.getNgayAn().equals(ct.getNgaySuDung())
+                    && ct.getDichVuAnUong() != null
+                    && coLinkCa(ct.getDichVuAnUong().getMaDichVu(), maCaAn, linkCache)) {
+                mon.add(ct.getTenSanPham() + " x " + ct.getSoLuong());
+            }
+        }
+
+        for (QuyenLoiDon ql : quyenLoiTheoDon.computeIfAbsent(maDonDat, quyenLoiDonRepository::findByChiTietDon_DonDat_MaDonDat)) {
+            if ("AN_UONG".equals(ql.getLoaiThanhPhanChup())
+                    && ql.getTrangThai() != TrangThaiQuyenLoi.DA_HUY
+                    && ql.getThanhPhanDichVu() != null
+                    && ql.getThanhPhanDichVu().getDichVuAnUong() != null
+                    && ql.getChiTietDon() != null
+                    && db.getNgayAn().equals(ql.getChiTietDon().getNgaySuDung())
+                    && coLinkCa(ql.getThanhPhanDichVu().getDichVuAnUong().getMaDichVu(), maCaAn, linkCache)) {
+                mon.add(ql.getTenThanhPhanChup() + " x " + ql.getSoLuongToiDa());
+            }
+        }
+        return mon;
+    }
+
+    private boolean coLinkCa(String maMon, String maCaAn, Map<String, Boolean> linkCache) {
+        return linkCache.computeIfAbsent(maMon + "|" + maCaAn,
+                k -> dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn(maMon, maCaAn).isPresent());
     }
 
     @Override

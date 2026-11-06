@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -29,4 +31,8 @@ public class MealScheduleRow {
 
     @Builder.Default
     private List<DatBan> danhSachDatBan = new ArrayList<>();
+
+    // maDatBan -> danh sách "Tên món x số lượng"
+    @Builder.Default
+    private Map<String, List<String>> monTheoDatBan = new HashMap<>();
 }

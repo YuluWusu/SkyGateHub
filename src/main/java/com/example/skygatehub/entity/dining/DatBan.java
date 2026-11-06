@@ -66,7 +66,8 @@ public class DatBan {
     private TrangThaiDatBan trangThai = TrangThaiDatBan.CHO_XAC_NHAN;
 
     /**
-     * Cột tính toán GENERATED ALWAYS AS (CASE WHEN TRANG_THAI <> 'DA_HUY' THEN MA_BAN_AN ELSE NULL END) STORED
+     * Cột tính toán GENERATED ALWAYS AS (CASE WHEN TRANG_THAI NOT IN ('DA_HUY','DA_HOAN_THANH') THEN MA_BAN_AN ELSE NULL END) STORED.
+     * Lượt đã hủy hoặc đã hoàn thành không giữ bàn, nên bàn dùng lại được trong cùng ca.
      */
     @Column(name = "MA_BAN_AN_DANG_GIU", insertable = false, updatable = false)
     private String maBanAnDangGiu;

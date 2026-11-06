@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -58,6 +59,43 @@ class BanAnServiceImplTest {
 
         assertThrows(IllegalArgumentException.class, () -> service.create(req));
         verify(banAnRepository, never()).save(any());
+    }
+
+    private BanAnRequest requestSucChua(int sucChua) {
+        BanAnRequest req = new BanAnRequest();
+        req.setSoBan("B01");
+        req.setKhuVuc("Sảnh chính");
+        req.setSucChua(sucChua);
+        req.setTrangThai(TrangThaiBanAn.SAN_SANG);
+        return req;
+    }
+
+    @Test
+    void updateGiamSucChuaDuoiSoKhachDaDat_nemIllegalState() {
+        when(banAnRepository.findById(1L)).thenReturn(Optional.of(ban(TrangThaiBanAn.SAN_SANG)));
+        when(banAnRepository.existsBySoBanAndMaBanAnNot("B01", "BAN01")).thenReturn(false);
+        when(banAnRepository.maxSoKhachActiveFrom(anyString(), any(LocalDate.class), any(Collection.class)))
+                .thenReturn(4);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> service.update(1L, requestSucChua(3)));
+        assertTrue(ex.getMessage().contains("B01"));
+        assertTrue(ex.getMessage().contains("4"));
+        verify(banAnRepository, never()).save(any());
+    }
+
+    @Test
+    void updateGiamSucChuaVanDuSoKhach_thanhCong() {
+        BanAn b = ban(TrangThaiBanAn.SAN_SANG);
+        when(banAnRepository.findById(1L)).thenReturn(Optional.of(b));
+        when(banAnRepository.existsBySoBanAndMaBanAnNot("B01", "BAN01")).thenReturn(false);
+        when(banAnRepository.maxSoKhachActiveFrom(anyString(), any(LocalDate.class), any(Collection.class)))
+                .thenReturn(2);
+
+        service.update(1L, requestSucChua(3));
+
+        assertEquals(3, b.getSucChua());
+        verify(banAnRepository).save(b);
     }
 
     @Test
