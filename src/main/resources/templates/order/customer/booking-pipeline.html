@@ -497,11 +497,11 @@
                             <div class="row g-3 align-items-center">
                                 <div class="col-md-5">
                                     <label class="form-label fw-bold small text-dark mb-1">Ngày nhận phòng (Check-in 14:00):</label>
-                                    <input type="date" name="ngayNhanPhong" id="ngayNhanInput" th:value="${today}" class="form-control rounded-pill" onchange="calculateNights(); updateSummary();">
+                                    <input type="date" name="ngayNhanPhong" id="ngayNhanInput" th:value="${today}" th:min="${today}" class="form-control rounded-pill" onchange="calculateNights(); updateSummary();">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-label fw-bold small text-dark mb-1">Ngày trả phòng (Check-out 12:00):</label>
-                                    <input type="date" name="ngayTraPhong" id="ngayTraInput" th:value="${tomorrow}" class="form-control rounded-pill" onchange="calculateNights(); updateSummary();">
+                                    <input type="date" name="ngayTraPhong" id="ngayTraInput" th:value="${tomorrow}" th:min="${tomorrow}" class="form-control rounded-pill" onchange="calculateNights(); updateSummary();">
                                 </div>
                                 <div class="col-md-2 text-center">
                                     <span class="d-block small text-muted">Thời gian:</span>
@@ -620,7 +620,7 @@
                             <div class="row g-3 align-items-center">
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small text-dark mb-1">Ngày dùng bữa:</label>
-                                    <input type="date" name="ngayAn" id="ngayAnInput" th:value="${today}" class="form-control rounded-pill" onchange="updateSummary();">
+                                    <input type="date" name="ngayAn" id="ngayAnInput" th:value="${today}" th:min="${today}" class="form-control rounded-pill" onchange="updateSummary();">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small text-dark mb-1">Ca ăn mong muốn:</label>
@@ -920,7 +920,7 @@
             if (!input) return;
 
             let val = parseInt(input.value) || 0;
-            val = Math.max(0, val + delta);
+            const maxLimit = (typeof input !== 'undefined' && input && input.name === 'roomQty') ? 10 : 99; val = Math.min(maxLimit, Math.max(0, val + delta));
             input.value = val;
 
             const card = btn.closest('.item-select-card');
@@ -946,7 +946,7 @@
             if (!input) return;
 
             let val = parseInt(input.value) || 0;
-            val = Math.max(0, val + delta);
+            const maxLimit = (typeof input !== 'undefined' && input && input.name === 'roomQty') ? 10 : 99; val = Math.min(maxLimit, Math.max(0, val + delta));
             input.value = val;
 
             const card = document.getElementById(`${type}-card-${code}`);
@@ -970,7 +970,7 @@
             const outInput = document.getElementById('ngayTraInput');
             if (!inInput || !outInput) return;
 
-            if (inInput.value) {
+            if (inInput.value) { const now = new Date(); const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; inInput.min = todayStr; if (inInput.value < todayStr) { alert('Ngày nhận phòng không thể trước ngày hiện tại (' + todayStr + ')!'); inInput.value = todayStr; }
                 const parts = inInput.value.split('-').map(Number);
                 if (parts.length === 3) {
                     const nextDay = new Date(parts[0], parts[1] - 1, parts[2] + 1);

@@ -628,13 +628,13 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Ngày Nhận Phòng (Check-in)</label>
-                                <input type="date" class="form-control" id="roomCheckIn" th:value="${currentDate}"
+                                <input type="date" class="form-control" id="roomCheckIn" th:value="${currentDate}" th:min="${currentDate}"
                                     onchange="calcRoomPrice()" required>
                             </div>
 
                             <div class="form-group">
                                 <label>Ngày Trả Phòng (Check-out)</label>
-                                <input type="date" class="form-control" id="roomCheckOut" th:value="${tomorrowDate}"
+                                <input type="date" class="form-control" id="roomCheckOut" th:value="${tomorrowDate}" th:min="${tomorrowDate}"
                                     onchange="calcRoomPrice()" required>
                             </div>
 
@@ -665,7 +665,7 @@
                                     style="color: #ea580c; font-weight: 600;">0 đ</span> |
                                 Tổng tiền: <strong id="roomTotalDisplay">1,500,000 đ</strong>
                             </div>
-                            <a th:href="@{/khach-san}" class="btn btn-primary fw-bold"
+                            <a th:href="@{/khach-san}" id="btnKhamPhaKhachSan" onclick="goToHotelWithDates(event)" class="btn btn-primary fw-bold"
                                 style="background: #0284c7; border: none;">
                                 Khám Phá Khách Sạn
                             </a>
@@ -1267,6 +1267,10 @@
             document.getElementById('roomNights').textContent = nights + ' đêm';
             document.getElementById('roomSurcharge').textContent = formatMoney(totalSurcharge);
             document.getElementById('roomTotalDisplay').textContent = formatMoney(total);
+            const btnExplore = document.getElementById('btnKhamPhaKhachSan');
+            if (btnExplore && inStr && outStr) {
+                btnExplore.href = `/khach-san?ngayNhan=${encodeURIComponent(inStr)}&ngayTra=${encodeURIComponent(outStr)}`;
+            }
         }
 
         function calcDiningPrice() {
@@ -1300,7 +1304,20 @@
 
         function handleRoomBooking(e) {
             e.preventDefault();
-            window.location.href = '/dat-dich-vu';
+            goToHotelWithDates(e);
+        }
+
+        function goToHotelWithDates(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const inInput = document.getElementById('roomCheckIn');
+            const outInput = document.getElementById('roomCheckOut');
+            const inStr = inInput ? inInput.value : '';
+            const outStr = outInput ? outInput.value : '';
+            let url = '/khach-san';
+            if (inStr && outStr) {
+                url += `?ngayNhan=${encodeURIComponent(inStr)}&ngayTra=${encodeURIComponent(outStr)}`;
+            }
+            window.location.href = url;
         }
 
         function handleDiningBooking(e) {
@@ -1402,34 +1419,52 @@
         }
 
         window.addEventListener('DOMContentLoaded', function () {
-            flatpickr('#roomCheckIn', {
+            let fpOut = null;
+            const fpIn = flatpickr('#roomCheckIn', {
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altFormat: 'd/m/Y',
                 locale: 'vn',
-                defaultDate: document.getElementById('roomCheckIn').value || '2026-10-21',
+                minDate: 'today',
+                defaultDate: document.getElementById('roomCheckIn').value,
+                onChange: function (selectedDates, dateStr) {
+                    if (selectedDates.length > 0 && fpOut) {
+                        const nextDay = new Date(selectedDates[0]);
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        fpOut.set('minDate', nextDay);
+                        if (!fpOut.selectedDates[0] || fpOut.selectedDates[0] <= selectedDates[0]) {
+                            fpOut.setDate(nextDay);
+                        }
+                    }
+                    calcRoomPrice();
+                }
+            });
+
+            fpOut = flatpickr('#roomCheckOut', {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                locale: 'vn',
+                minDate: 'today',
+                defaultDate: document.getElementById('roomCheckOut').value,
                 onChange: function () {
                     calcRoomPrice();
                 }
             });
 
-            flatpickr('#roomCheckOut', {
-                dateFormat: 'Y-m-d',
-                altInput: true,
-                altFormat: 'd/m/Y',
-                locale: 'vn',
-                defaultDate: document.getElementById('roomCheckOut').value || '2026-10-22',
-                onChange: function () {
-                    calcRoomPrice();
-                }
-            });
+            if (fpIn.selectedDates.length > 0) {
+                const nextDay = new Date(fpIn.selectedDates[0]);
+                nextDay.setDate(nextDay.getDate() + 1);
+                fpOut.set('minDate', nextDay);
+            }
 
             flatpickr('#diningDate', {
                 dateFormat: 'Y-m-d',
                 altInput: true,
                 altFormat: 'd/m/Y',
                 locale: 'vn',
-                defaultDate: document.getElementById('diningDate').value || '2026-10-21'
+                minDate: 'today',
+                defaultDate: document.getElementById('diningDate').value
             });
 
             updateCartBadge();

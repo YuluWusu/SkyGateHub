@@ -41,7 +41,7 @@ public class RoomBookingController {
             @RequestParam(value = "soKhach", required = false) Integer soKhach,
             Model model) {
 
-        LocalDate checkIn = (ngayNhan != null) ? ngayNhan : LocalDate.now();
+        LocalDate checkIn = (ngayNhan != null && !ngayNhan.isBefore(LocalDate.now())) ? ngayNhan : LocalDate.now();
         LocalDate checkOut = (ngayTra != null) ? ngayTra : checkIn.plusDays(1);
         if (!checkOut.isAfter(checkIn)) {
             checkOut = checkIn.plusDays(1);

@@ -95,6 +95,9 @@ public class CheckoutServiceImpl implements CheckoutService {
         }
 
         LocalDate ngayThamQuan = form.getNgayThamQuan() != null ? form.getNgayThamQuan() : LocalDate.now();
+        if (ngayThamQuan.isBefore(LocalDate.now())) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Ngày tham quan không thể trước ngày hiện tại (" + LocalDate.now() + ")!");
+        }
 
         // 2. Khởi tạo thực thể DonDat với mã sinh chống trùng (OrderCodeGenerator)
         String maDonHang = OrderCodeGenerator.generateMaDonHang("CTDG");
@@ -183,6 +186,10 @@ public class CheckoutServiceImpl implements CheckoutService {
         // 4. Xử lý phân hệ Khách sạn: Kiểm tra phòng trống & Phụ thu +20% đêm thứ Bảy / Ngày lễ (Quy tắc D1)
         if (form.isBookHotel() && form.getRoomTypeCode() != null && form.getRoomQty() != null) {
             LocalDate checkIn = form.getNgayNhanPhong() != null ? form.getNgayNhanPhong() : LocalDate.now();
+            if (checkIn.isBefore(LocalDate.now())) {
+                throw new BusinessException(ErrorCode.BAD_REQUEST,
+                        "Ngày nhận phòng không thể trước ngày hiện tại (" + LocalDate.now() + ")!");
+            }
             LocalDate checkOut = form.getNgayTraPhong() != null ? form.getNgayTraPhong() : checkIn.plusDays(1);
             if (!checkOut.isAfter(checkIn)) {
                 checkOut = checkIn.plusDays(1);
@@ -249,6 +256,10 @@ public class CheckoutServiceImpl implements CheckoutService {
         // 5. Xử lý phân hệ Ẩm thực: Tạo ChiTietDon và tự động tạo DatBan cho bộ phận nhà hàng
         if (form.isBookDining() && form.getDiningCode() != null && form.getDiningQty() != null) {
             LocalDate ngayAn = form.getNgayAn() != null ? form.getNgayAn() : LocalDate.now();
+            if (ngayAn.isBefore(LocalDate.now())) {
+                throw new BusinessException(ErrorCode.BAD_REQUEST,
+                        "Ngày dùng bữa không thể trước ngày hiện tại (" + LocalDate.now() + ")!");
+            }
 
             for (int i = 0; i < form.getDiningCode().size(); i++) {
                 String dCode = form.getDiningCode().get(i);
