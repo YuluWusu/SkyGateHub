@@ -23,7 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin/users")
+@RequestMapping({"/admin/users", "/admin/accounts"})
 @RequireRole({"QUAN_LY", "ROLE_ADMIN", "VT001", "ADMIN"})
 public class AdminAccountController {
 

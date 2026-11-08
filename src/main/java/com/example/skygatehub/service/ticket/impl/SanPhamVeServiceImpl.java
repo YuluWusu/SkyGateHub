@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,6 +116,16 @@ public class SanPhamVeServiceImpl implements SanPhamVeService {
 
     @Override
     public LoaiVe taoLoaiVe(SanPhamVeRequest yeuCau) {
+        if (yeuCau == null) {
+            throw new IllegalArgumentException("Dữ liệu loại vé không được để trống.");
+        }
+        if (yeuCau.getTenLoaiVe() == null || yeuCau.getTenLoaiVe().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên loại vé không được để trống.");
+        }
+        if (yeuCau.getGiaVe() != null && yeuCau.getGiaVe().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Giá vé niêm yết không được âm.");
+        }
+
         String maLoaiVe = yeuCau.getMaLoaiVe();
         if (maLoaiVe == null || maLoaiVe.trim().isEmpty() || maLoaiVe.startsWith("LV")) {
             maLoaiVe = generateNextMaLoaiVe();
@@ -134,6 +145,10 @@ public class SanPhamVeServiceImpl implements SanPhamVeService {
 
     @Override
     public LoaiVe capNhatLoaiVe(Long id, SanPhamVeRequest yeuCau) {
+        if (yeuCau.getGiaVe() != null && yeuCau.getGiaVe().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Giá vé niêm yết không được âm.");
+        }
+
         Optional<LoaiVe> timThay = loaiVeRepository.findById(id);
         if (!timThay.isPresent()) {
             throw new IllegalArgumentException("Không tìm thấy loại vé với ID: " + id);
@@ -177,6 +192,16 @@ public class SanPhamVeServiceImpl implements SanPhamVeService {
 
     @Override
     public void themThanhPhanCombo(String maLoaiVe, ComboItemRequest yeuCau) {
+        if (yeuCau == null) {
+            throw new IllegalArgumentException("Dữ liệu thành phần combo không được để trống.");
+        }
+        if (yeuCau.getMaThanhPhan() == null || yeuCau.getMaThanhPhan().trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn thành phần dịch vụ cần gán vào combo.");
+        }
+        if (yeuCau.getSoLuongMoiCombo() != null && yeuCau.getSoLuongMoiCombo() <= 0) {
+            throw new IllegalArgumentException("Số lượng thành phần dịch vụ trong combo phải lớn hơn 0.");
+        }
+
         Optional<LoaiVe> timThayVe = loaiVeRepository.findByMaLoaiVe(maLoaiVe);
         if (!timThayVe.isPresent()) {
             throw new IllegalArgumentException("Không tìm thấy loại vé: " + maLoaiVe);

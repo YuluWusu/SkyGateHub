@@ -73,6 +73,16 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public UserResponse taoNguoiDung(UserCreateRequest yeuCau) {
+        if (yeuCau == null) {
+            throw new IllegalArgumentException("Dữ liệu tạo tài khoản không được để trống.");
+        }
+        if (yeuCau.getTenDangNhap() == null || yeuCau.getTenDangNhap().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên đăng nhập không được để trống.");
+        }
+        if (yeuCau.getHoTen() == null || yeuCau.getHoTen().trim().isEmpty()) {
+            throw new IllegalArgumentException("Họ và tên người dùng không được để trống.");
+        }
+
         String tenDangNhap = yeuCau.getTenDangNhap().trim();
         if (nguoiDungRepository.existsByTenDangNhap(tenDangNhap)) {
             throw new IllegalArgumentException("Tên đăng nhập đã tồn tại: " + tenDangNhap);

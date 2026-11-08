@@ -242,7 +242,7 @@ public class CheckInClientHandler implements Runnable {
                 // Tạo bản ghi CheckIn
                 CheckIn banGhiCheckIn = new CheckIn();
                 banGhiCheckIn.setMaCheckIn("CI-VE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-                banGhiCheckIn.setDonDat(ve.getChiTietDon().getDonDat());
+                banGhiCheckIn.setDonDat(ve.getChiTietDon() != null ? ve.getChiTietDon().getDonDat() : null);
                 banGhiCheckIn.setLoaiCheckIn(LoaiCheckIn.VE);
                 banGhiCheckIn.setVe(ve);
 
@@ -255,9 +255,10 @@ public class CheckInClientHandler implements Runnable {
                 banGhiCheckIn.setGhiChu("Check-in qua Socket tại trạm: " + stationName);
                 checkInRepository.save(banGhiCheckIn);
 
+                String tenLoaiVe = ve.getLoaiVe() != null ? ve.getLoaiVe().getTenLoaiVe() : "Vé tham quan";
                 log.info("[THREAD: {}] [CHECKIN-VE-SUCCESS] Trạm {} check-in thành công vé: {}",
                         Thread.currentThread().getName(), stationName, ve.getMaVe());
-                return "200 CHECKIN_SUCCESS MaCheckIn=" + banGhiCheckIn.getMaCheckIn() + " MaVe=" + ve.getMaVe() + " LoaiVe=" + ve.getLoaiVe().getTenLoaiVe();
+                return "200 CHECKIN_SUCCESS MaCheckIn=" + banGhiCheckIn.getMaCheckIn() + " MaVe=" + ve.getMaVe() + " LoaiVe=" + tenLoaiVe;
             });
         }
     }

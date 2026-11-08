@@ -161,7 +161,6 @@ public class AdminTicketController {
             dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Không tìm thấy loại vé.");
             return "redirect:/admin/tickets";
         }
-
         if (loaiVe.getLoaiVe() != LoaiVeType.TRON_GOI) {
             dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Chỉ có loại vé combo trọn gói mới có thể cấu hình thành phần.");
             return "redirect:/admin/tickets/detail/" + id;
@@ -186,6 +185,10 @@ public class AdminTicketController {
         if (loaiVe == null) {
             dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Không tìm thấy loại vé.");
             return "redirect:/admin/tickets";
+        }
+        if (loaiVe.getLoaiVe() != LoaiVeType.TRON_GOI) {
+            dieuHuong.addFlashAttribute(SessionKeys.FLASH_ERROR, "Chỉ có loại vé combo trọn gói mới có thể cấu hình thành phần.");
+            return "redirect:/admin/tickets/detail/" + id;
         }
 
         try {

@@ -82,6 +82,22 @@ public class BangGiaVeServiceImpl implements BangGiaVeService {
 
     @Override
     public BangGiaVe taoBangGia(BangGiaVeRequest yeuCau) {
+        if (yeuCau == null) {
+            throw new IllegalArgumentException("Dữ liệu bảng giá không được để trống.");
+        }
+        if (yeuCau.getTenBangGia() == null || yeuCau.getTenBangGia().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên bảng giá không được để trống.");
+        }
+        if (yeuCau.getDonGia() == null || yeuCau.getDonGia().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Đơn giá bảng giá vé không được âm hoặc để trống.");
+        }
+        if (yeuCau.getHieuLucTu() == null) {
+            throw new IllegalArgumentException("Ngày bắt đầu hiệu lực không được để trống.");
+        }
+        if (yeuCau.getHieuLucDen() != null && yeuCau.getHieuLucDen().isBefore(yeuCau.getHieuLucTu())) {
+            throw new IllegalArgumentException("Ngày kết thúc hiệu lực phải sau hoặc cùng ngày với ngày bắt đầu hiệu lực.");
+        }
+
         Optional<LoaiVe> timThayLoaiVe = loaiVeRepository.findByMaLoaiVe(yeuCau.getMaLoaiVe());
         if (!timThayLoaiVe.isPresent()) {
             throw new IllegalArgumentException("Không tìm thấy loại vé: " + yeuCau.getMaLoaiVe());
@@ -116,6 +132,16 @@ public class BangGiaVeServiceImpl implements BangGiaVeService {
         }
 
         BangGiaVe bangGia = timThay.get();
+
+        if (yeuCau.getDonGia() != null && yeuCau.getDonGia().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Đơn giá bảng giá vé không được âm.");
+        }
+        java.time.LocalDate tuNgay = yeuCau.getHieuLucTu() != null ? yeuCau.getHieuLucTu() : bangGia.getHieuLucTu();
+        java.time.LocalDate denNgay = yeuCau.getHieuLucDen();
+        if (tuNgay != null && denNgay != null && denNgay.isBefore(tuNgay)) {
+            throw new IllegalArgumentException("Ngày kết thúc hiệu lực phải sau hoặc cùng ngày với ngày bắt đầu hiệu lực.");
+        }
+
         if (yeuCau.getMaLoaiVe() != null) {
             Optional<LoaiVe> timThayLoaiVe = loaiVeRepository.findByMaLoaiVe(yeuCau.getMaLoaiVe());
             if (timThayLoaiVe.isPresent()) {
@@ -147,6 +173,15 @@ public class BangGiaVeServiceImpl implements BangGiaVeService {
 
     @Override
     public NgayDacBiet taoNgayDacBiet(NgayDacBiet ngayDacBiet) {
+        if (ngayDacBiet == null) {
+            throw new IllegalArgumentException("Dữ liệu ngày đặc biệt không được để trống.");
+        }
+        if (ngayDacBiet.getNgayApDung() == null) {
+            throw new IllegalArgumentException("Ngày áp dụng sự kiện/lễ không được để trống.");
+        }
+        if (ngayDacBiet.getTenNgay() == null || ngayDacBiet.getTenNgay().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên ngày lễ/sự kiện không được để trống.");
+        }
         if (ngayDacBiet.getMaNgayDacBiet() == null || ngayDacBiet.getMaNgayDacBiet().trim().isEmpty()) {
             ngayDacBiet.setMaNgayDacBiet("NDB" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
         }

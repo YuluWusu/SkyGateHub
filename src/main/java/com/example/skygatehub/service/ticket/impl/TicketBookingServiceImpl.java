@@ -124,6 +124,10 @@ public class TicketBookingServiceImpl implements TicketBookingService {
 
     @Override
     public KhoVe capNhatHanMucKho(String maLoaiVe, LocalDate ngayThamQuan, Integer hanMucToiDa) {
+        if (hanMucToiDa != null && hanMucToiDa <= 0) {
+            throw new IllegalArgumentException("Hạn mức kho vé tối đa phải lớn hơn 0.");
+        }
+
         Optional<LoaiVe> timThayLoaiVe = loaiVeRepository.findByMaLoaiVe(maLoaiVe);
         if (!timThayLoaiVe.isPresent()) {
             throw new IllegalArgumentException("Không tìm thấy loại vé: " + maLoaiVe);
@@ -134,6 +138,9 @@ public class TicketBookingServiceImpl implements TicketBookingService {
         KhoVe khoVe;
         if (timThayKhoVe.isPresent()) {
             khoVe = timThayKhoVe.get();
+            if (hanMucToiDa != null && khoVe.getSoLuongDaBan() > hanMucToiDa) {
+                throw new IllegalArgumentException("Hạn mức tối đa (" + hanMucToiDa + ") không thể nhỏ hơn số lượng vé đã bán (" + khoVe.getSoLuongDaBan() + ").");
+            }
             khoVe.setSoLuongToiDa(hanMucToiDa);
         } else {
             khoVe = new KhoVe();
