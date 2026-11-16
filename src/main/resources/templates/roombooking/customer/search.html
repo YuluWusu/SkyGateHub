@@ -274,6 +274,7 @@
                                     <div>
                                         <button type="button" class="btn btn-gold btn-sm fw-bold px-3 py-2 shadow-sm"
                                                 onclick="openBookingDirectModal(this)"
+                                                th:data-code="${lp.maLoaiPhong}"
                                                 th:data-name="${lp.tenLoaiPhong}"
                                                 th:data-price="${lp.giaCoBan}"
                                                 th:data-khu="${lp.khuLuuTru != null ? lp.khuLuuTru.tenKhu : 'FIVITEL'}">
@@ -311,6 +312,7 @@
                     <div class="p-3 mb-3 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                         <div class="fw-bold fs-6 text-success mb-1" id="modalRoomName">Superior King</div>
                         <div class="small text-muted mb-1" id="modalRoomKhu">FIVITEL Sông Ngân</div>
+                        <div class="small text-dark mb-1">Thời gian lưu trú: <strong id="modalRoomDates" class="text-primary fw-bold">--</strong></div>
                         <div class="small text-dark">Giá niêm yết: <strong id="modalRoomPrice" class="text-warning fw-bold">1,500,000 đ</strong>/đêm</div>
                     </div>
 
@@ -320,7 +322,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-semibold text-dark">Số điện thoại liên hệ (*)</label>
-                        <input type="tel" class="form-control" id="guestPhone" placeholder="0905xxxxxx" required>
+                        <input type="tel" class="form-control" id="guestPhone" placeholder="0905xxxxxx" maxlength="10" required>
+                        <div id="phoneError" class="text-danger small mt-1" style="display: none; font-weight: 600;"></div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-semibold text-dark">Ghi chú yêu cầu đặc biệt</label>
@@ -334,7 +337,7 @@
                 </div>
                 <div class="modal-footer border-top border-light">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-gold fw-bold px-4" onclick="submitDirectBooking()">
+                    <button type="button" class="btn btn-gold fw-bold px-4" id="btnSubmitDirectBooking" onclick="submitDirectBooking()">
                         Gửi Yêu Cầu Đặt Phòng
                     </button>
                 </div>
@@ -364,32 +367,227 @@
                 locale: 'vn',
                 minDate: 'today'
             });
+
+            // Ràng buộc số điện thoại: Chỉ cho nhập số & kiểm tra định dạng trực tiếp
+            const phoneInput = document.getElementById('guestPhone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    // Tự động loại bỏ bất kỳ ký tự nào không phải chữ số
+                    this.value = this.value.replace(/\D/g, '');
+                    validatePhoneInput(false);
+                });
+                phoneInput.addEventListener('blur', function() {
+                    validatePhoneInput(true);
+                });
+            }
+
+            const nameInput = document.getElementById('guestName');
+            if (nameInput) {
+                nameInput.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
         });
 
+        // Hàm kiểm tra ràng buộc số điện thoại Việt Nam chuẩn (10 chữ số, đầu 03, 05, 07, 08, 09)
+        function validatePhoneInput(isBlur) {
+            const phoneInput = document.getElementById('guestPhone');
+            const phoneError = document.getElementById('phoneError');
+            if (!phoneInput) return true;
+
+            const phone = phoneInput.value.trim();
+            if (!phone) {
+                if (isBlur) {
+                    phoneInput.classList.add('is-invalid');
+                    phoneInput.classList.remove('is-valid');
+                    if (phoneError) {
+                        phoneError.textContent = 'Vui lòng nhập số điện thoại liên hệ!';
+                        phoneError.style.display = 'block';
+                    }
+                } else {
+                    phoneInput.classList.remove('is-invalid', 'is-valid');
+                    if (phoneError) phoneError.style.display = 'none';
+                }
+                return false;
+            }
+
+            // Kiểm tra chữ số đầu tiên phải là 0
+            if (phone.length >= 1 && phone[0] !== '0') {
+                phoneInput.classList.add('is-invalid');
+                phoneInput.classList.remove('is-valid');
+                if (phoneError) {
+                    phoneError.textContent = 'Số điện thoại phải bắt đầu bằng số 0.';
+                    phoneError.style.display = 'block';
+                }
+                return false;
+            }
+
+            // Kiểm tra 2 chữ số đầu tiên phải thuộc các đầu số di động VN hợp lệ: 03, 05, 07, 08, 09
+            const validPrefixes = ['03', '05', '07', '08', '09'];
+            if (phone.length >= 2) {
+                const prefix = phone.substring(0, 2);
+                if (!validPrefixes.includes(prefix)) {
+                    phoneInput.classList.add('is-invalid');
+                    phoneInput.classList.remove('is-valid');
+                    if (phoneError) {
+                        phoneError.textContent = 'Đầu số ' + prefix + ' không hợp lệ! Vui lòng dùng đầu số 03, 05, 07, 08 hoặc 09.';
+                        phoneError.style.display = 'block';
+                    }
+                    return false;
+                }
+            }
+
+            // Kiểm tra độ dài: Đúng 10 chữ số
+            if (phone.length < 10) {
+                if (isBlur) {
+                    phoneInput.classList.add('is-invalid');
+                    phoneInput.classList.remove('is-valid');
+                    if (phoneError) {
+                        phoneError.textContent = 'Số điện thoại phải gồm đúng 10 chữ số (hiện có ' + phone.length + ' số).';
+                        phoneError.style.display = 'block';
+                    }
+                } else {
+                    phoneInput.classList.remove('is-invalid', 'is-valid');
+                    if (phoneError) phoneError.style.display = 'none';
+                }
+                return false;
+            }
+
+            // Kiểm tra biểu thức chính quy hoàn chỉnh
+            const phoneRegex = /^(0[35789])[0-9]{8}$/;
+            if (phoneRegex.test(phone)) {
+                phoneInput.classList.remove('is-invalid');
+                phoneInput.classList.add('is-valid');
+                if (phoneError) phoneError.style.display = 'none';
+                return true;
+            } else {
+                phoneInput.classList.add('is-invalid');
+                phoneInput.classList.remove('is-valid');
+                if (phoneError) {
+                    phoneError.textContent = 'Số điện thoại không hợp lệ! Vui lòng kiểm tra lại.';
+                    phoneError.style.display = 'block';
+                }
+                return false;
+            }
+        }
+
         let directModal = null;
+        let selectedRoomCode = '';
+
         function openBookingDirectModal(btn) {
+            selectedRoomCode = btn.getAttribute('data-code') || '';
             const name = btn.getAttribute('data-name');
             const price = btn.getAttribute('data-price');
             const khu = btn.getAttribute('data-khu');
+
+            const checkInVal = document.getElementById('checkInInput') ? document.getElementById('checkInInput').value : '';
+            const checkOutVal = document.getElementById('checkOutInput') ? document.getElementById('checkOutInput').value : '';
 
             document.getElementById('modalRoomName').textContent = name;
             document.getElementById('modalRoomKhu').textContent = khu;
             document.getElementById('modalRoomPrice').textContent = Number(price || 0).toLocaleString('vi-VN') + ' đ';
 
+            const datesEl = document.getElementById('modalRoomDates');
+            if (datesEl) {
+                datesEl.textContent = checkInVal + ' ➔ ' + checkOutVal;
+            }
+
+            const phoneErr = document.getElementById('phoneError');
+            if (phoneErr) phoneErr.style.display = 'none';
+            const phoneIn = document.getElementById('guestPhone');
+            if (phoneIn) {
+                phoneIn.classList.remove('is-invalid', 'is-valid');
+                phoneIn.value = '';
+            }
+            const nameIn = document.getElementById('guestName');
+            if (nameIn) {
+                nameIn.classList.remove('is-invalid', 'is-valid');
+                nameIn.value = '';
+            }
+            const noteIn = document.getElementById('guestNote');
+            if (noteIn) noteIn.value = '';
+
             directModal = new bootstrap.Modal(document.getElementById('directBookingModal'));
             directModal.show();
         }
 
-        function submitDirectBooking() {
-            const name = document.getElementById('guestName').value.trim();
-            const phone = document.getElementById('guestPhone').value.trim();
-            if (!name || !phone) {
-                alert('Vui lòng nhập họ tên và số điện thoại liên hệ!');
+        async function submitDirectBooking() {
+            const nameInput = document.getElementById('guestName');
+            const phoneInput = document.getElementById('guestPhone');
+            const noteInput = document.getElementById('guestNote');
+
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const note = noteInput ? noteInput.value.trim() : '';
+
+            nameInput.classList.remove('is-invalid');
+
+            // 1. Kiểm tra họ tên
+            if (!name) {
+                nameInput.classList.add('is-invalid');
+                alert('Vui lòng nhập họ và tên người đại diện!');
+                nameInput.focus();
                 return;
             }
-            alert('Cảm ơn Quý khách ' + name + '! Yêu cầu đặt phòng đã được tiếp nhận thành công. Nhân viên lễ tân FIVITEL sẽ liên hệ hotline xác nhận ngay!');
-            if (directModal) {
-                directModal.hide();
+
+            // 2. Ràng buộc số điện thoại
+            const isPhoneValid = validatePhoneInput(true);
+            if (!isPhoneValid) {
+                phoneInput.focus();
+                return;
+            }
+
+            const inInput = document.getElementById('checkInInput');
+            const outInput = document.getElementById('checkOutInput');
+            const ngayNhan = inInput ? inInput.value : '';
+            const ngayTra = outInput ? outInput.value : '';
+
+            const btnSubmit = document.getElementById('btnSubmitDirectBooking');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang gửi yêu cầu...';
+            }
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('hoTenKhach', name);
+                formData.append('sdtKhach', phone);
+                formData.append('ghiChu', note);
+                formData.append('maLoaiPhong', selectedRoomCode);
+                formData.append('ngayNhan', ngayNhan);
+                formData.append('ngayTra', ngayTra);
+
+                const res = await fetch('/khach-san/dat-nhanh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    if (directModal) directModal.hide();
+                    alert('🎉 GỬI YÊU CẦU ĐẶT PHÒNG THÀNH CÔNG!\n\n' +
+                          '• Khách hàng: ' + data.hoTenKhach + '\n' +
+                          '• Hạng phòng: ' + data.tenPhong + '\n' +
+                          '• Thời gian: ' + data.checkIn + ' đến ' + data.checkOut + ' (' + data.soDem + ' đêm)\n' +
+                          '• Tổng tiền dự tính: ' + Number(data.tongTien).toLocaleString('vi-VN') + ' đ\n' +
+                          '• Mã đơn hàng: ' + data.maDonHang + '\n' +
+                          '• Mã đặt phòng: ' + data.maDatPhong + '\n\n' +
+                          'Yêu cầu của Quý khách đã được gửi tới hệ thống quản trị lễ tân FIVITEL!\n' +
+                          'Nhân viên lễ tân sẽ liên hệ hotline xác nhận và xếp phòng cho Quý khách ngay.');
+                    window.location.reload();
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể tạo đơn đặt phòng!'));
+                }
+            } catch (err) {
+                alert('Có lỗi kết nối máy chủ. Vui lòng thử lại!');
+            } finally {
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = 'Gửi Yêu Cầu Đặt Phòng';
+                }
             }
         }
     </script>
