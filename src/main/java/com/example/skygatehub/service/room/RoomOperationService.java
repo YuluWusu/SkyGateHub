@@ -26,4 +26,5 @@ public interface RoomOperationService {
     String checkInRoom(String maDatPhong, String maNhanVien);
 
     String checkOutRoom(String maDatPhong, String maNhanVien);
+
 }
