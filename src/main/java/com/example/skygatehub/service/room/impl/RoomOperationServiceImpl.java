@@ -217,83 +217,162 @@ public class RoomOperationServiceImpl implements RoomOperationService {
         );
     }
 
-    @Override
-    public PhanPhong assignRoomToBooking(String maDatPhong, String maPhong, String maNhanVien) {
-        DatPhong dp = datPhongRepository.findByMaDatPhongWithDetails(maDatPhong)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt phòng: " + maDatPhong));
+//    @Override
+//    public PhanPhong assignRoomToBooking(String maDatPhong, String maPhong, String maNhanVien) {
+//        DatPhong dp = datPhongRepository.findByMaDatPhongWithDetails(maDatPhong)
+//                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt phòng: " + maDatPhong));
+//
+//        if (dp.getTrangThai() == TrangThaiDatPhong.DA_HUY) {
+//            throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong + "] đã bị hủy, không thể phân phòng!");
+//        }
+//        if (dp.getTrangThai() == TrangThaiDatPhong.DA_TRA_PHONG) {
+//            throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong + "] đã hoàn tất trả phòng!");
+//        }
+//
+//        Phong phong = phongRepository.findByMaPhongWithLock(maPhong)
+//                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng vật lý: " + maPhong));
+//
+//        if (phong.getTrangThai() == TrangThaiPhong.BAO_TRI) {
+//            throw new IllegalStateException("Phòng [" + phong.getSoPhong() + "] đang bảo trì, không thể phân cho khách!");
+//        }
+//
+//        if (!phong.getLoaiPhong().getMaLoaiPhong().equalsIgnoreCase(dp.getLoaiPhong().getMaLoaiPhong())) {
+//            throw new IllegalArgumentException("Loại phòng của phòng " + phong.getSoPhong()
+//                    + " (" + phong.getLoaiPhong().getTenLoaiPhong()
+//                    + ") không khớp với loại phòng của đơn đặt (" + dp.getLoaiPhong().getTenLoaiPhong() + ")!");
+//        }
+//
+//        // Kiểm tra khóa bi quan chống 2 nhân viên lễ tân gán trùng phòng
+//        boolean overlap = phanPhongRepository.existsOverlappingAssignmentWithLock(
+//                maPhong, dp.getNgayNhanPhong(), dp.getNgayTraPhong()
+//        );
+//        if (overlap) {
+//            throw new IllegalStateException("Phòng [" + phong.getSoPhong()
+//                    + "] đã có lịch phân phòng trùng trong khoảng từ "
+//                    + dp.getNgayNhanPhong() + " đến " + dp.getNgayTraPhong() + "!");
+//        }
+//
+//        long activeCount = phanPhongRepository.countByDatPhong_MaDatPhongAndTrangThaiNot(
+//                maDatPhong, TrangThaiPhanPhong.DA_HUY
+//        );
+//        if (activeCount >= dp.getSoLuongPhong()) {
+//            throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong
+//                    + "] đã được phân đủ số lượng yêu cầu (" + dp.getSoLuongPhong() + " phòng)!");
+//        }
+//
+//        // Sinh mã MA_PHAN_PHONG dạng PP023, PP024...
+//        String nextMa = generateNextMaPhanPhong();
+//
+//        // Tìm nhân viên phân phòng (hoặc người dùng đầu tiên)
+//        NguoiDung nhanVien = null;
+//        if (maNhanVien != null && !maNhanVien.trim().isEmpty()) {
+//            nhanVien = nguoiDungRepository.findByMaNguoiDung(maNhanVien.trim()).orElse(null);
+//        }
+//        if (nhanVien == null) {
+//            nhanVien = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
+//        }
+//
+//        PhanPhong pp = new PhanPhong();
+//        pp.setMaPhanPhong(nextMa);
+//        pp.setDatPhong(dp);
+//        pp.setPhong(phong);
+//        pp.setNhanVien(nhanVien);
+//        pp.setThoiGianPhan(LocalDateTime.now());
+//        pp.setTrangThai(TrangThaiPhanPhong.DANG_PHAN);
+//
+//        PhanPhong savedPp = phanPhongRepository.save(pp);
+//        log.info("Phân phòng thành công: Mã PP={}, Đơn={}, Phòng={}", nextMa, maDatPhong, phong.getSoPhong());
+//
+//        // Nếu đã phân đủ số phòng yêu cầu -> tự động chuyển DatPhong sang DA_XAC_NHAN
+//        if (activeCount + 1 >= dp.getSoLuongPhong()) {
+//            if (dp.getTrangThai() == TrangThaiDatPhong.CHO_XAC_NHAN) {
+//                dp.setTrangThai(TrangThaiDatPhong.DA_XAC_NHAN);
+//                datPhongRepository.save(dp);
+//                log.info("Đơn đặt phòng {} đã phân đủ {} phòng -> chuyển sang DA_XAC_NHAN", maDatPhong, dp.getSoLuongPhong());
+//            }
+//        }
+//
+//        return savedPp;
+//    }
+@Override
+public PhanPhong assignRoomToBooking(String maDatPhong, String maPhong, String maNhanVien) {
+    // 1. KHÓA PHÒNG NGAY ĐẦU TIÊN TRƯỚC KHI ĐỌC BẤT KỲ DỮ LIỆU NÀO KHÁC (Tránh bẫy Snapshot của MySQL)
+    Phong phong = phongRepository.findByMaPhongWithLock(maPhong)
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng vật lý: " + maPhong));
 
-        if (dp.getTrangThai() == TrangThaiDatPhong.DA_HUY) {
-            throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong + "] đã bị hủy, không thể phân phòng!");
-        }
-        if (dp.getTrangThai() == TrangThaiDatPhong.DA_TRA_PHONG) {
-            throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong + "] đã hoàn tất trả phòng!");
-        }
-
-        Phong phong = phongRepository.findByMaPhongWithLock(maPhong)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng vật lý: " + maPhong));
-
-        if (phong.getTrangThai() == TrangThaiPhong.BAO_TRI) {
-            throw new IllegalStateException("Phòng [" + phong.getSoPhong() + "] đang bảo trì, không thể phân cho khách!");
-        }
-
-        if (!phong.getLoaiPhong().getMaLoaiPhong().equalsIgnoreCase(dp.getLoaiPhong().getMaLoaiPhong())) {
-            throw new IllegalArgumentException("Loại phòng của phòng " + phong.getSoPhong()
-                    + " (" + phong.getLoaiPhong().getTenLoaiPhong()
-                    + ") không khớp với loại phòng của đơn đặt (" + dp.getLoaiPhong().getTenLoaiPhong() + ")!");
-        }
-
-        // Kiểm tra khóa bi quan chống 2 nhân viên lễ tân gán trùng phòng
-        boolean overlap = phanPhongRepository.existsOverlappingAssignmentWithLock(
-                maPhong, dp.getNgayNhanPhong(), dp.getNgayTraPhong()
-        );
-        if (overlap) {
-            throw new IllegalStateException("Phòng [" + phong.getSoPhong()
-                    + "] đã có lịch phân phòng trùng trong khoảng từ "
-                    + dp.getNgayNhanPhong() + " đến " + dp.getNgayTraPhong() + "!");
-        }
-
-        long activeCount = phanPhongRepository.countByDatPhong_MaDatPhongAndTrangThaiNot(
-                maDatPhong, TrangThaiPhanPhong.DA_HUY
-        );
-        if (activeCount >= dp.getSoLuongPhong()) {
-            throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong
-                    + "] đã được phân đủ số lượng yêu cầu (" + dp.getSoLuongPhong() + " phòng)!");
-        }
-
-        // Sinh mã MA_PHAN_PHONG dạng PP023, PP024...
-        String nextMa = generateNextMaPhanPhong();
-
-        // Tìm nhân viên phân phòng (hoặc người dùng đầu tiên)
-        NguoiDung nhanVien = null;
-        if (maNhanVien != null && !maNhanVien.trim().isEmpty()) {
-            nhanVien = nguoiDungRepository.findByMaNguoiDung(maNhanVien.trim()).orElse(null);
-        }
-        if (nhanVien == null) {
-            nhanVien = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
-        }
-
-        PhanPhong pp = new PhanPhong();
-        pp.setMaPhanPhong(nextMa);
-        pp.setDatPhong(dp);
-        pp.setPhong(phong);
-        pp.setNhanVien(nhanVien);
-        pp.setThoiGianPhan(LocalDateTime.now());
-        pp.setTrangThai(TrangThaiPhanPhong.DANG_PHAN);
-
-        PhanPhong savedPp = phanPhongRepository.save(pp);
-        log.info("Phân phòng thành công: Mã PP={}, Đơn={}, Phòng={}", nextMa, maDatPhong, phong.getSoPhong());
-
-        // Nếu đã phân đủ số phòng yêu cầu -> tự động chuyển DatPhong sang DA_XAC_NHAN
-        if (activeCount + 1 >= dp.getSoLuongPhong()) {
-            if (dp.getTrangThai() == TrangThaiDatPhong.CHO_XAC_NHAN) {
-                dp.setTrangThai(TrangThaiDatPhong.DA_XAC_NHAN);
-                datPhongRepository.save(dp);
-                log.info("Đơn đặt phòng {} đã phân đủ {} phòng -> chuyển sang DA_XAC_NHAN", maDatPhong, dp.getSoLuongPhong());
-            }
-        }
-
-        return savedPp;
+    if (phong.getTrangThai() == TrangThaiPhong.BAO_TRI) {
+        throw new IllegalStateException("Phòng [" + phong.getSoPhong() + "] đang bảo trì, không thể phân cho khách!");
     }
+
+    // 2. Sau khi đã giành được khóa độc quyền trên phòng mới đọc thông tin đơn đặt phòng
+    DatPhong dp = datPhongRepository.findByMaDatPhongWithDetails(maDatPhong)
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn đặt phòng: " + maDatPhong));
+
+    if (dp.getTrangThai() == TrangThaiDatPhong.DA_HUY) {
+        throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong + "] đã bị hủy, không thể phân phòng!");
+    }
+    if (dp.getTrangThai() == TrangThaiDatPhong.DA_TRA_PHONG) {
+        throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong + "] đã hoàn tất trả phòng!");
+    }
+
+    if (!phong.getLoaiPhong().getMaLoaiPhong().equalsIgnoreCase(dp.getLoaiPhong().getMaLoaiPhong())) {
+        throw new IllegalArgumentException("Loại phòng của phòng " + phong.getSoPhong()
+                + " (" + phong.getLoaiPhong().getTenLoaiPhong()
+                + ") không khớp với loại phòng của đơn đặt (" + dp.getLoaiPhong().getTenLoaiPhong() + ")!");
+    }
+
+    // 3. Kiểm tra trùng lịch trực tiếp từ DB sau khi đã giữ khóa
+    boolean overlap = phanPhongRepository.existsOverlappingAssignmentWithLock(
+            maPhong, dp.getNgayNhanPhong(), dp.getNgayTraPhong()
+    );
+    if (overlap) {
+        throw new IllegalStateException("Phòng [" + phong.getSoPhong()
+                + "] đã có lịch phân phòng trùng trong khoảng từ "
+                + dp.getNgayNhanPhong() + " đến " + dp.getNgayTraPhong() + "!");
+    }
+
+    long activeCount = phanPhongRepository.countByDatPhong_MaDatPhongAndTrangThaiNot(
+            maDatPhong, TrangThaiPhanPhong.DA_HUY
+    );
+    if (activeCount >= dp.getSoLuongPhong()) {
+        throw new IllegalStateException("Đơn đặt phòng [" + maDatPhong
+                + "] đã được phân đủ số lượng yêu cầu (" + dp.getSoLuongPhong() + " phòng)!");
+    }
+
+    // 4. Sinh mã phân phòng an toàn đa luồng
+    String nextMa = generateNextMaPhanPhong();
+
+    // Tìm nhân viên phân phòng (hoặc người dùng đầu tiên)
+    NguoiDung nhanVien = null;
+    if (maNhanVien != null && !maNhanVien.trim().isEmpty()) {
+        nhanVien = nguoiDungRepository.findByMaNguoiDung(maNhanVien.trim()).orElse(null);
+    }
+    if (nhanVien == null) {
+        nhanVien = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
+    }
+
+    PhanPhong pp = new PhanPhong();
+    pp.setMaPhanPhong(nextMa);
+    pp.setDatPhong(dp);
+    pp.setPhong(phong);
+    pp.setNhanVien(nhanVien);
+    pp.setThoiGianPhan(LocalDateTime.now());
+    pp.setTrangThai(TrangThaiPhanPhong.DANG_PHAN);
+
+    PhanPhong savedPp = phanPhongRepository.save(pp);
+    log.info("Phân phòng thành công: Mã PP={}, Đơn={}, Phòng={}", nextMa, maDatPhong, phong.getSoPhong());
+
+    // Nếu đã phân đủ số phòng yêu cầu -> tự động chuyển DatPhong sang DA_XAC_NHAN
+    if (activeCount + 1 >= dp.getSoLuongPhong()) {
+        if (dp.getTrangThai() == TrangThaiDatPhong.CHO_XAC_NHAN) {
+            dp.setTrangThai(TrangThaiDatPhong.DA_XAC_NHAN);
+            datPhongRepository.save(dp);
+            log.info("Đơn đặt phòng {} đã phân đủ {} phòng -> chuyển sang DA_XAC_NHAN", maDatPhong, dp.getSoLuongPhong());
+        }
+    }
+
+    return savedPp;
+}
 
     @Override
     public void unassignRoom(String maPhanPhong) {
@@ -425,18 +504,19 @@ public class RoomOperationServiceImpl implements RoomOperationService {
     }
 
     private String generateNextMaPhanPhong() {
-        List<String> latest = phanPhongRepository.findLatestMaPhanPhong();
-        int maxIndex = 0;
-        for (String c : latest) {
-            if (c != null && c.startsWith("PP")) {
-                try {
-                    int num = Integer.parseInt(c.substring(2));
-                    if (num > maxIndex) {
-                        maxIndex = num;
-                    }
-                } catch (NumberFormatException ignored) {}
-            }
-        }
-        return String.format("PP%03d", maxIndex + 1);
+//        List<String> latest = phanPhongRepository.findLatestMaPhanPhong();
+//        int maxIndex = 0;
+//        for (String c : latest) {
+//            if (c != null && c.startsWith("PP")) {
+//                try {
+//                    int num = Integer.parseInt(c.substring(2));
+//                    if (num > maxIndex) {
+//                        maxIndex = num;
+//                    }
+//                } catch (NumberFormatException ignored) {}
+//            }
+//        }
+//        return String.format("PP%03d", maxIndex + 1);
+        return "PP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

@@ -31,7 +31,7 @@ public interface PhanPhongRepository extends JpaRepository<PhanPhong, Long> {
 
     long countByDatPhong_MaDatPhongAndTrangThaiNot(String maDatPhong, TrangThaiPhanPhong trangThai);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+//    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
         SELECT COUNT(pp) > 0 FROM PhanPhong pp
         JOIN pp.datPhong dp
