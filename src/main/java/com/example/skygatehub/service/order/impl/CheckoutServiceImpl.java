@@ -8,6 +8,7 @@ import com.example.skygatehub.common.enums.TrangThaiChiTiet;
 import com.example.skygatehub.common.enums.TrangThaiDatBan;
 import com.example.skygatehub.common.enums.TrangThaiDatPhong;
 import com.example.skygatehub.common.enums.TrangThaiDon;
+import com.example.skygatehub.common.enums.TrangThaiQuyenLoi;
 import com.example.skygatehub.common.enums.TrangThaiThanhToan;
 import com.example.skygatehub.common.enums.TrangThaiThanhToanDon;
 import com.example.skygatehub.common.enums.TrangThaiVe;
@@ -22,24 +23,30 @@ import com.example.skygatehub.entity.dining.DichVuAnUong;
 import com.example.skygatehub.entity.dining.DichVuCaAn;
 import com.example.skygatehub.entity.order.ChiTietDon;
 import com.example.skygatehub.entity.order.DonDat;
+import com.example.skygatehub.entity.order.QuyenLoiDon;
 import com.example.skygatehub.entity.order.Ve;
 import com.example.skygatehub.entity.payment.ThanhToan;
 import com.example.skygatehub.entity.room.LoaiPhong;
 import com.example.skygatehub.entity.room.Phong;
 import com.example.skygatehub.entity.roombooking.DatPhong;
+import com.example.skygatehub.entity.ticket.ComboThanhPhan;
 import com.example.skygatehub.entity.ticket.KhoVe;
 import com.example.skygatehub.entity.ticket.LoaiVe;
+import com.example.skygatehub.entity.ticket.ThanhPhanDichVu;
 import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.dining.DichVuAnUongRepository;
 import com.example.skygatehub.repository.dining.DichVuCaAnRepository;
 import com.example.skygatehub.repository.order.ChiTietDonRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
+import com.example.skygatehub.repository.order.QuyenLoiDonRepository;
 import com.example.skygatehub.repository.order.VeRepository;
 import com.example.skygatehub.repository.payment.ThanhToanRepository;
 import com.example.skygatehub.repository.room.LoaiPhongRepository;
 import com.example.skygatehub.repository.room.PhongRepository;
 import com.example.skygatehub.repository.roombooking.DatPhongRepository;
+import com.example.skygatehub.repository.ticket.ComboThanhPhanRepository;
 import com.example.skygatehub.repository.ticket.KhoVeRepository;
+import com.example.skygatehub.service.dining.DichVuAnService;
 import com.example.skygatehub.service.order.CheckoutService;
 import com.example.skygatehub.service.ticket.SanPhamVeService;
 import com.example.skygatehub.service.ticket.TicketPricingService;
@@ -53,7 +60,9 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -77,8 +86,11 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final DichVuAnUongRepository dichVuAnUongRepository;
     private final DichVuCaAnRepository dichVuCaAnRepository;
     private final KhoVeRepository khoVeRepository;
+    private final ComboThanhPhanRepository comboThanhPhanRepository;
+    private final QuyenLoiDonRepository quyenLoiDonRepository;
 
     private final SanPhamVeService sanPhamVeService;
+    private final DichVuAnService dichVuAnService;
     private final TicketPricingService ticketPricingService;
     private final DayTypeResolver dayTypeResolver;
     private final AsyncTaskService asyncTaskService;
@@ -119,6 +131,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         BigDecimal tongTien = BigDecimal.ZERO;
         List<ChiTietDon> chiTietList = new ArrayList<>();
         List<Ve> veList = new ArrayList<>();
+        List<QuyenLoiDon> quyenLoiList = new ArrayList<>();
         List<DatPhong> datPhongList = new ArrayList<>();
         List<DatBan> datBanList = new ArrayList<>();
 
@@ -178,10 +191,15 @@ public class CheckoutServiceImpl implements CheckoutService {
                             ve.setTrangThai(TrangThaiVe.CHUA_SU_DUNG);
                             veList.add(ve);
                         }
+
+                        if (loaiVe.isCombo()) {
+                            quyenLoiList.addAll(taoQuyenLoiCombo(loaiVe, ctd, qty));
+                        }
                     }
                 }
             }
         }
+        datBanList.addAll(gomLuotDatBanCombo(quyenLoiList, form.getMaCaAn(), ngayThamQuan, donDat));
 
         // 4. Xử lý phân hệ Khách sạn: Kiểm tra phòng trống & Phụ thu +20% đêm thứ Bảy / Ngày lễ (Quy tắc D1)
         if (form.isBookHotel() && form.getRoomTypeCode() != null && form.getRoomQty() != null) {
@@ -253,7 +271,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             }
         }
 
-        // 5. Xử lý phân hệ Ẩm thực: Tạo ChiTietDon và tự động tạo DatBan cho bộ phận nhà hàng
+        // 5. Xử lý phân hệ Ẩm thực: các dòng món lẻ của đơn dùng chung một lượt đặt bàn (DatBan)
         if (form.isBookDining() && form.getDiningCode() != null && form.getDiningQty() != null) {
             LocalDate ngayAn = form.getNgayAn() != null ? form.getNgayAn() : LocalDate.now();
             if (ngayAn.isBefore(LocalDate.now())) {
@@ -261,54 +279,81 @@ public class CheckoutServiceImpl implements CheckoutService {
                         "Ngày dùng bữa không thể trước ngày hiện tại (" + LocalDate.now() + ")!");
             }
 
+            List<String> maMonList = new ArrayList<>();
+            List<Integer> soLuongList = new ArrayList<>();
             for (int i = 0; i < form.getDiningCode().size(); i++) {
                 String dCode = form.getDiningCode().get(i);
                 Integer qty = (i < form.getDiningQty().size()) ? form.getDiningQty().get(i) : 0;
                 if (dCode != null && !dCode.isBlank() && qty != null && qty > 0) {
-                    Optional<DichVuAnUong> dvaOpt = dichVuAnUongRepository.findByMaDichVu(dCode);
-                    if (dvaOpt.isPresent()) {
-                        DichVuAnUong dva = dvaOpt.get();
-                        BigDecimal price = dva.getGiaDichVu() != null ? dva.getGiaDichVu() : BigDecimal.ZERO;
+                    maMonList.add(dCode);
+                    soLuongList.add(qty);
+                }
+            }
 
-                        ChiTietDon ctd = new ChiTietDon();
-                        ctd.setMaChiTiet(OrderCodeGenerator.generateMaChiTiet());
-                        ctd.setDonDat(donDat);
-                        ctd.setMaDonDat(donDat.getMaDonDat());
-                        ctd.setLoaiDichVu(LoaiDichVuDon.AN_UONG);
-                        ctd.setDichVuAnUong(dva);
-                        ctd.setTenSanPham(dva.getTenDichVu());
-                        ctd.setSoLuong(qty);
-                        ctd.setDonGia(price);
-                        ctd.setNgaySuDung(ngayAn);
-                        ctd.setTrangThai(TrangThaiChiTiet.HIEU_LUC);
+            if (!maMonList.isEmpty()) {
+                String maCaAn = form.getMaCaAn() != null ? form.getMaCaAn().trim() : "";
+                if (maCaAn.isEmpty()) {
+                    throw new BusinessException(ErrorCode.BAD_REQUEST, "Vui lòng chọn ca dùng bữa");
+                }
+                Integer soKhach = form.getSoKhachAn();
+                if (soKhach == null || soKhach < 1 || soKhach > 50) {
+                    throw new BusinessException(ErrorCode.BAD_REQUEST, "Số khách dùng bữa phải từ 1 đến 50");
+                }
 
-                        BigDecimal subTotal = price.multiply(BigDecimal.valueOf(qty));
-                        tongTien = tongTien.add(subTotal);
-                        chiTietList.add(ctd);
+                ChiTietDon chiTietDauTien = null;
+                for (int i = 0; i < maMonList.size(); i++) {
+                    String dCode = maMonList.get(i);
+                    int qty = soLuongList.get(i);
+                    DichVuAnUong dva = dichVuAnUongRepository.findByMaDichVu(dCode).orElse(null);
+                    String tenMon = (dva != null && dva.getTenDichVu() != null) ? dva.getTenDichVu() : dCode;
+                    if (dva == null || !Boolean.TRUE.equals(dva.getTrangThai())
+                            || dva.getGiaDichVu() == null || dva.getGiaDichVu().compareTo(BigDecimal.ZERO) <= 0) {
+                        throw new BusinessException(ErrorCode.BAD_REQUEST, "Món [" + tenMon + "] hiện không nhận đặt");
+                    }
+                    List<String> caCuaMon = dichVuAnService.getMaCaAnDatDuoc(List.of(dCode))
+                            .getOrDefault(dCode, List.of());
+                    if (!caCuaMon.contains(maCaAn)) {
+                        throw new BusinessException(ErrorCode.BAD_REQUEST,
+                                "Món [" + tenMon + "] không phục vụ trong ca đã chọn");
+                    }
+                    BigDecimal price = dva.getGiaDichVu();
 
-                        // Tìm ca ăn để tạo DatBan vào hệ thống điều phối bàn
-                        Optional<DichVuCaAn> dvcaOpt = dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn(
-                                dCode, form.getMaCaAn() != null ? form.getMaCaAn() : "CA_TRUA");
-                        if (dvcaOpt.isEmpty()) {
-                            List<DichVuCaAn> list = dichVuCaAnRepository.findByDichVuAnUong_MaDichVu(dCode);
-                            if (!list.isEmpty()) {
-                                dvcaOpt = Optional.of(list.get(0));
-                            }
-                        }
+                    ChiTietDon ctd = new ChiTietDon();
+                    ctd.setMaChiTiet(OrderCodeGenerator.generateMaChiTiet());
+                    ctd.setDonDat(donDat);
+                    ctd.setMaDonDat(donDat.getMaDonDat());
+                    ctd.setLoaiDichVu(LoaiDichVuDon.AN_UONG);
+                    ctd.setDichVuAnUong(dva);
+                    ctd.setTenSanPham(dva.getTenDichVu());
+                    ctd.setSoLuong(qty);
+                    ctd.setDonGia(price);
+                    ctd.setNgaySuDung(ngayAn);
+                    ctd.setTrangThai(TrangThaiChiTiet.HIEU_LUC);
 
-                        if (dvcaOpt.isPresent()) {
-                            DatBan db = new DatBan();
-                            db.setMaDatBan(OrderCodeGenerator.generateMaDatBan());
-                            db.setDonDat(donDat);
-                            db.setChiTietDon(ctd);
-                            db.setDichVuCaAn(dvcaOpt.get());
-                            db.setNgayAn(ngayAn);
-                            db.setSoKhach(form.getSoKhachAn() != null ? form.getSoKhachAn() : (qty * 2));
-                            db.setTrangThai(TrangThaiDatBan.CHO_XAC_NHAN);
-                            datBanList.add(db);
-                        }
+                    tongTien = tongTien.add(price.multiply(BigDecimal.valueOf(qty)));
+                    chiTietList.add(ctd);
+                    if (chiTietDauTien == null) {
+                        chiTietDauTien = ctd;
                     }
                 }
+
+                String maMonDauTien = maMonList.get(0);
+                DichVuCaAn dichVuCaAn = dichVuCaAnRepository
+                        .findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn(maMonDauTien, maCaAn)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.BAD_REQUEST,
+                                "Món [" + maMonDauTien + "] không phục vụ trong ca đã chọn"));
+
+                DatBan db = new DatBan();
+                db.setMaDatBan(OrderCodeGenerator.generateMaDatBan());
+                db.setDonDat(donDat);
+                db.setChiTietDon(chiTietDauTien);
+                db.setDichVuCaAn(dichVuCaAn);
+                db.setNgayAn(ngayAn);
+                db.setSoKhach(soKhach);
+                db.setTrangThai(TrangThaiDatBan.CHO_XAC_NHAN);
+                String khuVuc = form.getKhuVucMongMuon() != null ? form.getKhuVucMongMuon().trim() : "";
+                db.setGhiChu(khuVuc.isEmpty() ? null : "Khu vực mong muốn: " + khuVuc);
+                datBanList.add(db);
             }
         }
 
@@ -328,6 +373,9 @@ public class CheckoutServiceImpl implements CheckoutService {
         chiTietDonRepository.saveAllAndFlush(chiTietList);
         if (!veList.isEmpty()) {
             veRepository.saveAllAndFlush(veList);
+        }
+        if (!quyenLoiList.isEmpty()) {
+            quyenLoiDonRepository.saveAllAndFlush(quyenLoiList);
         }
         if (!datPhongList.isEmpty()) {
             datPhongRepository.saveAllAndFlush(datPhongList);
@@ -373,5 +421,82 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         return donDat;
     }
-}
 
+    /**
+     * Combo trọn gói: mỗi thành phần đang bật thành một quyền lợi của dòng vé, số lượng tối đa nhân theo số combo mua.
+     */
+    private List<QuyenLoiDon> taoQuyenLoiCombo(LoaiVe loaiVe, ChiTietDon ctd, int qty) {
+        List<QuyenLoiDon> result = new ArrayList<>();
+        for (ComboThanhPhan ctp : comboThanhPhanRepository.findByLoaiVe_MaLoaiVe(loaiVe.getMaLoaiVe())) {
+            ThanhPhanDichVu tp = ctp.getThanhPhanDichVu();
+            if (tp == null || !Boolean.TRUE.equals(tp.getTrangThai())) {
+                continue;
+            }
+            int moiCombo = ctp.getSoLuongMoiCombo() != null ? ctp.getSoLuongMoiCombo() : 1;
+
+            QuyenLoiDon ql = new QuyenLoiDon();
+            ql.setMaQuyenLoi(OrderCodeGenerator.generateMaQuyenLoi());
+            ql.setChiTietDon(ctd);
+            ql.setThanhPhanDichVu(tp);
+            ql.setTenThanhPhanChup(tp.getTenThanhPhan());
+            ql.setLoaiThanhPhanChup(tp.getLoaiThanhPhan().name());
+            ql.setSoLuongToiDa(moiCombo * qty);
+            ql.setSoLuongDaDung(0);
+            ql.setTheoDoiSuDung(ctp.getTheoDoiSuDung() != null ? ctp.getTheoDoiSuDung() : Boolean.TRUE);
+            ql.setTrangThai(TrangThaiQuyenLoi.HIEU_LUC);
+            ql.setNgayTao(LocalDateTime.now());
+            result.add(ql);
+        }
+        return result;
+    }
+
+    /**
+     * Gom suất ăn của combo thành lượt đặt bàn theo ca, dùng chung cho mọi dòng combo của đơn (check-in một lượt
+     * trừ hết suất cùng ngày, cùng ca của đơn). Món ưu tiên vào nhóm ca đã có, rồi ca khách chọn, rồi ca sớm nhất.
+     */
+    private List<DatBan> gomLuotDatBanCombo(List<QuyenLoiDon> quyenLoiList, String maCaAnForm,
+                                            LocalDate ngayAn, DonDat donDat) {
+        Map<String, List<QuyenLoiDon>> nhomTheoCa = new LinkedHashMap<>();
+        for (QuyenLoiDon ql : quyenLoiList) {
+            DichVuAnUong mon = "AN_UONG".equals(ql.getLoaiThanhPhanChup())
+                    ? ql.getThanhPhanDichVu().getDichVuAnUong() : null;
+            if (mon == null) {
+                continue;
+            }
+            String maMon = mon.getMaDichVu();
+            List<String> candidates = dichVuAnService.getMaCaAnDatDuoc(List.of(maMon)).getOrDefault(maMon, List.of());
+            if (candidates.isEmpty()) {
+                log.warn("Suất ăn combo [{}] không có ca nào đang mở, bỏ qua lượt đặt bàn", ql.getTenThanhPhanChup());
+                continue;
+            }
+            String maCa = nhomTheoCa.keySet().stream().filter(candidates::contains).findFirst().orElse(null);
+            if (maCa == null) {
+                String maCaForm = maCaAnForm != null ? maCaAnForm.trim() : "";
+                maCa = candidates.contains(maCaForm) ? maCaForm : candidates.get(0);
+            }
+            nhomTheoCa.computeIfAbsent(maCa, k -> new ArrayList<>()).add(ql);
+        }
+
+        List<DatBan> result = new ArrayList<>();
+        for (Map.Entry<String, List<QuyenLoiDon>> nhom : nhomTheoCa.entrySet()) {
+            QuyenLoiDon dau = nhom.getValue().get(0);
+            String maMonDau = dau.getThanhPhanDichVu().getDichVuAnUong().getMaDichVu();
+            DichVuCaAn dichVuCaAn = dichVuCaAnRepository
+                    .findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn(maMonDau, nhom.getKey())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.BAD_REQUEST,
+                            "Suất ăn combo [" + dau.getTenThanhPhanChup() + "] không phục vụ trong ca " + nhom.getKey()));
+
+            DatBan db = new DatBan();
+            db.setMaDatBan(OrderCodeGenerator.generateMaDatBan());
+            db.setDonDat(donDat);
+            db.setQuyenLoiDon(dau);
+            db.setDichVuCaAn(dichVuCaAn);
+            db.setNgayAn(ngayAn);
+            db.setSoKhach(nhom.getValue().stream().mapToInt(QuyenLoiDon::getSoLuongToiDa).sum());
+            db.setTrangThai(TrangThaiDatBan.CHO_XAC_NHAN);
+            db.setGhiChu("Suất ăn từ combo");
+            result.add(db);
+        }
+        return result;
+    }
+}

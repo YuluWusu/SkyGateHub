@@ -10,6 +10,7 @@ import com.example.skygatehub.entity.payment.ThanhToan;
 import com.example.skygatehub.repository.order.ChiTietDonRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
 import com.example.skygatehub.repository.payment.ThanhToanRepository;
+import com.example.skygatehub.service.dining.TableAssignmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,7 @@ public class AdminOrderController {
     private final DonDatRepository donDatRepository;
     private final ChiTietDonRepository chiTietDonRepository;
     private final ThanhToanRepository thanhToanRepository;
+    private final TableAssignmentService tableAssignmentService;
 
     @GetMapping
     public String listOrders(
@@ -92,9 +94,15 @@ public class AdminOrderController {
 
         try {
             TrangThaiDon newStatus = TrangThaiDon.valueOf(trangThaiDon.toUpperCase());
+            TrangThaiDon cu = donDat.getTrangThaiDon();
             donDat.setTrangThaiDon(newStatus);
             donDatRepository.save(donDat);
-            redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS, "Đã cập nhật trạng thái đơn sang: " + newStatus.name());
+            String thongBao = "Đã cập nhật trạng thái đơn sang: " + newStatus.name();
+            if (newStatus == TrangThaiDon.DA_HUY && cu != TrangThaiDon.DA_HUY) {
+                int soLuotHuy = tableAssignmentService.huyDatBanTheoDon(maDonDat);
+                thongBao += ". Đã hủy " + soLuotHuy + " lượt đặt bàn.";
+            }
+            redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS, thongBao);
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute(SessionKeys.FLASH_ERROR, "Trạng thái đơn không hợp lệ: " + trangThaiDon);
         }

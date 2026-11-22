@@ -680,19 +680,30 @@
                             <div class="form-group">
                                 <label>Ngày Dùng Bữa</label>
                                 <input type="date" class="form-control" id="diningDate" th:value="${currentDate}"
-                                    required>
+                                    th:min="${currentDate}" required>
                             </div>
 
                             <div class="form-group">
-                                <label>Ca Dùng Bữa & Dịch Vụ</label>
-                                <select class="form-control" id="diningService" onchange="calcDiningPrice()">
-                                    <option value="BUFFET_SANG" data-price="120000">Ca Sáng: Buffet Ẩm Thực Đại Ngàn
-                                        (120,000 đ/suất)</option>
-                                    <option value="SET_TRUA" data-price="180000" selected>Ca Trưa: Set Cơm Lam & Gà
-                                        Nướng Cơ Tu (180,000 đ/suất)</option>
-                                    <option value="SET_TOI" data-price="220000">Ca Tối: Lẩu Thảo Dược Nhà Hàng Ngân Hà
-                                        (220,000 đ/suất)</option>
+                                <label>Ca Dùng Bữa</label>
+                                <select class="form-control" id="diningShift" onchange="filterDiningService()">
+                                    <option th:each="ca : ${caAnList}" th:value="${ca.maCaAn}"
+                                        th:selected="${ca.maCaAn == 'CA_TRUA'}"
+                                        th:text="${ca.tenCaAn + ' (' + ca.gioBatDau + ' - ' + ca.gioKetThuc + ')'}">
+                                        Bữa Trưa (11:00 - 14:00)</option>
                                 </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Món / Set Ăn</label>
+                                <select class="form-control" id="diningService" onchange="calcDiningPrice()">
+                                    <option th:each="dv : ${diningServices}" th:value="${dv.maDichVu}"
+                                        th:data-price="${dv.giaDichVu}"
+                                        th:data-ca-an="${diningShiftMap.containsKey(dv.maDichVu) ? #strings.listJoin(diningShiftMap.get(dv.maDichVu), ' ') : ''}"
+                                        th:text="${dv.tenDichVu + ' (' + #numbers.formatDecimal(dv.giaDichVu, 0, 'COMMA', 0, 'POINT') + ' đ/suất)'}">
+                                        Set Cơm Lam & Gà Nướng Cơ Tu (180,000 đ/suất)</option>
+                                </select>
+                                <small id="diningNoItemNotice" style="display: none; color: #dc2626;">Ca này hiện chưa có
+                                    món phục vụ.</small>
                             </div>
 
                             <div class="form-group">
@@ -704,21 +715,27 @@
                             <div class="form-group">
                                 <label>Khu Vực Bàn Ăn</label>
                                 <select class="form-control" id="diningTableNote">
-                                    <option value="GẦN_SUỐI">Khu bàn cạnh bờ suối mát lành</option>
-                                    <option value="TRONG_NHÀ">Nhà Gươl truyền thống ấm cúng</option>
-                                    <option value="SÂN_THƯỢNG">Sân thượng ngắm hoàng hôn</option>
+                                    <option value="">Không yêu cầu</option>
+                                    <option th:each="kv : ${khuVucList}" th:value="${kv}" th:text="${kv}">Khu Sân Hồ
+                                    </option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="price-estimate-bar">
                             <div class="estimate-text">
-                                Đơn giá: <span id="diningUnitDisplay">180,000 đ/suất</span> |
-                                Tạm tính: <strong id="diningTotalDisplay">720,000 đ</strong>
+                                Đơn giá: <span id="diningUnitDisplay">0 VNĐ/suất</span> |
+                                Tạm tính: <strong id="diningTotalDisplay">0 VNĐ</strong>
                             </div>
-                            <a th:href="@{/am-thuc}" class="btn btn-gold fw-bold">
-                                Xem Thực Đơn Chi Tiết
-                            </a>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <a th:href="@{/am-thuc}" class="btn btn-gold fw-bold">
+                                    Xem Thực Đơn Chi Tiết
+                                </a>
+                                <button type="submit" id="btnDiningBook" class="btn btn-primary fw-bold"
+                                    style="background: #047857; border: none;">
+                                    Đặt Bàn Ngay
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -1273,9 +1290,32 @@
             }
         }
 
+        // Chỉ cho chọn món có phục vụ trong ca đang chọn
+        function filterDiningService() {
+            const ca = document.getElementById('diningShift').value;
+            const select = document.getElementById('diningService');
+            let first = null;
+            Array.from(select.options).forEach(function (opt) {
+                const ok = (opt.dataset.caAn || '').split(' ').filter(Boolean).includes(ca);
+                opt.hidden = !ok;
+                opt.disabled = !ok;
+                if (ok && !first) first = opt;
+            });
+            const current = select.options[select.selectedIndex];
+            if (first && (!current || current.disabled)) {
+                select.value = first.value;
+            } else if (!first) {
+                select.selectedIndex = -1;
+            }
+            document.getElementById('diningNoItemNotice').style.display = first ? 'none' : '';
+            document.getElementById('btnDiningBook').disabled = !first;
+            calcDiningPrice();
+        }
+
         function calcDiningPrice() {
             const diningSelect = document.getElementById('diningService');
-            const unitPrice = parseInt(diningSelect.options[diningSelect.selectedIndex].dataset.price);
+            const selected = diningSelect.options[diningSelect.selectedIndex];
+            const unitPrice = selected ? (parseInt(selected.dataset.price) || 0) : 0;
             const guests = parseInt(document.getElementById('diningGuests').value) || 1;
             const total = unitPrice * guests;
 
@@ -1322,7 +1362,19 @@
 
         function handleDiningBooking(e) {
             e.preventDefault();
-            window.location.href = '/dat-dich-vu';
+            const mon = document.getElementById('diningService').value;
+            if (!mon) return;
+            const guests = String(parseInt(document.getElementById('diningGuests').value) || 1);
+            const params = new URLSearchParams({
+                ngayAn: document.getElementById('diningDate').value,
+                maCaAn: document.getElementById('diningShift').value,
+                soKhachAn: guests,
+                mon: mon,
+                suat: guests
+            });
+            const khuVuc = document.getElementById('diningTableNote').value;
+            if (khuVuc) params.set('khuVuc', khuVuc);
+            window.location.href = '/dat-dich-vu?' + params.toString();
         }
 
         function updateCartBadge() {
@@ -1470,7 +1522,7 @@
             updateCartBadge();
             calcTicketPrice();
             calcRoomPrice();
-            calcDiningPrice();
+            filterDiningService();
         });
     </script>
     <div th:replace="~{fragments/date-picker-modal :: datePickerModal}"></div>

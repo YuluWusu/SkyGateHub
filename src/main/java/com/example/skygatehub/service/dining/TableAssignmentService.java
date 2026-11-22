@@ -47,6 +47,14 @@ public interface TableAssignmentService {
     String completeTable(String maDatBan, String maNhanVien);
 
     /**
+     * Hủy các lượt đặt bàn chưa nhận bàn của một đơn (CHO_XAC_NHAN, DA_XAC_NHAN) và các quyền lợi còn hiệu lực
+     * của đơn. Lượt đã check-in, đã hoàn thành hoặc đã hủy giữ nguyên.
+     *
+     * @return số lượt đặt bàn đã hủy
+     */
+    int huyDatBanTheoDon(String maDonDat);
+
+    /**
      * Thống kê lịch phục vụ ca ăn theo ngày cho nhà bếp và quản lý.
      */
     List<MealScheduleRow> getMealSchedule(LocalDate targetDate);

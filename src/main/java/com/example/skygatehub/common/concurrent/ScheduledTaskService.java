@@ -3,6 +3,7 @@ package com.example.skygatehub.common.concurrent;
 import com.example.skygatehub.common.enums.TrangThaiDon;
 import com.example.skygatehub.entity.order.DonDat;
 import com.example.skygatehub.repository.order.DonDatRepository;
+import com.example.skygatehub.service.dining.TableAssignmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,6 +23,7 @@ import java.util.List;
 public class ScheduledTaskService {
 
     private final DonDatRepository donDatRepository;
+    private final TableAssignmentService tableAssignmentService;
 
     /**
      * Tác vụ định kỳ 1: Rà soát đơn chờ xác nhận quá hạn (mặc định quá 30 phút chưa cọc/thanh toán).
@@ -47,6 +49,7 @@ public class ScheduledTaskService {
             don.setTrangThaiDon(TrangThaiDon.DA_HUY);
             don.setGhiChu((don.getGhiChu() == null ? "" : don.getGhiChu() + " | ") + "Tự động hủy do hết hạn giữ chỗ (30 phút).");
             donDatRepository.save(don);
+            tableAssignmentService.huyDatBanTheoDon(don.getMaDonDat());
             log.warn("[THREAD: {}] [SCHEDULED-CRON] Đã tự động hủy đơn hết hạn giữ chỗ: {} (Mã đơn hàng: {})",
                     threadName, don.getMaDonDat(), don.getMaDonHang());
         }

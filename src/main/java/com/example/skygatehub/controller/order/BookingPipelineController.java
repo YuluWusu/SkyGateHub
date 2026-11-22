@@ -10,18 +10,20 @@ import com.example.skygatehub.entity.room.KhuLuuTru;
 import com.example.skygatehub.entity.room.LoaiPhong;
 import com.example.skygatehub.entity.ticket.LoaiVe;
 import com.example.skygatehub.repository.dining.CaAnRepository;
-import com.example.skygatehub.repository.dining.DichVuAnUongRepository;
 import com.example.skygatehub.repository.order.ChiTietDonRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
 import com.example.skygatehub.repository.order.VeRepository;
 import com.example.skygatehub.repository.room.KhuLuuTruRepository;
 import com.example.skygatehub.repository.room.LoaiPhongRepository;
+import com.example.skygatehub.service.dining.DichVuAnService;
+import com.example.skygatehub.service.dining.TableAssignmentService;
 import com.example.skygatehub.service.order.CheckoutService;
 import com.example.skygatehub.service.ticket.SanPhamVeService;
 import com.example.skygatehub.service.ticket.TicketPricingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -36,6 +38,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,7 +63,8 @@ public class BookingPipelineController {
     private final TicketPricingService ticketPricingService;
     private final LoaiPhongRepository loaiPhongRepository;
     private final KhuLuuTruRepository khuLuuTruRepository;
-    private final DichVuAnUongRepository dichVuAnUongRepository;
+    private final DichVuAnService dichVuAnService;
+    private final TableAssignmentService tableAssignmentService;
     private final CaAnRepository caAnRepository;
     private final DonDatRepository donDatRepository;
     private final ChiTietDonRepository chiTietDonRepository;
@@ -70,7 +74,14 @@ public class BookingPipelineController {
      * Mở giao diện pipeline đặt dịch vụ
      */
     @GetMapping({"/dat-dich-vu", "/booking/pipeline"})
-    public String showPipelinePage(Model model) {
+    public String showPipelinePage(
+            @RequestParam(value = "ngayAn", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngayAn,
+            @RequestParam(value = "maCaAn", required = false) String maCaAn,
+            @RequestParam(value = "soKhachAn", required = false) Integer soKhachAn,
+            @RequestParam(value = "khuVuc", required = false) String khuVuc,
+            @RequestParam(value = "mon", required = false) String mon,
+            @RequestParam(value = "suat", required = false) Integer suat,
+            Model model) {
         // 1. Dữ liệu vé
         List<LoaiVe> tickets = sanPhamVeService.layDanhSachVeDangBan();
         Map<String, BigDecimal> ticketPrices = new HashMap<>();
@@ -84,8 +95,11 @@ public class BookingPipelineController {
         List<LoaiPhong> roomTypes = loaiPhongRepository.findByTrangThai(true);
 
         // 3. Dữ liệu ẩm thực & ca ăn
-        List<DichVuAnUong> diningServices = dichVuAnUongRepository.findByTrangThai(true);
+        List<DichVuAnUong> diningServices = dichVuAnService.getDichVuDatDuoc();
         List<CaAn> caAnList = caAnRepository.findByTrangThai(true);
+        Map<String, List<String>> diningShiftMap = dichVuAnService.getMaCaAnDatDuoc(
+                diningServices.stream().map(DichVuAnUong::getMaDichVu).toList());
+        List<String> khuVucList = tableAssignmentService.getAllKhuVuc();
 
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);
@@ -97,14 +111,41 @@ public class BookingPipelineController {
         model.addAttribute("roomTypes", roomTypes);
         model.addAttribute("diningServices", diningServices);
         model.addAttribute("caAnList", caAnList);
+        model.addAttribute("diningShiftMap", diningShiftMap);
+        model.addAttribute("khuVucList", khuVucList);
         model.addAttribute("today", today.format(DateTimeFormatter.ISO_DATE));
         model.addAttribute("tomorrow", tomorrow.format(DateTimeFormatter.ISO_DATE));
         model.addAttribute("todayDisplay", today.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         model.addAttribute("tomorrowDisplay", tomorrow.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         model.addAttribute("depositRatePercent", 30);
+
+        Map<String, Integer> prefillDiningQty = new LinkedHashMap<>();
         if (!model.containsAttribute("bookingForm")) {
-            model.addAttribute("bookingForm", new BookingPipelineForm());
+            BookingPipelineForm form = new BookingPipelineForm();
+            if (ngayAn != null && !ngayAn.isBefore(today)) {
+                form.setNgayAn(ngayAn);
+            }
+            if (maCaAn != null && caAnList.stream().anyMatch(ca -> maCaAn.equals(ca.getMaCaAn()))) {
+                form.setMaCaAn(maCaAn);
+            }
+            if (soKhachAn != null && soKhachAn >= 1 && soKhachAn <= 50) {
+                form.setSoKhachAn(soKhachAn);
+            }
+            if (khuVuc != null && khuVucList.contains(khuVuc)) {
+                form.setKhuVucMongMuon(khuVuc);
+            }
+            boolean monHopLe = mon != null
+                    && diningServices.stream().anyMatch(dv -> mon.equals(dv.getMaDichVu()))
+                    && diningShiftMap.getOrDefault(mon, List.of()).contains(form.getMaCaAn());
+            if (monHopLe) {
+                int soSuat = (suat != null && suat >= 1 && suat <= 50) ? suat : form.getSoKhachAn();
+                prefillDiningQty.put(mon, soSuat);
+                form.setBookDining(true);
+            }
+            model.addAttribute("bookingForm", form);
         }
+        model.addAttribute("prefillDiningQty", prefillDiningQty);
+        model.addAttribute("openDiningStep", !prefillDiningQty.isEmpty());
 
         return "order/customer/booking-pipeline";
     }

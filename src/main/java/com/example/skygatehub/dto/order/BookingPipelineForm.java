@@ -1,5 +1,7 @@
 package com.example.skygatehub.dto.order;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -56,7 +58,11 @@ public class BookingPipelineForm {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate ngayAn = LocalDate.now();
     private String maCaAn = "CA_TRUA";
+    @Min(value = 1, message = "Số khách dùng bữa phải từ 1 đến 50")
+    @Max(value = 50, message = "Số khách dùng bữa phải từ 1 đến 50")
     private Integer soKhachAn = 2;
+    @Size(max = 100, message = "Khu vực mong muốn không được vượt quá 100 ký tự")
+    private String khuVucMongMuon;
     private List<String> diningCode = new ArrayList<>();
     private List<Integer> diningQty = new ArrayList<>();
 

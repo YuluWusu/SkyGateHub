@@ -1,6 +1,7 @@
 package com.example.skygatehub.service.dining.impl;
 
 import com.example.skygatehub.common.enums.LoaiCheckIn;
+import com.example.skygatehub.common.enums.LoaiDichVuDon;
 import com.example.skygatehub.common.enums.TrangThaiBanAn;
 import com.example.skygatehub.common.enums.TrangThaiCheckIn;
 import com.example.skygatehub.common.enums.TrangThaiChiTiet;
@@ -24,6 +25,7 @@ import com.example.skygatehub.repository.dining.BanAnRepository;
 import com.example.skygatehub.repository.dining.CaAnRepository;
 import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.dining.DichVuCaAnRepository;
+import com.example.skygatehub.repository.order.ChiTietDonRepository;
 import com.example.skygatehub.repository.order.QuyenLoiDonRepository;
 import com.example.skygatehub.service.dining.TableAssignmentService;
 import jakarta.persistence.EntityManager;
@@ -53,6 +55,7 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
     private final CheckInRepository checkInRepository;
     private final NguoiDungRepository nguoiDungRepository;
     private final QuyenLoiDonRepository quyenLoiDonRepository;
+    private final ChiTietDonRepository chiTietDonRepository;
     private final DichVuCaAnRepository dichVuCaAnRepository;
     private final EntityManager entityManager;
 
@@ -465,12 +468,36 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public int huyDatBanTheoDon(String maDonDat) {
+        int daHuy = 0;
+        for (DatBan db : datBanRepository.findByDonDat_MaDonDat(maDonDat)) {
+            // Khóa lượt đặt và nạp lại trạng thái: lượt vừa được check-in song song thì không bị hủy nhầm
+            entityManager.refresh(db, LockModeType.PESSIMISTIC_WRITE);
+            if (db.getTrangThai() == TrangThaiDatBan.CHO_XAC_NHAN || db.getTrangThai() == TrangThaiDatBan.DA_XAC_NHAN) {
+                db.setTrangThai(TrangThaiDatBan.DA_HUY);
+                datBanRepository.save(db);
+                daHuy++;
+            }
+        }
+        for (QuyenLoiDon ql : quyenLoiDonRepository.findByChiTietDon_DonDat_MaDonDatAndTrangThai(
+                maDonDat, TrangThaiQuyenLoi.HIEU_LUC)) {
+            ql.setTrangThai(TrangThaiQuyenLoi.DA_HUY);
+            quyenLoiDonRepository.save(ql);
+        }
+        log.info("[HUY-DON] Đơn {}: đã hủy {} lượt đặt bàn", maDonDat, daHuy);
+        return daHuy;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<MealScheduleRow> getMealSchedule(LocalDate targetDate) {
         LocalDate date = (targetDate != null) ? targetDate : LocalDate.now();
         List<CaAn> caAnList = sortedCaAn();
         List<DatBan> allBookings = datBanRepository.findByNgayAn(date);
         Map<String, List<QuyenLoiDon>> quyenLoiTheoDon = new HashMap<>();
+        Map<String, List<ChiTietDon>> chiTietTheoDon = new HashMap<>();
+        Map<String, Set<String>> chiTietCoLuotTheoDon = new HashMap<>();
         Map<String, Boolean> linkCache = new HashMap<>();
 
         List<MealScheduleRow> schedule = new ArrayList<>();
@@ -505,7 +532,8 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
                     .build();
 
             for (DatBan db : forThisShift) {
-                List<String> mon = tinhMonCuaDatBan(db, ca.getMaCaAn(), quyenLoiTheoDon, linkCache);
+                List<String> mon = tinhMonCuaDatBan(db, ca.getMaCaAn(), quyenLoiTheoDon, chiTietTheoDon,
+                        chiTietCoLuotTheoDon, linkCache);
                 if (!mon.isEmpty()) {
                     row.getMonTheoDatBan().put(db.getMaDatBan(), mon);
                 }
@@ -531,18 +559,36 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
     }
 
     /**
-     * Món của một lượt đặt bàn. Checkout tạo một lượt cho mỗi dòng ăn uống (MA_CHI_TIET), nên lượt đó chỉ có
-     * món của dòng mình. Lượt từ combo (MA_QUYEN_LOI) gồm các suất ăn combo của đơn trong cùng ngày và ca,
-     * cùng phạm vi mà check-in trừ quyền lợi. Quyền lợi của đơn được nạp một lần rồi dùng lại.
+     * Món của một lượt đặt bàn. Checkout tạo một lượt cho cả phần món lẻ của đơn (MA_CHI_TIET trỏ tới dòng
+     * ăn uống đầu tiên), nên lượt đó gồm món của dòng mình cùng các dòng ăn uống còn hiệu lực khác của đơn
+     * có cùng ngày ăn mà chưa lượt nào của đơn tham chiếu. Dữ liệu cũ tạo một lượt cho mỗi dòng thì mỗi lượt
+     * chỉ có món của dòng mình. Lượt từ combo (MA_QUYEN_LOI) gồm các suất ăn combo của đơn trong cùng ngày
+     * và ca, cùng phạm vi mà check-in trừ quyền lợi. Chi tiết, lượt đặt bàn và quyền lợi của đơn được nạp
+     * một lần rồi dùng lại.
      */
     private List<String> tinhMonCuaDatBan(DatBan db, String maCaAn,
                                           Map<String, List<QuyenLoiDon>> quyenLoiTheoDon,
+                                          Map<String, List<ChiTietDon>> chiTietTheoDon,
+                                          Map<String, Set<String>> chiTietCoLuotTheoDon,
                                           Map<String, Boolean> linkCache) {
         List<String> mon = new ArrayList<>();
         ChiTietDon ct = db.getChiTietDon();
         if (ct != null) {
             if (ct.getTrangThai() == TrangThaiChiTiet.HIEU_LUC) {
                 mon.add(ct.getTenSanPham() + " x " + ct.getSoLuong());
+            }
+            if (db.getDonDat() != null && db.getNgayAn() != null) {
+                String maDonDat = db.getDonDat().getMaDonDat();
+                Set<String> coLuot = chiTietCoLuotTheoDon.computeIfAbsent(maDonDat,
+                        k -> datBanRepository.findByDonDat_MaDonDat(k).stream()
+                                .map(DatBan::getChiTietDon)
+                                .filter(Objects::nonNull)
+                                .map(ChiTietDon::getMaChiTiet)
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toSet()));
+                chiTietTheoDon.computeIfAbsent(maDonDat, chiTietDonRepository::findByDonDat_MaDonDat).stream()
+                        .filter(khac -> khac != ct && laMonLeChuaCoLuot(khac, db.getNgayAn(), coLuot))
+                        .forEach(khac -> mon.add(khac.getTenSanPham() + " x " + khac.getSoLuong()));
             }
             return mon;
         }
@@ -556,6 +602,13 @@ public class TableAssignmentServiceImpl implements TableAssignmentService {
             }
         }
         return mon;
+    }
+
+    private static boolean laMonLeChuaCoLuot(ChiTietDon ct, LocalDate ngayAn, Set<String> chiTietCoLuot) {
+        return ct.getLoaiDichVu() == LoaiDichVuDon.AN_UONG
+                && ct.getTrangThai() == TrangThaiChiTiet.HIEU_LUC
+                && ngayAn.equals(ct.getNgaySuDung())
+                && !chiTietCoLuot.contains(ct.getMaChiTiet());
     }
 
     /**

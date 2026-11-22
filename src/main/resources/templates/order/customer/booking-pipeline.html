@@ -589,7 +589,7 @@
                     <!-- ========================================== -->
                     <!-- BƯỚC 3: CHỌN ẨM THỰC & NHÀ HÀNG            -->
                     <!-- ========================================== -->
-                    <div class="step-card" id="step-pane-3">
+                    <div class="step-card" id="step-pane-3" th:data-open-step="${openDiningStep}">
                         <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
                             <div>
                                 <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-3 py-2 rounded-pill mb-2">BƯỚC 3 / 4</span>
@@ -620,22 +620,38 @@
                             <div class="row g-3 align-items-center">
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small text-dark mb-1">Ngày dùng bữa:</label>
-                                    <input type="date" name="ngayAn" id="ngayAnInput" th:value="${today}" th:min="${today}" class="form-control rounded-pill" onchange="updateSummary();">
+                                    <input type="date" name="ngayAn" id="ngayAnInput" th:value="${bookingForm.ngayAn != null ? bookingForm.ngayAn : today}" th:min="${today}" class="form-control rounded-pill" onchange="updateSummary();">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small text-dark mb-1">Ca ăn mong muốn:</label>
-                                    <select name="maCaAn" id="maCaAnSelect" class="form-select rounded-pill">
-                                        <option th:each="ca : ${caAnList}" th:value="${ca.maCaAn}" th:text="${ca.tenCaAn} + ' (' + ${ca.gioBatDau} + ' - ' + ${ca.gioKetThuc} + ')'">
+                                    <select name="maCaAn" id="maCaAnSelect" class="form-select rounded-pill" onchange="filterDiningByShift();">
+                                        <option th:each="ca : ${caAnList}" th:value="${ca.maCaAn}" th:selected="${ca.maCaAn == bookingForm.maCaAn}" th:text="${ca.tenCaAn} + ' (' + ${ca.gioBatDau} + ' - ' + ${ca.gioKetThuc} + ')'">
                                             Bữa Trưa Thung Lũng (11:00 - 14:00)
                                         </option>
                                     </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark mb-1">Số khách dùng bữa:</label>
+                                    <input type="number" name="soKhachAn" id="soKhachAnInput" min="1" max="50" th:value="${bookingForm.soKhachAn}" class="form-control rounded-pill" onchange="updateSummary();">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-dark mb-1">Khu vực mong muốn:</label>
+                                    <select name="khuVucMongMuon" id="khuVucMongMuonSelect" class="form-select rounded-pill" onchange="updateSummary();">
+                                        <option value="">Không yêu cầu</option>
+                                        <option th:each="kv : ${khuVucList}" th:value="${kv}" th:selected="${kv == bookingForm.khuVucMongMuon}" th:text="${kv}">Khu Sân Hồ</option>
+                                    </select>
+                                    <div class="form-text small">Nhân viên sẽ ưu tiên xếp bàn theo khu này nếu còn bàn.</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Danh sách suất ăn -->
+                        <div class="alert alert-warning small rounded-4" id="diningNoItemNotice" style="display: none;">
+                            Ca ăn này hiện chưa có món nào phục vụ. Vui lòng chọn ca khác hoặc bỏ qua bước này.
+                        </div>
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6" th:each="dva : ${diningServices}">
+                            <div class="col-md-6 dining-card-col" th:each="dva : ${diningServices}"
+                                 th:data-ca-an="${diningShiftMap.containsKey(dva.maDichVu) ? #strings.listJoin(diningShiftMap.get(dva.maDichVu), ' ') : ''}">
                                 <div class="item-select-card" th:id="'dining-card-' + ${dva.maDichVu}">
                                     <div>
                                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -653,7 +669,7 @@
                                         <div class="qty-control">
                                             <button type="button" class="qty-btn" onclick="stepQty(this, -1)">-</button>
                                             <input type="hidden" name="diningCode" th:value="${dva.maDichVu}">
-                                            <input type="text" name="diningQty" th:id="'qty-dining-' + ${dva.maDichVu}" value="0" readonly class="qty-input"
+                                            <input type="text" name="diningQty" th:id="'qty-dining-' + ${dva.maDichVu}" th:value="${prefillDiningQty.containsKey(dva.maDichVu) ? prefillDiningQty.get(dva.maDichVu) : 0}" value="0" readonly class="qty-input"
                                                    th:data-price="${dva.giaDichVu}"
                                                    th:data-name="${dva.tenDichVu}">
                                             <button type="button" class="qty-btn" onclick="stepQty(this, 1)">+</button>
@@ -1078,6 +1094,21 @@
                     `;
                 }
             });
+            if (hasDining) {
+                const esc = t => String(t).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+                const caSel = document.getElementById('maCaAnSelect');
+                const khuSel = document.getElementById('khuVucMongMuonSelect');
+                const ngayAn = document.getElementById('ngayAnInput').value;
+                const soKhach = document.getElementById('soKhachAnInput').value;
+                const caText = caSel && caSel.selectedIndex >= 0 ? caSel.options[caSel.selectedIndex].text : '';
+                const khuText = khuSel && khuSel.value ? khuSel.options[khuSel.selectedIndex].text : 'Không yêu cầu';
+                diningList.innerHTML += `
+                    <div class="small text-muted border-top pt-1 mt-1">
+                        <div>Ngày: ${esc(ngayAn)} | ${esc(caText)}</div>
+                        <div>Số khách: ${esc(soKhach)} | Khu vực: ${esc(khuText)}</div>
+                    </div>
+                `;
+            }
             document.getElementById('summaryDiningGroup').style.display = hasDining ? 'block' : 'none';
             document.getElementById('bookDiningFlag').value = hasDining ? 'true' : 'false';
 
@@ -1093,6 +1124,29 @@
             document.getElementById('displayRemaining').innerText = remaining.toLocaleString('vi-VN') + ' đ';
 
             validateStep4();
+        }
+
+        // Chỉ hiện món có phục vụ trong ca đang chọn; món bị ẩn về 0 suất
+        function filterDiningByShift() {
+            const sel = document.getElementById('maCaAnSelect');
+            const ca = sel ? sel.value : '';
+            let visible = 0;
+            document.querySelectorAll('.dining-card-col').forEach(col => {
+                const codes = (col.dataset.caAn || '').split(' ').filter(Boolean);
+                const input = col.querySelector('input[name="diningQty"]');
+                const card = col.querySelector('.item-select-card');
+                if (codes.includes(ca)) {
+                    col.style.display = '';
+                    visible++;
+                } else {
+                    col.style.display = 'none';
+                    if (input) input.value = 0;
+                }
+                if (card && input) card.classList.toggle('selected', (parseInt(input.value) || 0) > 0);
+            });
+            const notice = document.getElementById('diningNoItemNotice');
+            if (notice) notice.style.display = visible === 0 ? 'block' : 'none';
+            updateSummary();
         }
 
         function validateStep4() {
@@ -1144,7 +1198,11 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             calculateNights();
-            updateSummary();
+            filterDiningByShift();
+            const pane3 = document.getElementById('step-pane-3');
+            if (pane3 && pane3.dataset.openStep === 'true') {
+                goToStep(3);
+            }
         });
     </script>
 

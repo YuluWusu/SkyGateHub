@@ -24,6 +24,7 @@ public class OrderCodeGenerator {
     private static final AtomicInteger SEQ_DAT_PHONG = new AtomicInteger(100);
     private static final AtomicInteger SEQ_DAT_BAN = new AtomicInteger(100);
     private static final AtomicInteger SEQ_THANH_TOAN = new AtomicInteger(100);
+    private static final AtomicInteger SEQ_QUYEN_LOI = new AtomicInteger(100);
 
     private static int nextSeq(AtomicInteger counter, int max) {
         return counter.updateAndGet(val -> (val >= max) ? 100 : val + 1);
@@ -72,6 +73,13 @@ public class OrderCodeGenerator {
      */
     public static String generateMaDatBan() {
         return "DB" + LocalDateTime.now().format(TS_FORMAT) + (nextSeq(SEQ_DAT_BAN, 999) % 1000);
+    }
+
+    /**
+     * Sinh mã quyền lợi đơn MA_QUYEN_LOI (VD: QL2611040215100 - 15 ký tự <= 20)
+     */
+    public static String generateMaQuyenLoi() {
+        return "QL" + LocalDateTime.now().format(TS_FORMAT) + (nextSeq(SEQ_QUYEN_LOI, 999) % 1000);
     }
 
     /**

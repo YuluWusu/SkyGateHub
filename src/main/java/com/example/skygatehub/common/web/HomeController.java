@@ -1,7 +1,12 @@
 package com.example.skygatehub.common.web;
 
+import com.example.skygatehub.entity.dining.CaAn;
+import com.example.skygatehub.entity.dining.DichVuAnUong;
 import com.example.skygatehub.entity.ticket.LoaiVe;
 import com.example.skygatehub.entity.ticket.NgayDacBiet;
+import com.example.skygatehub.repository.dining.CaAnRepository;
+import com.example.skygatehub.service.dining.DichVuAnService;
+import com.example.skygatehub.service.dining.TableAssignmentService;
 import com.example.skygatehub.service.ticket.BangGiaVeService;
 import com.example.skygatehub.service.ticket.SanPhamVeService;
 import com.example.skygatehub.service.ticket.TicketPricingService;
@@ -23,13 +28,22 @@ public class HomeController {
     private final SanPhamVeService sanPhamVeService;
     private final BangGiaVeService bangGiaVeService;
     private final TicketPricingService ticketPricingService;
+    private final DichVuAnService dichVuAnService;
+    private final CaAnRepository caAnRepository;
+    private final TableAssignmentService tableAssignmentService;
 
     public HomeController(SanPhamVeService sanPhamVeService,
                           BangGiaVeService bangGiaVeService,
-                          TicketPricingService ticketPricingService) {
+                          TicketPricingService ticketPricingService,
+                          DichVuAnService dichVuAnService,
+                          CaAnRepository caAnRepository,
+                          TableAssignmentService tableAssignmentService) {
         this.sanPhamVeService = sanPhamVeService;
         this.bangGiaVeService = bangGiaVeService;
         this.ticketPricingService = ticketPricingService;
+        this.dichVuAnService = dichVuAnService;
+        this.caAnRepository = caAnRepository;
+        this.tableAssignmentService = tableAssignmentService;
     }
 
     @GetMapping("/")
@@ -70,6 +84,14 @@ public class HomeController {
 
         List<NgayDacBiet> specialDays = bangGiaVeService.getAllSpecialDays();
         model.addAttribute("specialDays", specialDays);
+
+        List<DichVuAnUong> diningServices = dichVuAnService.getDichVuDatDuoc();
+        List<CaAn> caAnList = caAnRepository.findByTrangThai(true);
+        model.addAttribute("diningServices", diningServices);
+        model.addAttribute("diningShiftMap", dichVuAnService.getMaCaAnDatDuoc(
+                diningServices.stream().map(DichVuAnUong::getMaDichVu).toList()));
+        model.addAttribute("caAnList", caAnList);
+        model.addAttribute("khuVucList", tableAssignmentService.getAllKhuVuc());
 
         return "index";
     }

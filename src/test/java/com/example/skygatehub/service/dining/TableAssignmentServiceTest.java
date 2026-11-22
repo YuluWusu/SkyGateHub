@@ -25,6 +25,7 @@ import com.example.skygatehub.repository.dining.BanAnRepository;
 import com.example.skygatehub.repository.dining.CaAnRepository;
 import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.dining.DichVuCaAnRepository;
+import com.example.skygatehub.repository.order.ChiTietDonRepository;
 import com.example.skygatehub.repository.order.QuyenLoiDonRepository;
 import com.example.skygatehub.service.dining.impl.TableAssignmentServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -50,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -69,6 +71,8 @@ class TableAssignmentServiceTest {
     private NguoiDungRepository nguoiDungRepository;
     @Mock
     private QuyenLoiDonRepository quyenLoiDonRepository;
+    @Mock
+    private ChiTietDonRepository chiTietDonRepository;
     @Mock
     private DichVuCaAnRepository dichVuCaAnRepository;
     @Mock
@@ -693,5 +697,92 @@ class TableAssignmentServiceTest {
         assertEquals(TrangThaiDatBan.DA_HOAN_THANH, db.getTrangThai());
         assertEquals(TrangThaiBanAn.SAN_SANG, b.getTrangThai());
         verify(banAnRepository).save(b);
+    }
+
+    @Test
+    void lichBep_motLuotChoCaDon_hienMoiMonLeCuaDonKhongLap() {
+        LocalDate homNay = LocalDate.now();
+        ChiTietDon buffet = chiTiet(LoaiDichVuDon.AN_UONG, "Buffet trưa", 4, homNay, mon("MON1"));
+        buffet.setMaChiTiet("C1");
+        ChiTietDon setMenu = chiTiet(LoaiDichVuDon.AN_UONG, "Set menu", 2, homNay, mon("MON2"));
+        setMenu.setMaChiTiet("C2");
+        ChiTietDon daHuy = chiTiet(LoaiDichVuDon.AN_UONG, "Món đã hủy", 1, homNay, mon("MON3"));
+        daHuy.setMaChiTiet("C3");
+        daHuy.setTrangThai(TrangThaiChiTiet.DA_HUY);
+        ChiTietDon ngayKhac = chiTiet(LoaiDichVuDon.AN_UONG, "Món ngày khác", 1, homNay.plusDays(1), mon("MON4"));
+        ngayKhac.setMaChiTiet("C4");
+        ChiTietDon ve = chiTiet(LoaiDichVuDon.VE, "Vé", 1, homNay, null);
+        ve.setMaChiTiet("C5");
+        DatBan db = datBan("DB1", TrangThaiDatBan.DA_XAC_NHAN, 4, homNay, null);
+        db.setChiTietDon(buffet);
+        when(caAnRepository.findAll()).thenReturn(List.of(caAn("CA_TRUA", LocalTime.of(11, 0))));
+        when(datBanRepository.findByNgayAn(homNay)).thenReturn(List.of(db));
+        when(datBanRepository.findByDonDat_MaDonDat("DD1")).thenReturn(List.of(db));
+        when(chiTietDonRepository.findByDonDat_MaDonDat("DD1"))
+                .thenReturn(List.of(buffet, setMenu, daHuy, ngayKhac, ve));
+
+        MealScheduleRow row = service.getMealSchedule(homNay).get(0);
+
+        assertEquals(List.of("Buffet trưa x 4", "Set menu x 2"), row.getMonTheoDatBan().get("DB1"));
+    }
+
+    @Test
+    void lichBep_donCuMoiDongMotLuot_moiLuotChiHienMonCuaMinhVaNapChiTietMotLan() {
+        LocalDate homNay = LocalDate.now();
+        ChiTietDon buffet = chiTiet(LoaiDichVuDon.AN_UONG, "Buffet trưa", 4, homNay, mon("MON1"));
+        buffet.setMaChiTiet("C1");
+        ChiTietDon setMenu = chiTiet(LoaiDichVuDon.AN_UONG, "Set menu", 2, homNay, mon("MON2"));
+        setMenu.setMaChiTiet("C2");
+        DatBan db1 = datBan("DB1", TrangThaiDatBan.DA_XAC_NHAN, 4, homNay, null);
+        db1.setChiTietDon(buffet);
+        DatBan db2 = datBan("DB2", TrangThaiDatBan.DA_XAC_NHAN, 2, homNay, null);
+        db2.setChiTietDon(setMenu);
+        when(caAnRepository.findAll()).thenReturn(List.of(caAn("CA_TRUA", LocalTime.of(11, 0))));
+        when(datBanRepository.findByNgayAn(homNay)).thenReturn(List.of(db1, db2));
+        when(datBanRepository.findByDonDat_MaDonDat("DD1")).thenReturn(List.of(db1, db2));
+        when(chiTietDonRepository.findByDonDat_MaDonDat("DD1")).thenReturn(List.of(buffet, setMenu));
+
+        MealScheduleRow row = service.getMealSchedule(homNay).get(0);
+
+        assertEquals(List.of("Buffet trưa x 4"), row.getMonTheoDatBan().get("DB1"));
+        assertEquals(List.of("Set menu x 2"), row.getMonTheoDatBan().get("DB2"));
+        verify(chiTietDonRepository, times(1)).findByDonDat_MaDonDat("DD1");
+    }
+
+    @Test
+    void huyDatBanTheoDon_huyLuotChuaNhanBanGiuLuotDaCheckInVaHuyQuyenLoi() throws NoSuchMethodException {
+        LocalDate homNay = LocalDate.now();
+        DatBan choXacNhan = datBan("DB1", TrangThaiDatBan.CHO_XAC_NHAN, 2, homNay, null);
+        DatBan daXacNhan = datBan("DB2", TrangThaiDatBan.DA_XAC_NHAN, 2, homNay, null);
+        DatBan daCheckIn = datBan("DB3", TrangThaiDatBan.DA_CHECK_IN, 2, homNay, null);
+        DatBan daHoanThanh = datBan("DB4", TrangThaiDatBan.DA_HOAN_THANH, 2, homNay, null);
+        DatBan daHuy = datBan("DB5", TrangThaiDatBan.DA_HUY, 2, homNay, null);
+        QuyenLoiDon hieuLuc = quyenLoi("AN_UONG", "MON1", true);
+        when(datBanRepository.findByDonDat_MaDonDat("DD1"))
+                .thenReturn(List.of(choXacNhan, daXacNhan, daCheckIn, daHoanThanh, daHuy));
+        when(quyenLoiDonRepository.findByChiTietDon_DonDat_MaDonDatAndTrangThai("DD1", TrangThaiQuyenLoi.HIEU_LUC))
+                .thenReturn(List.of(hieuLuc));
+
+        int soHuy = service.huyDatBanTheoDon("DD1");
+
+        assertEquals(2, soHuy);
+        assertEquals(TrangThaiDatBan.DA_HUY, choXacNhan.getTrangThai());
+        assertEquals(TrangThaiDatBan.DA_HUY, daXacNhan.getTrangThai());
+        assertEquals(TrangThaiDatBan.DA_CHECK_IN, daCheckIn.getTrangThai());
+        assertEquals(TrangThaiDatBan.DA_HOAN_THANH, daHoanThanh.getTrangThai());
+        assertEquals(TrangThaiDatBan.DA_HUY, daHuy.getTrangThai());
+        verify(datBanRepository).save(choXacNhan);
+        verify(datBanRepository).save(daXacNhan);
+        verify(datBanRepository, never()).save(daCheckIn);
+        verify(datBanRepository, never()).save(daHoanThanh);
+        for (DatBan db : List.of(choXacNhan, daXacNhan, daCheckIn, daHoanThanh, daHuy)) {
+            verify(entityManager).refresh(db, LockModeType.PESSIMISTIC_WRITE);
+        }
+        assertEquals(TrangThaiQuyenLoi.DA_HUY, hieuLuc.getTrangThai());
+        verify(quyenLoiDonRepository).save(hieuLuc);
+
+        Transactional tx = TableAssignmentServiceImpl.class
+                .getMethod("huyDatBanTheoDon", String.class).getAnnotation(Transactional.class);
+        assertEquals(Isolation.READ_COMMITTED, tx.isolation());
     }
 }
