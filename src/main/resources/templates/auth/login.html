@@ -174,7 +174,7 @@
                             <h5 class="fw-bold mb-0" style="color: #0f172a;">Đăng nhập tài khoản</h5>
                         </div>
 
-                        <form th:action="@{/login}" method="post" autocomplete="off">
+                        <form id="loginForm" th:action="@{/login}" method="post" autocomplete="off">
                             <input type="hidden" name="redirect" th:value="${redirect}" />
 
                             <div class="mb-3">
@@ -219,6 +219,50 @@
                                 </button>
                             </div>
                         </form>
+
+                        <!-- Đăng nhập nhanh tài khoản mẫu phục vụ Demo / Bảo vệ đồ án -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="fw-bold small text-secondary text-uppercase" style="letter-spacing: 0.4px;">
+                                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Đăng nhập nhanh (Demo)
+                                </span>
+                                <span class="badge bg-light text-muted border font-monospace">MK: 123456</span>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-success btn-sm w-100 text-start py-2 px-2"
+                                            onclick="quickLogin('admin', '123456')">
+                                        <i class="bi bi-shield-lock-fill me-1"></i>
+                                        <span class="fw-semibold">Quản lý</span>
+                                        <small class="d-block text-muted font-monospace" style="font-size: 0.72rem;">admin</small>
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100 text-start py-2 px-2"
+                                            onclick="quickLogin('nv_letan1', '123456')">
+                                        <i class="bi bi-building-fill me-1"></i>
+                                        <span class="fw-semibold">Lễ tân</span>
+                                        <small class="d-block text-muted font-monospace" style="font-size: 0.72rem;">nv_letan1</small>
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-warning text-dark btn-sm w-100 text-start py-2 px-2"
+                                            onclick="quickLogin('nv_ve1', '123456')">
+                                        <i class="bi bi-ticket-perforated-fill me-1"></i>
+                                        <span class="fw-semibold">Nhân viên vé</span>
+                                        <small class="d-block text-muted font-monospace" style="font-size: 0.72rem;">nv_ve1</small>
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-danger btn-sm w-100 text-start py-2 px-2"
+                                            onclick="quickLogin('nv_nhahang1', '123456')">
+                                        <i class="bi bi-cup-hot-fill me-1"></i>
+                                        <span class="fw-semibold">Nhà hàng</span>
+                                        <small class="d-block text-muted font-monospace" style="font-size: 0.72rem;">nv_nhahang1</small>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="alert alert-success bg-opacity-10 border border-success border-opacity-25 py-2 px-3 mt-4 mb-0 small" style="color: #065f46;">
                             <i class="bi bi-shield-check me-1"></i>
@@ -299,6 +343,12 @@
                 icon.classList.remove('bi-eye-slash');
                 icon.classList.add('bi-eye');
             }
+        }
+
+        function quickLogin(username, password) {
+            document.getElementById('usernameInput').value = username;
+            document.getElementById('passwordInput').value = password;
+            document.getElementById('loginForm').submit();
         }
 
         // Không can thiệp xóa ô input định kỳ để đảm bảo thao tác chuột và gõ phím mượt mà

@@ -44,4 +44,52 @@ public class CurrentUser implements Serializable {
         return isAdmin() || hasRole("NHAN_VIEN_VE") || hasRole("NHAN_VIEN_NHA_HANG") || hasRole("NHAN_VIEN_LUU_TRU")
                 || hasRole("VT004") || hasRole("VT005") || hasRole("VT006");
     }
+
+    public boolean canAccessTicketModule() {
+        return isAdmin() || hasRole("NHAN_VIEN_VE") || hasRole("VT004");
+    }
+
+    public boolean canAccessRoomModule() {
+        return isAdmin() || hasRole("NHAN_VIEN_LUU_TRU") || hasRole("VT006");
+    }
+
+    public boolean canAccessDiningModule() {
+        return isAdmin() || hasRole("NHAN_VIEN_NHA_HANG") || hasRole("VT005");
+    }
+
+    public boolean canAccessOrders() {
+        return isAdmin() || canAccessTicketModule() || canAccessRoomModule();
+    }
+
+    public String getDefaultAdminUrl() {
+        if (isAdmin()) {
+            return "/admin/dashboard";
+        }
+        if (canAccessRoomModule()) {
+            return "/admin/room-map";
+        }
+        if (canAccessDiningModule()) {
+            return "/admin/dining/table-assignment";
+        }
+        if (canAccessTicketModule()) {
+            return "/admin/tickets";
+        }
+        return "/admin/dashboard";
+    }
+
+    public String getTenVaiTroHienThi() {
+        if (isAdmin()) {
+            return "Quản Trị Viên";
+        }
+        if (canAccessRoomModule()) {
+            return "Lễ Tân Lưu Trú";
+        }
+        if (canAccessDiningModule()) {
+            return "Nhân Viên Nhà Hàng";
+        }
+        if (canAccessTicketModule()) {
+            return "Nhân Viên Vé";
+        }
+        return "Khách Hàng";
+    }
 }

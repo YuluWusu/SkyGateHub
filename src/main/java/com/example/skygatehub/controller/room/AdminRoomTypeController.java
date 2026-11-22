@@ -23,9 +23,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/admin/room-types")
@@ -87,6 +94,7 @@ public class AdminRoomTypeController {
     public String createRoomType(
             @Valid @ModelAttribute("roomTypeRequest") LoaiPhongRequest request,
             BindingResult bindingResult,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -97,6 +105,9 @@ public class AdminRoomTypeController {
         }
 
         try {
+            if (imageFile != null && !imageFile.isEmpty()) {
+                request.setHinhAnh(saveRoomImage(imageFile));
+            }
             loaiPhongService.createLoaiPhong(request);
             redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS,
                     "Thêm loại phòng mới [" + request.getTenLoaiPhong() + "] thành công.");
@@ -144,6 +155,7 @@ public class AdminRoomTypeController {
             @PathVariable("id") Long id,
             @Valid @ModelAttribute("roomTypeRequest") LoaiPhongRequest request,
             BindingResult bindingResult,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -154,6 +166,9 @@ public class AdminRoomTypeController {
         }
 
         try {
+            if (imageFile != null && !imageFile.isEmpty()) {
+                request.setHinhAnh(saveRoomImage(imageFile));
+            }
             loaiPhongService.updateLoaiPhong(id, request);
             redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS,
                     "Cập nhật loại phòng [" + request.getTenLoaiPhong() + "] thành công.");
@@ -165,6 +180,35 @@ public class AdminRoomTypeController {
             model.addAttribute("isEdit", true);
             return "room/admin/type-form";
         }
+    }
+
+    private String saveRoomImage(MultipartFile file) throws IOException {
+        String original = file.getOriginalFilename();
+        String ext = ".jpg";
+        if (original != null && original.lastIndexOf('.') >= 0) {
+            ext = original.substring(original.lastIndexOf('.')).toLowerCase();
+        }
+        String fileName = "room-" + UUID.randomUUID().toString().substring(0, 8) + ext;
+
+        Path uploadDir = Paths.get("uploads", "rooms");
+        Files.createDirectories(uploadDir);
+        Path targetUpload = uploadDir.resolve(fileName);
+        Files.copy(file.getInputStream(), targetUpload, StandardCopyOption.REPLACE_EXISTING);
+
+        try {
+            Path staticDir = Paths.get("src", "main", "resources", "static", "images", "rooms");
+            Files.createDirectories(staticDir);
+            Files.copy(targetUpload, staticDir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+
+            Path targetClassDir = Paths.get("target", "classes", "static", "images", "rooms");
+            if (Files.exists(Paths.get("target", "classes"))) {
+                Files.createDirectories(targetClassDir);
+                Files.copy(targetUpload, targetClassDir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception ignored) {
+        }
+
+        return "/images/rooms/" + fileName;
     }
 
     @PostMapping("/toggle/{id}")

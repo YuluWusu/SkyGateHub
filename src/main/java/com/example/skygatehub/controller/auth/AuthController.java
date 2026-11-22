@@ -29,6 +29,10 @@ public class AuthController {
                                        @RequestParam(value = "redirect", required = false) String chuyenHuong,
                                        HttpSession phienLamViec) {
         if (phienLamViec != null && phienLamViec.getAttribute(SessionKeys.CURRENT_USER) != null) {
+            CurrentUser currentUser = (CurrentUser) phienLamViec.getAttribute(SessionKeys.CURRENT_USER);
+            if (currentUser.isStaff()) {
+                return redirectByRole(currentUser);
+            }
             return "redirect:/";
         }
         if (loi != null) {
@@ -65,17 +69,7 @@ public class AuthController {
             return "redirect:" + chuyenHuong;
         }
 
-        if (nguoiDungHienTai.isAdmin()) {
-            return "redirect:/admin/users";
-        }
-        if (nguoiDungHienTai.hasRole("NHAN_VIEN_LUU_TRU") || nguoiDungHienTai.hasRole("VT006")) {
-            return "redirect:/admin/room-map";
-        }
-        if (nguoiDungHienTai.hasRole("NHAN_VIEN_VE") || nguoiDungHienTai.hasRole("VT004")) {
-            return "redirect:/admin/tickets";
-        }
-
-        return "redirect:/admin/rooms";
+        return redirectByRole(nguoiDungHienTai);
     }
 
     @GetMapping("/doi-mat-khau-lan-dau")
@@ -134,17 +128,23 @@ public class AuthController {
         dieuHuong.addFlashAttribute(SessionKeys.FLASH_SUCCESS,
                 "Cập nhật hồ sơ và đổi mật khẩu lần đầu thành công! Chào mừng bạn đến với hệ thống SkyGateHub.");
 
+        return redirectByRole(nguoiDungHienTai);
+    }
+
+    private String redirectByRole(CurrentUser nguoiDungHienTai) {
         if (nguoiDungHienTai.isAdmin()) {
             return "redirect:/admin/users";
         }
         if (nguoiDungHienTai.hasRole("NHAN_VIEN_LUU_TRU") || nguoiDungHienTai.hasRole("VT006")) {
             return "redirect:/admin/room-map";
         }
+        if (nguoiDungHienTai.hasRole("NHAN_VIEN_NHA_HANG") || nguoiDungHienTai.hasRole("VT005")) {
+            return "redirect:/admin/dining/table-assignment";
+        }
         if (nguoiDungHienTai.hasRole("NHAN_VIEN_VE") || nguoiDungHienTai.hasRole("VT004")) {
             return "redirect:/admin/tickets";
         }
-
-        return "redirect:/admin/rooms";
+        return "redirect:/admin/dashboard";
     }
 
     @GetMapping("/logout")

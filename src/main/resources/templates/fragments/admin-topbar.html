@@ -27,7 +27,7 @@
 
         <!-- Right: Staff Info & Switch/Logout Buttons -->
         <div class="d-flex align-items-center gap-2 gap-md-3">
-            <a th:href="@{/admin/switch-to-customer}" class="btn btn-sm btn-outline-success d-none d-sm-inline-flex align-items-center gap-1" style="font-size: 0.78rem;" title="Xem Website Khách hàng">
+            <a th:href="@{/}" class="btn btn-sm btn-outline-success d-none d-sm-inline-flex align-items-center gap-1" style="font-size: 0.78rem;" title="Xem Website Khách hàng">
                 <i class="bi bi-box-arrow-up-right"></i>
                 <span class="d-none d-md-inline">Web Khách</span>
             </a>
@@ -43,7 +43,7 @@
                         th:if="${currentUser != null}" th:text="${currentUser.hoTen}">Quản trị viên</span>
                     <span class="badge bg-success text-white d-none d-sm-inline-block" style="font-size: 0.62rem; padding: 2px 6px;"
                         th:if="${currentUser != null}"
-                        th:text="${currentUser.isAdmin() ? 'Quản Trị Viên' : 'Nhân Viên'}">Quản Trị</span>
+                        th:text="${currentUser.tenVaiTroHienThi}">Quản Trị</span>
                 </div>
             </div>
             <button type="button" onclick="if(window.openAdminLogoutModal) window.openAdminLogoutModal();" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1 py-1 px-2" style="font-size: 0.78rem;" title="Đăng xuất">

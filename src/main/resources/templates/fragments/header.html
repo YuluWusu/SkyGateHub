@@ -96,7 +96,7 @@
 
             <!-- Nhân viên đã đăng nhập -->
             <div th:if="${currentUser != null and currentUser.isStaff()}" class="d-flex align-items-center gap-1">
-                <a th:href="@{/admin/rooms}" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1"
+                <a th:href="@{${currentUser.defaultAdminUrl}}" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1"
                    style="padding: 6px 12px; font-size: 0.82rem; border-radius: 8px;">
                     <i class="bi bi-speedometer2"></i>
                     <span class="d-none d-md-inline">Quản trị</span>

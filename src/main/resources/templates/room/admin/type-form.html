@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -43,6 +43,7 @@
                 <form th:action="${isEdit} ? @{'/admin/room-types/edit/' + ${roomTypeRequest.id}} : @{/admin/room-types/create}"
                       th:object="${roomTypeRequest}"
                       method="post"
+                      enctype="multipart/form-data"
                       novalidate>
 
                     <input type="hidden" th:field="*{id}" th:if="${isEdit}">
@@ -197,18 +198,32 @@
                         </div>
                     </div>
 
-                    <!-- Row 5: URL Hình ảnh -->
+                    <!-- Row 5: Tải lên File Hình ảnh đại diện -->
                     <div class="mb-3">
-                        <label for="hinhAnh" class="form-label fw-semibold text-white">Đường dẫn hình ảnh đại diện</label>
-                        <input type="text"
-                               id="hinhAnh"
-                               th:field="*{hinhAnh}"
+                        <label for="imageFile" class="form-label fw-semibold text-white">
+                            <i class="bi bi-image me-1 text-gold"></i>Hình ảnh đại diện hạng phòng
+                        </label>
+                        <input type="hidden" th:field="*{hinhAnh}">
+                        <input type="file"
+                               id="imageFile"
+                               name="imageFile"
+                               accept="image/*"
                                class="form-control"
-                               th:classappend="${#fields.hasErrors('hinhAnh')} ? 'is-invalid'"
-                               placeholder="https://... hoặc /images/rooms/...">
+                               onchange="previewRoomImage(this)">
+                        <small class="text-muted small d-block mt-1">
+                            Chọn tệp ảnh từ máy tính (.jpg, .png, .webp). Khi chỉnh sửa, nếu không chọn tệp mới hệ thống sẽ giữ nguyên ảnh hiện tại.
+                        </small>
+                        <div class="mt-2" id="imagePreviewContainer"
+                             th:style="${roomTypeRequest.hinhAnh != null and !roomTypeRequest.hinhAnh.isEmpty()} ? 'display:block;' : 'display:none;'">
+                            <img id="imagePreviewEl"
+                                 th:src="${roomTypeRequest.hinhAnh != null and !roomTypeRequest.hinhAnh.isEmpty() ? roomTypeRequest.hinhAnh : ''}"
+                                 alt="Xem trước ảnh phòng"
+                                 class="rounded-3 border shadow-sm"
+                                 style="max-height: 160px; width: auto; object-fit: cover;">
+                        </div>
                         <div class="invalid-feedback d-block"
                              th:if="${#fields.hasErrors('hinhAnh')}"
-                             th:errors="*{hinhAnh}">Lỗi đường dẫn hình ảnh</div>
+                             th:errors="*{hinhAnh}">Lỗi hình ảnh</div>
                     </div>
 
                     <!-- Row 6: Mô tả chi tiết & Tiện ích -->
@@ -252,5 +267,19 @@
     </div>
     <div th:replace="~{fragments/admin-footer :: admin_footer}"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function previewRoomImage(input) {
+            const container = document.getElementById('imagePreviewContainer');
+            const img = document.getElementById('imagePreviewEl');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    container.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </body>
 </html>
