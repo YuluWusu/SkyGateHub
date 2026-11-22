@@ -6,12 +6,15 @@ import com.example.skygatehub.dto.dining.BanAnRequest;
 import com.example.skygatehub.entity.dining.BanAn;
 import com.example.skygatehub.repository.dining.BanAnRepository;
 import com.example.skygatehub.service.dining.BanAnService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -27,6 +30,7 @@ public class BanAnServiceImpl implements BanAnService {
             List.of(TrangThaiDatBan.DA_HUY, TrangThaiDatBan.DA_HOAN_THANH);
 
     private final BanAnRepository banAnRepository;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional(readOnly = true)
@@ -129,8 +133,12 @@ public class BanAnServiceImpl implements BanAnService {
 
     // Giải phóng bàn bị kẹt DANG_SU_DUNG (dữ liệu cũ, không còn lượt DA_CHECK_IN nào)
     @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void releaseTable(Long id, String maNhanVien) {
         BanAn b = getById(id);
+        // Cùng cách khóa với TableAssignmentServiceImpl.checkInTable: khóa và nạp lại dòng BAN_AN, rồi mới kiểm
+        // lượt DA_CHECK_IN ở READ_COMMITTED. Không khóa thì một lượt vừa check-in vẫn bị ghi đè về SAN_SANG.
+        entityManager.refresh(b, LockModeType.PESSIMISTIC_WRITE);
 
         if (b.getTrangThai() != TrangThaiBanAn.DANG_SU_DUNG) {
             throw new IllegalStateException("Bàn [" + b.getSoBan() + "] không ở trạng thái đang phục vụ, không cần giải phóng.");

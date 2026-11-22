@@ -250,7 +250,8 @@ class ConcurrencyAndSocketTest {
                 checkInRepository,
                 nguoiDungRepository,
                 roomOperationService,
-                txManager
+                txManager,
+                mock(jakarta.persistence.EntityManager.class)
         );
         server.setPort(0);
         server.startServer();

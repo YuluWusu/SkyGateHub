@@ -9,6 +9,7 @@ import com.example.skygatehub.repository.roombooking.DatPhongRepository;
 import com.example.skygatehub.service.room.RoomOperationService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ public class CheckInSocketServer {
     private final NguoiDungRepository nguoiDungRepository;
     private final RoomOperationService roomOperationService;
     private final PlatformTransactionManager transactionManager;
+    private final EntityManager entityManager;
 
     private ServerSocket serverSocket;
     private ExecutorService threadPool;
@@ -96,7 +98,8 @@ public class CheckInSocketServer {
                             checkInRepository,
                             nguoiDungRepository,
                             roomOperationService,
-                            transactionManager
+                            transactionManager,
+                            entityManager
                     );
                     threadPool.execute(handler);
                 } catch (IOException e) {

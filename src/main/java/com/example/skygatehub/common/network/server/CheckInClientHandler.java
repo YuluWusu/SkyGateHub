@@ -18,8 +18,11 @@ import com.example.skygatehub.repository.order.DonDatRepository;
 import com.example.skygatehub.repository.order.VeRepository;
 import com.example.skygatehub.repository.roombooking.DatPhongRepository;
 import com.example.skygatehub.service.room.RoomOperationService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.BufferedReader;
@@ -54,6 +57,7 @@ public class CheckInClientHandler implements Runnable {
     private final NguoiDungRepository nguoiDungRepository;
     private final RoomOperationService roomOperationService;
     private final PlatformTransactionManager transactionManager;
+    private final EntityManager entityManager;
 
     private final int clientId;
     private String stationName = "ANONYMOUS";
@@ -68,7 +72,8 @@ public class CheckInClientHandler implements Runnable {
             CheckInRepository checkInRepository,
             NguoiDungRepository nguoiDungRepository,
             RoomOperationService roomOperationService,
-            PlatformTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager,
+            EntityManager entityManager) {
         this.clientSocket = socket;
         this.donDatRepository = donDatRepository;
         this.veRepository = veRepository;
@@ -78,6 +83,7 @@ public class CheckInClientHandler implements Runnable {
         this.nguoiDungRepository = nguoiDungRepository;
         this.roomOperationService = roomOperationService;
         this.transactionManager = transactionManager;
+        this.entityManager = entityManager;
         this.clientId = CLIENT_COUNTER.getAndIncrement();
     }
 
@@ -298,11 +304,15 @@ public class CheckInClientHandler implements Runnable {
 
     private String processCheckinAn(String maDatBan) {
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        // Cùng cách khóa với TableAssignmentServiceImpl.checkInTable: khóa DAT_BAN rồi BAN_AN, chạy ở READ_COMMITTED
+        // để câu kiểm bàn đang có khách thấy lượt mà giao dịch khác vừa commit.
+        tx.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
         return tx.execute(status -> {
             Optional<DatBan> dbOpt = datBanRepository.findByMaDatBan(maDatBan);
             if (dbOpt.isEmpty()) return "404 NOT_FOUND Mã đặt bàn không tồn tại: " + maDatBan;
 
             DatBan db = dbOpt.get();
+            entityManager.refresh(db, LockModeType.PESSIMISTIC_WRITE);
             if (db.getTrangThai() == TrangThaiDatBan.DA_CHECK_IN) {
                 return "409 CONFLICT_ALREADY_SEATED Bàn [" + maDatBan + "] đang được sử dụng.";
             }
@@ -315,6 +325,7 @@ public class CheckInClientHandler implements Runnable {
             if (db.getBanAn() == null) {
                 return "409 CONFLICT Đặt bàn [" + maDatBan + "] chưa được xếp bàn.";
             }
+            entityManager.refresh(db.getBanAn(), LockModeType.PESSIMISTIC_WRITE);
             if (db.getBanAn().getTrangThai() == TrangThaiBanAn.BAO_TRI) {
                 return "409 CONFLICT Bàn [" + db.getBanAn().getSoBan() + "] đang bảo trì.";
             }

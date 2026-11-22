@@ -25,15 +25,19 @@ import com.example.skygatehub.repository.dining.BanAnRepository;
 import com.example.skygatehub.repository.dining.CaAnRepository;
 import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.dining.DichVuCaAnRepository;
-import com.example.skygatehub.repository.order.ChiTietDonRepository;
 import com.example.skygatehub.repository.order.QuyenLoiDonRepository;
 import com.example.skygatehub.service.dining.impl.TableAssignmentServiceImpl;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -44,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -67,7 +72,7 @@ class TableAssignmentServiceTest {
     @Mock
     private DichVuCaAnRepository dichVuCaAnRepository;
     @Mock
-    private ChiTietDonRepository chiTietDonRepository;
+    private EntityManager entityManager;
 
     @InjectMocks
     private TableAssignmentServiceImpl service;
@@ -126,6 +131,12 @@ class TableAssignmentServiceTest {
             tp.setDichVuAnUong(mon);
         }
         ql.setThanhPhanDichVu(tp);
+        return ql;
+    }
+
+    private QuyenLoiDon quyenLoi(String loai, String maMon, boolean theoDoi, ChiTietDon dongCombo) {
+        QuyenLoiDon ql = quyenLoi(loai, maMon, theoDoi);
+        ql.setChiTietDon(dongCombo);
         return ql;
     }
 
@@ -382,48 +393,55 @@ class TableAssignmentServiceTest {
     }
 
     @Test
-    void lichBep_liet3MonCuaMotDatBan() {
+    void lichBep_luotTuDongDon_chiHienMonCuaDongDo() {
+        // Checkout tạo một lượt cho mỗi dòng ăn uống; cùng đơn nhưng mỗi lượt chỉ hiện món của mình
         LocalDate homNay = LocalDate.now();
-        DatBan db = datBan("DB1", TrangThaiDatBan.DA_XAC_NHAN, 4, homNay, null);
-        CaAn caTrua = caAn("CA_TRUA", LocalTime.of(11, 0));
-        when(caAnRepository.findAll()).thenReturn(List.of(caTrua));
-        when(datBanRepository.findByNgayAn(homNay)).thenReturn(List.of(db));
-
-        ChiTietDon lau = chiTiet(LoaiDichVuDon.AN_UONG, "Lẩu gà", 1, homNay, mon("MON1"));
-        ChiTietDon nuoc = chiTiet(LoaiDichVuDon.AN_UONG, "Nước ép", 2, homNay, mon("MON2"));
-        ChiTietDon monCaKhac = chiTiet(LoaiDichVuDon.AN_UONG, "Súp tối", 1, homNay, mon("MON3"));
-        ChiTietDon monNgayKhac = chiTiet(LoaiDichVuDon.AN_UONG, "Cá nướng", 1, homNay.plusDays(1), mon("MON1"));
-        ChiTietDon ve = chiTiet(LoaiDichVuDon.VE, "Vé vào cổng", 4, homNay, null);
+        DatBan db1 = datBan("DB1", TrangThaiDatBan.DA_XAC_NHAN, 4, homNay, null);
+        db1.setChiTietDon(chiTiet(LoaiDichVuDon.AN_UONG, "Buffet trưa", 4, homNay, mon("MON1")));
+        DatBan db2 = datBan("DB2", TrangThaiDatBan.DA_XAC_NHAN, 2, homNay, null);
+        db2.setChiTietDon(chiTiet(LoaiDichVuDon.AN_UONG, "Set menu", 2, homNay, mon("MON2")));
         ChiTietDon daHuy = chiTiet(LoaiDichVuDon.AN_UONG, "Món đã hủy", 1, homNay, mon("MON1"));
         daHuy.setTrangThai(TrangThaiChiTiet.DA_HUY);
-        when(chiTietDonRepository.findByDonDat_MaDonDat("DD1"))
-                .thenReturn(List.of(lau, nuoc, monCaKhac, monNgayKhac, ve, daHuy));
+        DatBan db3 = datBan("DB3", TrangThaiDatBan.DA_XAC_NHAN, 2, homNay, null);
+        db3.setChiTietDon(daHuy);
+        when(caAnRepository.findAll()).thenReturn(List.of(caAn("CA_TRUA", LocalTime.of(11, 0))));
+        when(datBanRepository.findByNgayAn(homNay)).thenReturn(List.of(db1, db2, db3));
 
-        QuyenLoiDon buffet = quyenLoi("AN_UONG", "MON4", true);
+        MealScheduleRow row = service.getMealSchedule(homNay).get(0);
+
+        assertEquals(List.of("Buffet trưa x 4"), row.getMonTheoDatBan().get("DB1"));
+        assertEquals(List.of("Set menu x 2"), row.getMonTheoDatBan().get("DB2"));
+        assertNull(row.getMonTheoDatBan().get("DB3"));
+        verifyNoInteractions(quyenLoiDonRepository);
+    }
+
+    @Test
+    void lichBep_luotCombo_chiHienSuatComboCungNgayCa() {
+        LocalDate homNay = LocalDate.now();
+        DatBan db = datBan("DB1", TrangThaiDatBan.DA_XAC_NHAN, 4, homNay, null);
+        db.setQuyenLoiDon(new QuyenLoiDon());
+        when(caAnRepository.findAll()).thenReturn(List.of(caAn("CA_TRUA", LocalTime.of(11, 0))));
+        when(datBanRepository.findByNgayAn(homNay)).thenReturn(List.of(db));
+
+        ChiTietDon comboHomNay = chiTiet(LoaiDichVuDon.VE, "Combo", 1, homNay, null);
+        ChiTietDon comboNgayMai = chiTiet(LoaiDichVuDon.VE, "Combo", 1, homNay.plusDays(1), null);
+        QuyenLoiDon buffet = quyenLoi("AN_UONG", "MON4", true, comboHomNay);
         buffet.setTenThanhPhanChup("Buffet trưa");
-        buffet.setChiTietDon(chiTiet(LoaiDichVuDon.VE, "Combo", 1, homNay, null));
-        QuyenLoiDon quyenLoiHuy = quyenLoi("AN_UONG", "MON4", true);
+        QuyenLoiDon buffetNgayMai = quyenLoi("AN_UONG", "MON4", true, comboNgayMai);
+        QuyenLoiDon quyenLoiHuy = quyenLoi("AN_UONG", "MON4", true, comboHomNay);
         quyenLoiHuy.setTrangThai(TrangThaiQuyenLoi.DA_HUY);
-        quyenLoiHuy.setChiTietDon(buffet.getChiTietDon());
-        QuyenLoiDon quyenLoiVe = quyenLoi("VE", null, true);
-        quyenLoiVe.setChiTietDon(buffet.getChiTietDon());
+        QuyenLoiDon suatCaKhac = quyenLoi("AN_UONG", "MON3", true, comboHomNay);
+        QuyenLoiDon quyenLoiVe = quyenLoi("VE", null, true, comboHomNay);
         when(quyenLoiDonRepository.findByChiTietDon_DonDat_MaDonDat("DD1"))
-                .thenReturn(List.of(buffet, quyenLoiHuy, quyenLoiVe));
-
-        when(dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn("MON1", "CA_TRUA"))
-                .thenReturn(Optional.of(new DichVuCaAn()));
-        when(dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn("MON2", "CA_TRUA"))
+                .thenReturn(List.of(buffet, buffetNgayMai, quyenLoiHuy, suatCaKhac, quyenLoiVe));
+        when(dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn("MON4", "CA_TRUA"))
                 .thenReturn(Optional.of(new DichVuCaAn()));
         when(dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn("MON3", "CA_TRUA"))
                 .thenReturn(Optional.empty());
-        when(dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn("MON4", "CA_TRUA"))
-                .thenReturn(Optional.of(new DichVuCaAn()));
 
-        List<MealScheduleRow> schedule = service.getMealSchedule(homNay);
+        MealScheduleRow row = service.getMealSchedule(homNay).get(0);
 
-        assertEquals(1, schedule.size());
-        assertEquals(List.of("Lẩu gà x 1", "Nước ép x 2", "Buffet trưa x 3"),
-                schedule.get(0).getMonTheoDatBan().get("DB1"));
+        assertEquals(List.of("Buffet trưa x 3"), row.getMonTheoDatBan().get("DB1"));
     }
 
     @Test
@@ -577,13 +595,16 @@ class TableAssignmentServiceTest {
                 .thenReturn(List.of());
         when(nguoiDungRepository.findByMaNguoiDung("NV01")).thenReturn(Optional.of(new NguoiDung()));
 
-        QuyenLoiDon buffetTrua = quyenLoi("AN_UONG", "MON1", true);
-        QuyenLoiDon buffetCaKhac = quyenLoi("AN_UONG", "MON2", true);
-        QuyenLoiDon khongTheoDoi = quyenLoi("AN_UONG", "MON1", false);
-        QuyenLoiDon quyenLoiVe = quyenLoi("VE", null, true);
-        QuyenLoiDon khongCoMon = quyenLoi("AN_UONG", null, true);
+        ChiTietDon comboHomNay = chiTiet(LoaiDichVuDon.VE, "Combo", 1, LocalDate.now(), null);
+        ChiTietDon comboNgayMai = chiTiet(LoaiDichVuDon.VE, "Combo", 1, LocalDate.now().plusDays(1), null);
+        QuyenLoiDon buffetTrua = quyenLoi("AN_UONG", "MON1", true, comboHomNay);
+        QuyenLoiDon buffetNgayMai = quyenLoi("AN_UONG", "MON1", true, comboNgayMai);
+        QuyenLoiDon buffetCaKhac = quyenLoi("AN_UONG", "MON2", true, comboHomNay);
+        QuyenLoiDon khongTheoDoi = quyenLoi("AN_UONG", "MON1", false, comboHomNay);
+        QuyenLoiDon quyenLoiVe = quyenLoi("VE", null, true, comboHomNay);
+        QuyenLoiDon khongCoMon = quyenLoi("AN_UONG", null, true, comboHomNay);
         when(quyenLoiDonRepository.findByChiTietDon_DonDat_MaDonDatAndTrangThai("DD1", TrangThaiQuyenLoi.HIEU_LUC))
-                .thenReturn(List.of(buffetTrua, buffetCaKhac, khongTheoDoi, quyenLoiVe, khongCoMon));
+                .thenReturn(List.of(buffetTrua, buffetNgayMai, buffetCaKhac, khongTheoDoi, quyenLoiVe, khongCoMon));
         when(dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn("MON1", "CA_TRUA"))
                 .thenReturn(Optional.of(new DichVuCaAn()));
         when(dichVuCaAnRepository.findByDichVuAnUong_MaDichVuAndCaAn_MaCaAn("MON2", "CA_TRUA"))
@@ -595,12 +616,41 @@ class TableAssignmentServiceTest {
         assertEquals(3, buffetTrua.getSoLuongDaDung());
         verify(quyenLoiDonRepository).save(buffetTrua);
 
-        // Món không có trong ca này, quyền lợi không theo dõi, loại khác vé: giữ nguyên
-        for (QuyenLoiDon ql : List.of(buffetCaKhac, khongTheoDoi, quyenLoiVe, khongCoMon)) {
+        // Suất của ngày khác, món không có trong ca này, quyền lợi không theo dõi, loại vé: giữ nguyên
+        for (QuyenLoiDon ql : List.of(buffetNgayMai, buffetCaKhac, khongTheoDoi, quyenLoiVe, khongCoMon)) {
             assertEquals(TrangThaiQuyenLoi.HIEU_LUC, ql.getTrangThai());
             assertEquals(0, ql.getSoLuongDaDung());
         }
         verify(quyenLoiDonRepository, never()).save(buffetCaKhac);
+        verify(quyenLoiDonRepository, never()).save(buffetNgayMai);
+    }
+
+    @Test
+    void checkInVaTraBan_khoaDatBanRoiBanAn_chayReadCommitted() throws NoSuchMethodException {
+        BanAn b = ban("B1", 4, TrangThaiBanAn.SAN_SANG);
+        DatBan db = datBan("DB1", TrangThaiDatBan.DA_XAC_NHAN, 2, LocalDate.now(), b);
+        stubBooking(db);
+        when(datBanRepository.findByBanAn_MaBanAnAndTrangThaiAndMaDatBanNot("B1", TrangThaiDatBan.DA_CHECK_IN, "DB1"))
+                .thenReturn(List.of());
+        when(nguoiDungRepository.findByMaNguoiDung("NV01")).thenReturn(Optional.of(new NguoiDung()));
+
+        service.checkInTable("DB1", "NV01");
+        service.completeTable("DB1", "NV01");
+
+        // Mỗi thao tác: khóa lượt đặt, rồi khóa bàn, rồi mới kiểm lượt đang ngồi trên bàn
+        InOrder thuTu = inOrder(entityManager, datBanRepository);
+        for (int i = 0; i < 2; i++) {
+            thuTu.verify(entityManager).refresh(db, LockModeType.PESSIMISTIC_WRITE);
+            thuTu.verify(entityManager).refresh(b, LockModeType.PESSIMISTIC_WRITE);
+            thuTu.verify(datBanRepository).findByBanAn_MaBanAnAndTrangThaiAndMaDatBanNot("B1", TrangThaiDatBan.DA_CHECK_IN, "DB1");
+        }
+
+        // Ở REPEATABLE READ, câu kiểm sau khi chờ khóa vẫn đọc snapshot cũ và không thấy lượt vừa check-in
+        for (String ten : List.of("checkInTable", "completeTable")) {
+            Transactional tx = TableAssignmentServiceImpl.class
+                    .getMethod(ten, String.class, String.class).getAnnotation(Transactional.class);
+            assertEquals(Isolation.READ_COMMITTED, tx.isolation(), ten);
+        }
     }
 
     @Test

@@ -6,11 +6,16 @@ import com.example.skygatehub.dto.dining.BanAnRequest;
 import com.example.skygatehub.entity.dining.BanAn;
 import com.example.skygatehub.repository.dining.BanAnRepository;
 import com.example.skygatehub.service.dining.impl.BanAnServiceImpl;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -22,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,6 +37,8 @@ class BanAnServiceImplTest {
 
     @Mock
     private BanAnRepository banAnRepository;
+    @Mock
+    private EntityManager entityManager;
 
     @InjectMocks
     private BanAnServiceImpl service;
@@ -158,6 +166,26 @@ class BanAnServiceImplTest {
 
         assertEquals(TrangThaiBanAn.SAN_SANG, b.getTrangThai());
         verify(banAnRepository).save(b);
+    }
+
+    @Test
+    void releaseTable_khoaBanTruocKhiKiemLuotDangNgoi_chayReadCommitted() throws NoSuchMethodException {
+        BanAn b = ban(TrangThaiBanAn.DANG_SU_DUNG);
+        when(banAnRepository.findById(1L)).thenReturn(Optional.of(b));
+        when(banAnRepository.findMaDatBanByBanAnAndTrangThai("BAN01", TrangThaiDatBan.DA_CHECK_IN))
+                .thenReturn(List.of());
+
+        service.releaseTable(1L, "NV01");
+
+        // Khóa rồi mới kiểm: lượt vừa check-in ở giao dịch khác phải hiện ra trong câu kiểm, không bị ghi đè SAN_SANG
+        InOrder thuTu = inOrder(entityManager, banAnRepository);
+        thuTu.verify(entityManager).refresh(b, LockModeType.PESSIMISTIC_WRITE);
+        thuTu.verify(banAnRepository).findMaDatBanByBanAnAndTrangThai("BAN01", TrangThaiDatBan.DA_CHECK_IN);
+        thuTu.verify(banAnRepository).save(b);
+
+        Transactional tx = BanAnServiceImpl.class.getMethod("releaseTable", Long.class, String.class)
+                .getAnnotation(Transactional.class);
+        assertEquals(Isolation.READ_COMMITTED, tx.isolation());
     }
 
     @Test
