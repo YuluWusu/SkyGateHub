@@ -29,6 +29,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,6 +43,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+        "spring.jpa.show-sql=false",
+        "logging.level.org.hibernate.SQL=WARN",
+        "logging.level.org.hibernate.orm.jdbc.bind=WARN"
+})
 @Slf4j
 public class ConcurrencyStressTest {
 
@@ -210,56 +216,7 @@ public class ConcurrencyStressTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch finishLatch = new CountDownLatch(NUMBER_OF_THREADS);
 
-//        AtomicInteger successCount = new AtomicInteger(0);
-//        AtomicInteger failureCount = new AtomicInteger(0);
-//
-//        for (int i = 1; i <= NUMBER_OF_THREADS; i++) {
-//            final String maDatPhong = MA_DAT_PHONG_PREFIX + i;
-//
-//            executorService.submit(() -> {
-//                readyLatch.countDown();
-//                try {
-//                    // Chờ tất cả 10 luồng sẵn sàng để kích hoạt đồng thời
-//                    startLatch.await();
-//
-//                    // Gọi hàm phân phòng có chứa khóa bi quan @Lock(PESSIMISTIC_WRITE)
-//                    roomOperationService.assignRoomToBooking(maDatPhong, MA_PHONG, MA_NHAN_VIEN);
-//                    successCount.incrementAndGet();
-//                } catch (Exception e) {
-//                    // Cắt các luồng thất bại do xung đột khóa bi quan hoặc phòng đã bị chiếm
-//                    failureCount.incrementAndGet();
-//                    System.err.println("Thread [" + Thread.currentThread().getName() + "] Bị chặn bởi khóa: " + e.getMessage());
-//                } finally {
-//                    finishLatch.countDown();
-//                }
-//            });
-//
-//        }
-//
-//        readyLatch.await(); // Chờ 10 luồng chuẩn bị xong
-//        startLatch.countDown(); // Kích hoạt nổ đạn đồng thời 10 luồng
-//        finishLatch.await(); // Chờ toàn bộ 10 luồng hoàn tất
-//        executorService.shutdown();
-//
-//        // Kiểm tra kết quả thực nghiệm
-//        String report = String.format("""
-//
-//                ================================================================================
-//                [THỰC NGHIỆM ĐA LUỒNG] KẾT QUẢ TRANH CHẤP PHÂN PHÒNG (PESSIMISTIC LOCK)
-//                ================================================================================
-//                • Tổng số luồng gửi yêu cầu đồng thời : %d luồng
-//                • Mã phòng tranh chấp                 : %s
-//                • SỐ GIAO DỊCH THÀNH CÔNG             : %d (Đã xếp phòng)
-//                • SỐ GIAO DỊCH BỊ CHẶN BỞI KHÓA       : %d (Tránh Overbooking thành công)
-//                ================================================================================
-//                """, NUMBER_OF_THREADS, MA_PHONG, successCount.get(), failureCount.get());
-//
-//        System.out.println(report);
-//        log.info(report);
-//
-//        // Khẳng định đúng tính chất của Khóa bi quan: Đúng 1 thành công, 9 thất bại
-//        assertEquals(1, successCount.get(), "Chỉ được phép đúng 1 đơn đặt thành công!");
-//        assertEquals(9, failureCount.get(), "9 đơn đặt còn lại phải thất bại!");
+
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger businessBlockedCount = new AtomicInteger(0); // Bị chặn hợp lệ do phòng đã bị xếp
         AtomicInteger systemErrorCount = new AtomicInteger(0);     // Lỗi hệ thống/SQL (không mong muốn)
@@ -277,11 +234,11 @@ public class ConcurrencyStressTest {
                 } catch (IllegalStateException e) {
                     // ĐÚNG: Luồng sau lấy được khóa, kiểm tra thấy phòng P101 đã có lịch trùng nên từ chối
                     businessBlockedCount.incrementAndGet();
-                    System.out.println("Thread [" + Thread.currentThread().getName() + "] Bị chặn hợp lệ: " + e.getMessage());
+                    System.out.println("Thread [" + Thread.currentThread().getName() + "] Bi chan hop le (Phong da co lich trung)");
                 } catch (Exception e) {
                     // SAI: Lỗi kỹ thuật (trùng khóa chính, deadlock, timeout...)
                     systemErrorCount.incrementAndGet();
-                    System.err.println("Thread [" + Thread.currentThread().getName() + "] LỖI HỆ THỐNG: " + e.getMessage());
+                    System.err.println("Thread [" + Thread.currentThread().getName() + "] LOI HE THONG: " + e.getMessage());
                 } finally {
                     finishLatch.countDown();
                 }
@@ -296,13 +253,13 @@ public class ConcurrencyStressTest {
         String report = String.format("""
                 
                 ================================================================================
-                [THỰC NGHIỆM ĐA LUỒNG] KẾT QUẢ TRANH CHẤP PHÂN PHÒNG (PESSIMISTIC LOCK)
+                [THUC NGHIEM DA LUONG] KET QUA TRANH CHAP PHAN PHONG (PESSIMISTIC LOCK)
                 ================================================================================
-                • Tổng số luồng gửi yêu cầu đồng thời : %d luồng
-                • Mã phòng tranh chấp                 : %s
-                • SỐ GIAO DỊCH THÀNH CÔNG             : %d (Đã xếp phòng)
-                • SỐ GIAO DỊCH BỊ CHẶN HỢP LỆ         : %d (Phòng đã có lịch trùng)
-                • SỐ LỖI HỆ THỐNG / SQL               : %d
+                - Tong so luong gui yeu cau dong thoi : %d luong
+                - Ma phong tranh chap                 : %s
+                - SO GIAO DICH THANH CONG             : %d (Da xep phong)
+                - SO GIAO DICH BI CHAN HOP LE         : %d (Phong da co lich trung)
+                - SO LOI HE THONG / SQL               : %d
                 ================================================================================
                 """, NUMBER_OF_THREADS, MA_PHONG, successCount.get(), businessBlockedCount.get(), systemErrorCount.get());
 

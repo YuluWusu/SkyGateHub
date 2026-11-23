@@ -9,7 +9,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Entity ánh xạ bảng LOAI_PHONG trong QL_Cong_Troi_Dong_Giang_MySQL.sql.
+ * [Module 3 - Quản trị Lưu trú] Entity ánh xạ bảng LOAI_PHONG (danh mục 15 hạng phòng thực tế).
+ * Giữ giá niêm yết cơ bản/đêm (GIA_CO_BAN), sức chứa người lớn/trẻ em và đường dẫn ảnh đại diện.
  */
 @Entity
 @Table(name = "LOAI_PHONG")
@@ -32,6 +33,7 @@ public class LoaiPhong {
     @Column(name = "MO_TA", length = 500)
     private String moTa;
 
+    // Nạp LAZY để tránh kéo dư dữ liệu khi chỉ liệt kê phòng; dùng JOIN FETCH ở Repository khi cần hiển thị Khu
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MA_KHU")
     private KhuLuuTru khuLuuTru;

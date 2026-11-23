@@ -11,7 +11,8 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Entity ánh xạ bảng PHAN_PHONG trong QL_Cong_Troi_Dong_Giang_MySQL.sql.
+ * [Module 3 - Quản trị Lưu trú] Entity ánh xạ bảng PHAN_PHONG (gán phòng vật lý cho đơn đặt phòng).
+ * Ràng buộc UNIQUE (MA_DAT_PHONG, MA_PHONG) chặn gán trùng 1 phòng 2 lần cho cùng 1 đơn.
  */
 @Entity
 @Table(name = "PHAN_PHONG", uniqueConstraints = {
@@ -30,6 +31,7 @@ public class PhanPhong {
     @Column(name = "MA_PHAN_PHONG", length = 20, nullable = false, unique = true)
     private String maPhanPhong;
 
+    // Khóa ngoại phức hợp (MA_DAT_PHONG, MA_LOAI_PHONG) ép ở tầng DB rằng phòng gán phải đúng hạng phòng đã đặt
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
         @JoinColumn(name = "MA_DAT_PHONG", referencedColumnName = "MA_DAT_PHONG", nullable = false),

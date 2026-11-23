@@ -21,6 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * [Module 3] Service quản lý danh mục Phòng vật lý:
+ * - Kiểm tra trùng mã phòng (MA_PHONG) và số phòng (SO_PHONG).
+ * - Chặn xóa phòng đã có lịch sử PhanPhong.
+ * - Bật bảo trì tự động kiểm tra phòng đang DANG_SU_DUNG hoặc đang giữ chỗ trong ngày.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -74,11 +80,16 @@ public class PhongServiceImpl implements PhongService {
         LoaiPhong lp = loaiPhongRepository.findByMaLoaiPhong(request.getMaLoaiPhong().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Loại phòng không tồn tại: " + request.getMaLoaiPhong()));
 
+        TrangThaiPhong initialStatus = request.getTrangThai() != null ? request.getTrangThai() : TrangThaiPhong.SAN_SANG;
+        if (initialStatus == TrangThaiPhong.DANG_SU_DUNG) {
+            throw new IllegalArgumentException("Không thể tạo phòng mới ở trạng thái Đang có khách (DANG_SU_DUNG). Chỉ chọn Sẵn sàng hoặc Đang bảo trì.");
+        }
+
         Phong p = new Phong();
         p.setMaPhong(maPhong);
         p.setSoPhong(soPhong);
         p.setLoaiPhong(lp);
-        p.setTrangThai(request.getTrangThai() != null ? request.getTrangThai() : TrangThaiPhong.SAN_SANG);
+        p.setTrangThai(initialStatus);
 
         log.info("Tạo mới phòng vật lý mã {}: {}", maPhong, soPhong);
         return phongRepository.save(p);
@@ -96,11 +107,50 @@ public class PhongServiceImpl implements PhongService {
         LoaiPhong lp = loaiPhongRepository.findByMaLoaiPhong(request.getMaLoaiPhong().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Loại phòng không tồn tại: " + request.getMaLoaiPhong()));
 
+        if (request.getTrangThai() != null && request.getTrangThai() != p.getTrangThai()) {
+            TrangThaiPhong currentStatus = p.getTrangThai();
+            TrangThaiPhong newStatus = request.getTrangThai();
+
+            // 1. Chặn đổi từ Đang có khách sang Bảo trì trong form chỉnh sửa
+            if (currentStatus == TrangThaiPhong.DANG_SU_DUNG && newStatus == TrangThaiPhong.BAO_TRI) {
+                throw new IllegalStateException("Phòng [" + p.getSoPhong()
+                        + "] đang có khách lưu trú (DANG_SU_DUNG), không thể chuyển sang trạng thái bảo trì!");
+            }
+
+            // 2. Chặn đổi thủ công từ Đang có khách sang Sẵn sàng nếu vẫn còn lượt nhận phòng chưa Check-out
+            if (currentStatus == TrangThaiPhong.DANG_SU_DUNG && newStatus == TrangThaiPhong.SAN_SANG) {
+                boolean hasActiveCheckIn = phanPhongRepository.existsByPhong_MaPhongAndTrangThaiIn(
+                        p.getMaPhong(), List.of(TrangThaiPhanPhong.DA_NHAN_PHONG));
+                if (hasActiveCheckIn) {
+                    throw new IllegalStateException("Phòng [" + p.getSoPhong()
+                            + "] đang có khách lưu trú, vui lòng thực hiện Trả phòng (Check-out) trên Sơ đồ phòng thay vì đổi trạng thái thủ công!");
+                }
+            }
+
+            // 3. Chặn đặt trạng thái Đang có khách thủ công từ form
+            if (currentStatus != TrangThaiPhong.DANG_SU_DUNG && newStatus == TrangThaiPhong.DANG_SU_DUNG) {
+                throw new IllegalStateException("Không thể đặt trạng thái Đang có khách (DANG_SU_DUNG) thủ công. Trạng thái này chỉ được cập nhật khi khách Check-in nhận phòng!");
+            }
+
+            // 4. Nếu chuyển sang Bảo trì, kiểm tra hôm nay phòng có đang giữ chỗ hay có khách ở không
+            if (newStatus == TrangThaiPhong.BAO_TRI) {
+                LocalDate today = LocalDate.now();
+                List<PhanPhong> activeAssignments = phanPhongRepository.findActiveAssignmentsOnDate(today);
+                boolean isOccupiedToday = activeAssignments.stream()
+                        .anyMatch(pp -> pp.getPhong().getMaPhong().equalsIgnoreCase(p.getMaPhong())
+                                && pp.getTrangThai() != TrangThaiPhanPhong.DA_HUY
+                                && pp.getTrangThai() != TrangThaiPhanPhong.DA_TRA_PHONG);
+                if (isOccupiedToday) {
+                    throw new IllegalStateException("Phòng [" + p.getSoPhong()
+                            + "] đang được gán giữ chỗ hoặc có khách ở trong ngày hôm nay, không thể bật chế độ bảo trì!");
+                }
+            }
+
+            p.setTrangThai(newStatus);
+        }
+
         p.setSoPhong(soPhong);
         p.setLoaiPhong(lp);
-        if (request.getTrangThai() != null) {
-            p.setTrangThai(request.getTrangThai());
-        }
 
         log.info("Cập nhật thông tin phòng ID {}: {}", id, soPhong);
         return phongRepository.save(p);

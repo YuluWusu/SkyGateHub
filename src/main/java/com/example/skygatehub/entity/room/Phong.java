@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Entity ánh xạ bảng PHONG trong QL_Cong_Troi_Dong_Giang_MySQL.sql.
+ * [Module 3 - Quản trị Lưu trú] Entity ánh xạ bảng PHONG (từng phòng vật lý cụ thể, VD: P001 - 101).
+ * Ràng buộc UNIQUE trên cả MA_PHONG, SO_PHONG và cặp (MA_PHONG, MA_LOAI_PHONG) phục vụ khóa ngoại phức hợp từ PHAN_PHONG.
  */
 @Entity
 @Table(name = "PHONG", uniqueConstraints = {

@@ -200,7 +200,9 @@
                                 <div class="room-card-actions pt-2 border-top border-secondary border-opacity-25">
                                     <!-- Case 1: Chờ nhận phòng -> Cho phép Check-in hoặc Hủy phân -->
                                     <th:block th:if="${c.isDaPhan()}">
-                                        <form th:action="@{/admin/room-map/check-in}" method="post" class="d-inline" onsubmit="return confirm('Xác nhận khách đã đến và thực hiện Check-in nhận phòng ' + /*[[${c.soPhong}]]*/ 'này?');">
+                                        <form th:action="@{/admin/room-map/check-in}" method="post" class="d-inline"
+                                              th:data-sophong="${c.soPhong}"
+                                              onsubmit="return confirm('Xác nhận khách đã đến và thực hiện Check-in nhận phòng ' + this.dataset.sophong + '?');">
                                             <input type="hidden" name="maDatPhong" th:value="${c.maDatPhong}">
                                             <input type="hidden" name="returnDate" th:value="${targetDate}">
                                             <button type="submit" class="btn btn-sm btn-success">
@@ -208,7 +210,9 @@
                                             </button>
                                         </form>
 
-                                        <form th:action="@{/admin/room-map/unassign}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn hủy phân phòng ' + /*[[${c.soPhong}]]*/ 'này?');">
+                                        <form th:action="@{/admin/room-map/unassign}" method="post" class="d-inline"
+                                              th:data-sophong="${c.soPhong}"
+                                              onsubmit="return confirm('Bạn có chắc muốn hủy phân phòng ' + this.dataset.sophong + '?');">
                                             <input type="hidden" name="maPhanPhong" th:value="${c.maPhanPhong}">
                                             <input type="hidden" name="returnDate" th:value="${targetDate}">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy gán phòng">
@@ -219,7 +223,9 @@
 
                                     <!-- Case 2: Khách đang ở -> Cho phép Check-out -->
                                     <th:block th:if="${c.isDangO()}">
-                                        <form th:action="@{/admin/room-map/check-out}" method="post" class="d-inline" onsubmit="return confirm('Xác nhận khách trả phòng (Check-out) và hoàn tất lưu trú phòng ' + /*[[${c.soPhong}]]*/ 'này?');">
+                                        <form th:action="@{/admin/room-map/check-out}" method="post" class="d-inline"
+                                              th:data-sophong="${c.soPhong}"
+                                              onsubmit="return confirm('Xác nhận khách trả phòng (Check-out) và hoàn tất lưu trú phòng ' + this.dataset.sophong + '?');">
                                             <input type="hidden" name="maDatPhong" th:value="${c.maDatPhong}">
                                             <input type="hidden" name="returnDate" th:value="${targetDate}">
                                             <button type="submit" class="btn btn-sm btn-outline-warning">
@@ -242,7 +248,7 @@
 
                                     <!-- Case 4: Đổi trạng thái bảo trì nếu phòng không có khách -->
                                     <th:block th:if="${c.isTrong() or c.isBaoTri()}">
-                                        <form th:action="@{'/admin/rooms/toggle-maintenance/' + ${c.maPhong}}" method="post" class="d-inline"
+                                        <form th:action="@{'/admin/rooms/toggle-maintenance/' + ${c.id}}" method="post" class="d-inline"
                                               th:data-is-baotri="${c.isBaoTri()}"
                                               onsubmit="return confirm(this.dataset.isBaotri === 'true' ? 'Xác nhận mở lại phòng sẵn sàng?' : 'Xác nhận chuyển sang bảo trì phòng này?');">
                                             <button type="submit" class="btn btn-sm btn-outline-secondary" th:title="${c.isBaoTri() ? 'Mở lại sẵn sàng' : 'Bật bảo trì'}">
@@ -262,42 +268,58 @@
                     </div>
                 </div>
 
-                <!-- Right: Pending Bookings Queue (Hàng đợi phân phòng) -->
+                <!-- Right: Pending Bookings Queue (Hàng đợi phân phòng & Chờ Check-in) -->
                 <div class="col-12 col-xl-3">
                     <div class="pending-bookings-box sticky-top" style="top: 85px;">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 class="fw-bold text-dark mb-0" style="font-size: 1rem;">
-                                <i class="bi bi-inbox-fill text-warning me-1"></i> Đơn Chờ Phân Phòng
+                                <i class="bi bi-inbox-fill text-warning me-1"></i> Đơn Đặt &amp; Chờ Check-in
                             </h5>
                             <span class="badge bg-warning text-dark" th:text="${pendingBookings.size()}">0</span>
                         </div>
-                        <p class="text-muted small mb-3">Danh sách khách đã đặt phòng cần lễ tân gán phòng vật lý trước giờ check-in.</p>
+                        <p class="text-muted small mb-3">
+                            <strong>Thiếu phòng (0/1, 1/2):</strong> Khách mới đặt, cần bấm <em>Phân phòng ngay</em>.<br>
+                            <strong>Đã xếp phòng (1/1):</strong> Đã giữ phòng vật lý, chờ khách đến bấm <em>Check-in</em> (hoặc <em>Hủy phân</em> để đổi phòng khác).
+                        </p>
 
                         <div class="pending-list-scrollable" style="max-height: 72vh; overflow-y: auto; padding-right: 4px;">
-                            <div th:each="b : ${pendingBookings}" class="pending-card">
+                            <div th:each="b : ${pendingBookings}" class="pending-card"
+                                 th:data-madatphong="${b.maDatPhong}"
+                                 th:data-madonhang="${b.maDonHang != null ? b.maDonHang : b.maDatPhong}"
+                                 th:data-tenkhach="${b.hoTenKhach}"
+                                 th:data-maloaiphong="${b.maLoaiPhong}"
+                                 th:data-tenloaiphong="${b.tenLoaiPhong}"
+                                 th:data-conthieu="${b.soLuongConThieu}">
                                 <div class="pending-header">
-                                    <div class="pending-code" th:text="${b.maDonHang != null ? b.maDonHang : b.maDatPhong}">CTDG-260522-001</div>
-                                    <span th:if="${b.isDaPhanDu()}" class="badge bg-success small">Đủ phòng</span>
-                                    <span th:unless="${b.isDaPhanDu()}" class="badge bg-warning text-dark small">Thiếu phòng</span>
+                                    <div class="pending-code" th:text="${b.maDonHang != null ? b.maDonHang : b.maDatPhong} + ' (' + ${b.maDatPhong} + ')'">CTDG-260522-001</div>
+                                    <span th:if="${b.isDaPhanDu()}" class="badge bg-info text-dark small">Đã xếp • Chờ Check-in</span>
+                                    <span th:unless="${b.isDaPhanDu()}" class="badge bg-warning text-dark small">Chờ phân phòng</span>
                                 </div>
 
                                 <div class="pending-guest" th:text="${b.hoTenKhach}">Nguyễn Văn B</div>
                                 <div class="pending-meta">
                                     <div><i class="bi bi-door-closed me-1"></i><strong class="text-dark" th:text="${b.tenLoaiPhong}">Deluxe DBL</strong></div>
                                     <div><i class="bi bi-building me-1"></i><span th:text="${b.tenKhu}">FIVITEL Sông Ngân</span></div>
-                                    <div><i class="bi bi-calendar-event me-1"></i><span th:text="${#temporals.format(b.ngayNhanPhong, 'dd/MM')} + ' - ' + ${#temporals.format(b.ngayTraPhong, 'dd/MM/yyyy')}">22/05 - 24/05/2026</span></div>
+                                    <div>
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        <span th:text="${#temporals.format(b.ngayNhanPhong, 'dd/MM')} + ' - ' + ${#temporals.format(b.ngayTraPhong, 'dd/MM/yyyy')}">22/05 - 24/05/2026</span>
+                                        <a th:href="@{/admin/room-map(date=${b.ngayNhanPhong})}" class="ms-1 text-decoration-none small fw-semibold" title="Nhảy sơ đồ phòng tới ngày nhận phòng này">
+                                            <i class="bi bi-box-arrow-up-right"></i> Xem ngày
+                                        </a>
+                                    </div>
                                 </div>
 
                                 <div class="pending-progress">
-                                    <span class="text-muted">Tiến độ phân phòng:</span>
+                                    <span class="text-muted">Phòng vật lý đã gán:</span>
                                     <span th:text="${b.soLuongDaPhan} + '/' + ${b.soLuongPhong} + ' phòng'"
                                           th:classappend="${b.isDaPhanDu() ? 'text-success' : 'text-warning'}">0/1 phòng</span>
                                 </div>
 
                                 <div th:if="${!b.danhSachPhongDaPhan.isEmpty()}" class="mb-2">
-                                    <span class="badge bg-secondary me-1 mb-1" th:each="rName : ${b.danhSachPhongDaPhan}" th:text="${rName}">Room-101</span>
+                                    <span class="badge bg-secondary me-1 mb-1" th:each="rName : ${b.danhSachPhongDaPhan}" th:text="'Phòng ' + ${rName}">Room-101</span>
                                 </div>
 
+                                <!-- Nút Phân phòng ngay khi đơn chưa gán đủ phòng (0/1 hoặc 1/2) -->
                                 <div class="d-grid mt-2" th:if="${!b.isDaPhanDu()}">
                                     <button type="button" class="btn btn-sm btn-gold fw-bold py-1"
                                             th:data-madatphong="${b.maDatPhong}"
@@ -307,6 +329,29 @@
                                             onclick="openAssignBookingModalFromBtn(this)">
                                         <i class="bi bi-plus-circle me-1"></i>Phân phòng ngay
                                     </button>
+                                </div>
+
+                                <!-- Nút thao tác nhanh cho đơn đã gán phòng (Check-in nhận phòng hoặc Hủy phân để chọn lại phòng) -->
+                                <div class="d-flex gap-1 mt-2" th:if="${b.isDaPhanDu()}">
+                                    <form th:action="@{/admin/room-map/check-in}" method="post" class="flex-grow-1"
+                                          th:data-madatphong="${b.maDatPhong}"
+                                          onsubmit="return confirm('Xác nhận khách đã tới quầy và Check-in nhận phòng cho đơn ' + this.dataset.madatphong + '?');">
+                                        <input type="hidden" name="maDatPhong" th:value="${b.maDatPhong}">
+                                        <input type="hidden" name="returnDate" th:value="${targetDate}">
+                                        <button type="submit" class="btn btn-sm btn-success w-100 fw-semibold">
+                                            <i class="bi bi-box-arrow-in-right me-1"></i>Check-in
+                                        </button>
+                                    </form>
+                                    <form th:if="${!b.danhSachMaPhanPhong.isEmpty()}"
+                                          th:action="@{/admin/room-map/unassign}" method="post"
+                                          th:data-madatphong="${b.maDatPhong}"
+                                          onsubmit="return confirm('Gỡ phòng đã xếp của đơn ' + this.dataset.madatphong + ' để phân lại phòng khác?');">
+                                        <input type="hidden" name="maPhanPhong" th:value="${b.danhSachMaPhanPhong[0]}">
+                                        <input type="hidden" name="returnDate" th:value="${targetDate}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Gỡ phòng đã xếp để phân phòng lại">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Đổi/Hủy
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 
@@ -378,14 +423,16 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 
-    <script th:inline="javascript">
-        const assignModalEl = document.getElementById('assignModal');
-        let assignModalInstance = null;
-        if (assignModalEl) {
-            assignModalInstance = new bootstrap.Modal(assignModalEl);
+    <script>
+        function getAssignModalInstance() {
+            const assignModalEl = document.getElementById('assignModal');
+            if (!assignModalEl || typeof bootstrap === 'undefined') {
+                return null;
+            }
+            return bootstrap.Modal.getOrCreateInstance(assignModalEl);
         }
 
-        function openAssignBookingModal(maDatPhong, tenKhach, tenLoaiPhong, soLuongConThieu) {
+        function openAssignBookingModal(maDatPhong, tenKhach, tenLoaiPhong, soLuongConThieu, preselectMaPhong) {
             document.getElementById('modalMaDatPhong').value = maDatPhong;
             document.getElementById('modalDisplayMaDatPhong').textContent = maDatPhong;
             document.getElementById('modalDisplayTenKhach').textContent = tenKhach;
@@ -395,8 +442,14 @@
             const select = document.getElementById('selectAvailableRoom');
             select.innerHTML = '<option value="">-- Đang kiểm tra phòng trống... --</option>';
 
-            fetch(/*[[@{/admin/room-map/available-rooms}]]*/ '/admin/room-map/available-rooms' + '?maDatPhong=' + encodeURIComponent(maDatPhong))
-                .then(res => res.json())
+            const apiUrl = '/admin/room-map/available-rooms?maDatPhong=' + encodeURIComponent(maDatPhong);
+            fetch(apiUrl)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('HTTP ' + res.status);
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     select.innerHTML = '';
                     if (!data || data.length === 0) {
@@ -407,42 +460,65 @@
                     data.forEach(p => {
                         const opt = document.createElement('option');
                         opt.value = p.maPhong;
-                        opt.textContent = p.soPhong + ' (' + p.tenLoaiPhong + ' - ' + (p.giaCoBan ? Number(p.giaCoBan).toLocaleString('vi-VN') + ' đ' : '') + ')';
+                        const giaStr = p.giaCoBan ? ' - ' + Number(p.giaCoBan).toLocaleString('vi-VN') + ' đ' : '';
+                        opt.textContent = 'Phòng ' + p.soPhong + ' (' + p.tenLoaiPhong + giaStr + ')';
+                        if (preselectMaPhong && String(p.maPhong) === String(preselectMaPhong)) {
+                            opt.selected = true;
+                        }
                         select.appendChild(opt);
                     });
                 })
                 .catch(err => {
-                    console.error(err);
+                    console.error('Lỗi tải danh sách phòng trống:', err);
                     select.innerHTML = '<option value="">Lỗi tải dữ liệu phòng trống</option>';
                 });
 
-            if (assignModalInstance) {
-                assignModalInstance.show();
+            const modal = getAssignModalInstance();
+            if (modal) {
+                modal.show();
             }
         }
 
         function openQuickAssignModal(maPhong, soPhong, maLoaiPhong, tenLoaiPhong) {
-            // Tìm trong danh sách pending bookings xem đơn nào cần hạng phòng này
-            const pendingList = /*[[${pendingBookings}]]*/ [];
-            const matching = pendingList.filter(b => b.maLoaiPhong === maLoaiPhong && b.soLuongConThieu > 0);
+            // Đọc trực tiếp từ danh sách thẻ .pending-card bên cột phải
+            const cards = Array.from(document.querySelectorAll('.pending-card'));
+            const matchingWaiting = cards.filter(card =>
+                String(card.dataset.maloaiphong) === String(maLoaiPhong) &&
+                Number(card.dataset.conthieu) > 0
+            );
 
-            if (!matching || matching.length === 0) {
-                alert('Hiện tại không có đơn đặt phòng nào đang chờ phân cho hạng phòng ' + tenLoaiPhong + '!');
+            if (matchingWaiting.length > 0) {
+                const card = matchingWaiting[0];
+                openAssignBookingModal(
+                    card.dataset.madatphong,
+                    card.dataset.tenkhach,
+                    card.dataset.tenloaiphong,
+                    card.dataset.conthieu,
+                    maPhong
+                );
                 return;
             }
 
-            const b = matching[0];
-            openAssignBookingModal(b.maDatPhong, b.hoTenKhach, b.tenLoaiPhong, b.soLuongConThieu);
-            setTimeout(() => {
-                const select = document.getElementById('selectAvailableRoom');
-                if (select) {
-                    select.value = maPhong;
-                }
-            }, 500);
+            // Kiểm tra xem có đơn nào cùng hạng phòng nhưng đã xếp đủ 1/1 chưa
+            const matchingAlreadyAssigned = cards.filter(card =>
+                String(card.dataset.maloaiphong) === String(maLoaiPhong)
+            );
+            const allWaiting = cards.filter(card => Number(card.dataset.conthieu) > 0);
+
+            let msg = 'Hiện không có đơn đặt phòng nào đang thiếu phòng cho hạng "' + tenLoaiPhong + '" (Phòng ' + soPhong + ').\n';
+            if (matchingAlreadyAssigned.length > 0) {
+                const codes = matchingAlreadyAssigned.map(c => c.dataset.madatphong + ' (' + c.dataset.tenkhach + ')').join(', ');
+                msg += '\n• Các đơn cùng hạng phòng này (' + codes + ') đều đã được xếp đủ phòng (1/1). Nếu muốn đổi sang phòng ' + soPhong + ', bạn hãy bấm nút "Đổi/Hủy" ở thẻ đơn bên cột phải rồi bấm "Gán đơn" lại!';
+            }
+            if (allWaiting.length > 0) {
+                const waitingInfo = allWaiting.map(c => c.dataset.madatphong + ' - ' + c.dataset.tenloaiphong).join(', ');
+                msg += '\n• Đơn đang chờ phân phòng hiện tại là: ' + waitingInfo + '. Bạn có thể bấm "Phân phòng ngay" ở cột bên phải hoặc chọn phòng thuộc hạng phòng đó.';
+            }
+            alert(msg);
         }
 
         function openAssignBookingModalFromBtn(btn) {
-            openAssignBookingModal(btn.dataset.madatphong, btn.dataset.tenkhach, btn.dataset.tenloaiphong, btn.dataset.conthieu);
+            openAssignBookingModal(btn.dataset.madatphong, btn.dataset.tenkhach, btn.dataset.tenloaiphong, btn.dataset.conthieu, null);
         }
 
         function openQuickAssignModalFromBtn(btn) {

@@ -18,6 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * [Module 3] Service xử lý nghiệp vụ Khu lưu trú và Hạng phòng:
+ * - Chống trùng tên khu, trùng mã/tên loại phòng.
+ * - Khi cập nhật giữ nguyên ảnh cũ nếu người dùng không tải tệp mới.
+ * - Kiểm tra chặt ràng buộc khóa ngoại (Phong, DatPhong, LoaiPhong) trước khi xóa.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

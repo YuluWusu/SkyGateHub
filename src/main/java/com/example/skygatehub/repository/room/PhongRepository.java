@@ -36,6 +36,7 @@ public interface PhongRepository extends JpaRepository<Phong, Long> {
 
     Page<Phong> findByLoaiPhong_MaLoaiPhong(String maLoaiPhong, Pageable pageable);
 
+    // Khóa bi quan PESSIMISTIC_WRITE (SELECT ... FOR UPDATE) trên dòng PHONG để tuần tự hóa các luồng phân phòng
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Phong p WHERE p.maPhong = :maPhong")
     Optional<Phong> findByMaPhongWithLock(@Param("maPhong") String maPhong);
@@ -44,8 +45,10 @@ public interface PhongRepository extends JpaRepository<Phong, Long> {
     long countPhanPhongByMaPhong(@Param("maPhong") String maPhong);
 
     /**
-     * Tìm danh sách phòng vật lý khả dụng (SAN_SANG) của một maLoaiPhong
-     * mà KHÔNG bị trùng lịch phân phòng trong khoảng ngày [ngayNhan, ngayTra) của đơn đặt phòng.
+     * Tìm danh sách phòng vật lý khả dụng (không BAO_TRI) của một maLoaiPhong
+     * mà KHÔNG bị trùng lịch phân phòng trong nửa khoảng [ngayNhan, ngayTra) của đơn đặt phòng.
+     * Công thức giao nhau: dp.ngayNhanPhong < :ngayTra AND dp.ngayTraPhong > :ngayNhan
+     * (khách cũ trả sáng ngày X thì khách mới vẫn nhận được chiều ngày X).
      */
     @Query("""
         SELECT p FROM Phong p

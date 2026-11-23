@@ -9,6 +9,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Đối tượng lưu thông tin người dùng và danh sách vai trò trong HttpSession.
+ * Đồng thời được GlobalModelAdvice bơm vào mọi View với tên "currentUser" để lọc menu Sidebar/Topbar theo quyền.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

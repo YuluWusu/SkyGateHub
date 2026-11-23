@@ -35,6 +35,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * [Module 3 - Trung tâm vận hành Lưu trú]
+ * Đảm nhiệm Sơ đồ phòng (Room Map), Phân phòng đa luồng có khóa bi quan (PESSIMISTIC_WRITE),
+ * Hủy phân phòng, Check-in nhận phòng và Check-out trả phòng (được gọi chung bởi cả Web và TCP Socket Trạm 2).
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -64,6 +69,7 @@ public class RoomOperationServiceImpl implements RoomOperationService {
         List<RoomMapCell> cells = new ArrayList<>();
         for (Phong p : rooms) {
             RoomMapCell cell = new RoomMapCell();
+            cell.setId(p.getId());
             cell.setMaPhong(p.getMaPhong());
             cell.setSoPhong(p.getSoPhong());
             cell.setMaLoaiPhong(p.getLoaiPhong().getMaLoaiPhong());
@@ -374,6 +380,9 @@ public PhanPhong assignRoomToBooking(String maDatPhong, String maPhong, String m
     return savedPp;
 }
 
+    /**
+     * Hủy phân phòng: chặn nếu khách đã nhận/trả phòng; nếu thiếu số lượng phòng yêu cầu thì tự lùi DatPhong về CHO_XAC_NHAN.
+     */
     @Override
     public void unassignRoom(String maPhanPhong) {
         PhanPhong pp = phanPhongRepository.findByMaPhanPhong(maPhanPhong)
@@ -402,6 +411,11 @@ public PhanPhong assignRoomToBooking(String maDatPhong, String maPhong, String m
         }
     }
 
+    /**
+     * Check-in nhận phòng (dùng chung cho Web /admin/room-map và Socket Trạm 2 CHECKIN_PHONG).
+     * Đồng bộ trạng thái 3 bảng: DAT_PHONG -> DA_NHAN_PHONG, PHAN_PHONG -> DA_NHAN_PHONG, PHONG -> DANG_SU_DUNG,
+     * đồng thời ghi nhận lịch sử CheckIn (CI-P-...) nếu chưa tồn tại.
+     */
     @Override
     public String checkInRoom(String maDatPhong, String maNhanVien) {
         DatPhong dp = datPhongRepository.findByMaDatPhongWithDetails(maDatPhong)
@@ -469,6 +483,9 @@ public PhanPhong assignRoomToBooking(String maDatPhong, String maPhong, String m
         return sbRooms.toString();
     }
 
+    /**
+     * Check-out trả phòng: đồng bộ 3 bảng DAT_PHONG -> DA_TRA_PHONG, PHAN_PHONG -> DA_TRA_PHONG, PHONG -> SAN_SANG.
+     */
     @Override
     public String checkOutRoom(String maDatPhong, String maNhanVien) {
         DatPhong dp = datPhongRepository.findByMaDatPhongWithDetails(maDatPhong)

@@ -6,6 +6,12 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * Cấu hình Spring MVC:
+ * 1. Gắn AuthInterceptor bảo vệ /admin/** và /profile/**.
+ * 2. Ánh xạ tài nguyên tĩnh (static/) và thư mục ảnh upload động (uploads/, /images/rooms/**).
+ * 3. Đăng ký view lỗi tĩnh /403, /404, /500.
+ */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 

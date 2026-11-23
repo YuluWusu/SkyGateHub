@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * [Module 3] Repository quản lý Khu lưu trú: kiểm tra trùng tên và đếm ràng buộc LoaiPhong trước khi xóa.
+ */
 @Repository
 public interface KhuLuuTruRepository extends JpaRepository<KhuLuuTru, Integer> {
 

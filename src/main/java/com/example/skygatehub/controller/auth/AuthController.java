@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+/**
+ * Controller Xác thực nội bộ (/login, /doi-mat-khau-lan-dau, /logout):
+ * Lưu CurrentUser vào HttpSession, bắt buộc đổi mật khẩu lần đầu nếu CAN_DOI_MAT_KHAU=1,
+ * và điều hướng tự động về đúng phân hệ quản trị theo vai trò (redirectByRole).
+ */
 @Controller
 public class AuthController {
 

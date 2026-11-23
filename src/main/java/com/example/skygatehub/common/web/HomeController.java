@@ -22,6 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller Trang chủ (/ -> templates/index.html):
+ * Kết hợp phần giao diện tĩnh (Hero Banner, Giới thiệu, Điểm nhấn) với dữ liệu động
+ * gồm danh sách vé/combo đang mở bán, giá vé áp dụng ngày hôm nay và các ngày đặc biệt.
+ */
 @Controller
 public class HomeController {
 

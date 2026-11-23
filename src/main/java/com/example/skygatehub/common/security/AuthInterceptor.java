@@ -8,6 +8,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+/**
+ * Bộ lọc bảo mật chặn mọi request tới /admin/** và /profile/** (đăng ký trong WebMvcConfig).
+ * Kiểm tra Session CurrentUser, ép đổi mật khẩu lần đầu, và đối chiếu danh sách vai trò trong @RequireRole
+ * (chưa đăng nhập -> /login, sai quyền -> /403).
+ */
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 

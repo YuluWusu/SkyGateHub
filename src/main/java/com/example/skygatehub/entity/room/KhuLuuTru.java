@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Entity ánh xạ bảng KHU_LUU_TRU trong database.
+ * [Module 3 - Quản trị Lưu trú] Entity ánh xạ bảng KHU_LUU_TRU (4 phân khu nghỉ dưỡng).
+ * Quan hệ: 1 KhuLuuTru -> N LoaiPhong (quản lý chuỗi kết nối qua MA_KHU).
  */
 @Entity
 @Table(name = "KHU_LUU_TRU")

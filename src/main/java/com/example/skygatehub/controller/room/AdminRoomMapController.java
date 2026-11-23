@@ -36,6 +36,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * [Module 3] Controller điều phối Sơ đồ phòng (/admin/room-map) cho Quản lý và Lễ tân.
+ * Hỗ trợ: lọc trực quan theo ngày/khu/hạng/trạng thái, API AJAX lấy phòng trống (/available-rooms),
+ * và các thao tác POST: Phân phòng (/assign), Hủy phân phòng (/unassign), Check-in (/check-in), Check-out (/check-out).
+ */
 @Controller
 @RequestMapping("/admin/room-map")
 @RequireRole({"QUAN_LY", "ROLE_ADMIN", "VT001", "ADMIN", "NHAN_VIEN_LUU_TRU", "VT006"})

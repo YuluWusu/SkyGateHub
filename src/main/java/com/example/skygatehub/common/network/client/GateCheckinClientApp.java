@@ -31,7 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Ứng dụng Client Socket đồ họa Java Swing (Tiêu chí 5.4 - 0,4 điểm).
+ * Ứng dụng Client Socket đồ họa Java Swing.
  * Dùng tại các quầy / cổng soát vé & lễ tân KDL Cổng Trời Đông Giang.
  * Có nút mở đồng thời 3 trạm Check-in độc lập để kiểm chứng khả năng phục vụ đồng thời của Server.
  */
@@ -315,6 +315,10 @@ public class GateCheckinClientApp extends JFrame {
         ticketCodeField.requestFocus();
     }
 
+    /**
+     * Gửi lệnh CHECKIN_PHONG|<MA_DAT_PHONG_HOAC_MA_DON>|<MA_NV> cho Trạm 2: Quầy Lưu Trú.
+     * Phản hồi từ server được listenerThread đọc và đẩy về Event Dispatch Thread qua SwingUtilities.invokeLater.
+     */
     private void processRoomCheckin() {
         String code = roomCodeField.getText().trim();
         if (code.isEmpty()) {

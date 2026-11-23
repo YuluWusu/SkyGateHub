@@ -271,6 +271,8 @@ public class CheckInClientHandler implements Runnable {
 
     /**
      * Tích hợp Trạm 2: Lễ Tân Lưu Trú qua RoomOperationService (Tiêu chí 5.3, 5.4).
+     * Hỗ trợ nhận vào cả MA_DAT_PHONG (DP...) lẫn MA_DON_HANG (CTDG-...), gọi chung logic transaction
+     * với giao diện Web tại roomOperationService.checkInRoom() để đồng bộ 3 bảng và ghi CHECK_IN.
      */
     private String processCheckinPhong(String codeOrOrder, String maNhanVien) {
         try {

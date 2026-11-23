@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RoomMapCell {
 
+    private Long id;
     private String maPhong;
     private String soPhong;
     private String maLoaiPhong;

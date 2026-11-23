@@ -31,6 +31,8 @@ public interface PhanPhongRepository extends JpaRepository<PhanPhong, Long> {
 
     long countByDatPhong_MaDatPhongAndTrangThaiNot(String maDatPhong, TrangThaiPhanPhong trangThai);
 
+    // Lưu ý: MySQL InnoDB không hỗ trợ FOR UPDATE trên câu truy vấn tổng hợp COUNT(...),
+    // nên việc khóa độc quyền được thực hiện trước bằng PhongRepository.findByMaPhongWithLock().
 //    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
         SELECT COUNT(pp) > 0 FROM PhanPhong pp

@@ -13,6 +13,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * [Module 3] Repository quản lý Hạng phòng: hỗ trợ khóa bi quan FOR UPDATE, đếm ràng buộc FK và tìm kiếm phân trang tối ưu.
+ */
 @Repository
 public interface LoaiPhongRepository extends JpaRepository<LoaiPhong, Long> {
 

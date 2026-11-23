@@ -31,6 +31,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+/**
+ * [Module 3] Controller CRUD Phòng vật lý (/admin/rooms) với whitelist sortField chống tham số sort trái phép.
+ */
 @Controller
 @RequestMapping("/admin/rooms")
 @RequireRole({"QUAN_LY", "ROLE_ADMIN", "VT001", "ADMIN", "NHAN_VIEN_LUU_TRU", "VT006"})

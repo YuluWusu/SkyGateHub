@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Controller điều hướng các trang thông tin tĩnh (templates/pages/*.html: giới thiệu, điểm tham quan, bản đồ, liên hệ)
+ * và chức năng Tra cứu mã đơn hàng (/tra-cuu-don) cho khách hàng không cần đăng nhập.
+ */
 @Controller
 @RequiredArgsConstructor
 @Slf4j

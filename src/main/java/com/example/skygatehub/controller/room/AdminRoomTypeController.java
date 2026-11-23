@@ -34,6 +34,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * [Module 3] Controller CRUD Khu lưu trú & Hạng phòng (/admin/room-types), hỗ trợ upload file ảnh MultipartFile
+ * lưu xuống uploads/rooms/ + static/images/rooms/ và phục vụ hiển thị ngay qua WebMvcConfig.
+ */
 @Controller
 @RequestMapping("/admin/room-types")
 @RequireRole({"QUAN_LY", "ROLE_ADMIN", "VT001", "ADMIN", "NHAN_VIEN_LUU_TRU", "VT006"})
