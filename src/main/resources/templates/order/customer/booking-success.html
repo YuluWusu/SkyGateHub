@@ -201,6 +201,41 @@
                     </table>
                 </div>
 
+                <!-- DỊCH VỤ & QUYỀN LỢI ĐƯỢC BINDING TỰ ĐỘNG (VÉ / BÀN ĂN / PHÒNG) -->
+                <div th:if="${(tickets != null and !tickets.isEmpty()) or (datBanList != null and !datBanList.isEmpty()) or (datPhongList != null and !datPhongList.isEmpty())}"
+                     class="p-3 rounded-4 bg-light border mb-4">
+                    <h6 class="fw-bold text-success mb-2"><i class="bi bi-link-45deg me-1"></i>Dịch vụ &amp; Quyền lợi đã liên kết theo đơn:</h6>
+                    <div class="row g-2 small">
+                        <div class="col-md-4" th:if="${tickets != null and !tickets.isEmpty()}">
+                            <div class="fw-semibold text-dark mb-1">🎟️ Vé phát hành (<span th:text="${tickets.size()}">0</span>):</div>
+                            <ul class="mb-0 ps-3">
+                                <li th:each="t : ${tickets}" class="font-monospace">
+                                    <span th:text="${t.maVeChuoi}">TK-...</span>
+                                    <span class="text-muted" th:text="'(' + ${t.loaiVe.tenLoaiVe} + ')'"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4" th:if="${datPhongList != null and !datPhongList.isEmpty()}">
+                            <div class="fw-semibold text-dark mb-1">🏨 Đặt phòng (<span th:text="${datPhongList.size()}">0</span>):</div>
+                            <ul class="mb-0 ps-3">
+                                <li th:each="dp : ${datPhongList}">
+                                    <span class="font-monospace" th:text="${dp.maDatPhong}">DP...</span> —
+                                    <span th:text="${dp.loaiPhong.tenLoaiPhong}">Phòng</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4" th:if="${datBanList != null and !datBanList.isEmpty()}">
+                            <div class="fw-semibold text-dark mb-1">🍽️ Đặt bàn nhà hàng (<span th:text="${datBanList.size()}">0</span>):</div>
+                            <ul class="mb-0 ps-3">
+                                <li th:each="db : ${datBanList}">
+                                    <span class="font-monospace" th:text="${db.maDatBan}">DB...</span> —
+                                    <span th:text="${db.soKhach + ' khách'}">1 khách</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- KHUNG THANH TOÁN CHUYỂN KHOẢN VIETQR CỌC 30% -->
                 <div class="qr-card mb-4">
                     <div class="row align-items-center g-4">
@@ -256,6 +291,15 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.SkygateCart) {
+                window.SkygateCart.clear();
+            } else {
+                try { localStorage.removeItem('skygate_cart'); } catch (e) {}
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -195,14 +195,58 @@
             } catch(e) {}
         };
 
+        window.SkygateCart = {
+            KEY: 'skygate_cart',
+            getItems: function() {
+                try {
+                    const raw = localStorage.getItem(this.KEY);
+                    const parsed = raw ? JSON.parse(raw) : [];
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch(e) { return []; }
+            },
+            saveItems: function(items) {
+                try {
+                    localStorage.setItem(this.KEY, JSON.stringify(items || []));
+                    this.updateBadge();
+                } catch(e) {}
+            },
+            addTicket: function(code, name, qty, date, isCombo) {
+                if (!code) return;
+                const q = Math.max(1, parseInt(qty) || 1);
+                const items = this.getItems();
+                const idx = items.findIndex(it => it.type === 'TICKET' && it.code === code);
+                if (idx >= 0) {
+                    items[idx].qty = (parseInt(items[idx].qty) || 0) + q;
+                    if (date) items[idx].date = date;
+                    if (name) items[idx].name = name;
+                } else {
+                    items.push({ type: 'TICKET', code: code, name: name || code, qty: q, date: date || '', isCombo: !!isCombo });
+                }
+                this.saveItems(items);
+            },
+            syncTickets: function(ticketItems, date) {
+                const others = this.getItems().filter(it => it.type !== 'TICKET');
+                const next = others.concat((ticketItems || []).map(t => ({
+                    type: 'TICKET', code: t.code, name: t.name, qty: t.qty, date: date || t.date || '', isCombo: !!t.isCombo
+                })));
+                this.saveItems(next);
+            },
+            clear: function() {
+                this.saveItems([]);
+            },
+            updateBadge: function() {
+                try {
+                    const items = this.getItems();
+                    const totalQty = items.reduce((sum, it) => sum + (parseInt(it.qty) || 1), 0);
+                    const badge = document.getElementById('cartBadge');
+                    if (badge) badge.textContent = totalQty;
+                } catch(e) {}
+            }
+        };
+
         (function() {
             // 1. Đồng bộ số lượng giỏ hàng trên tất cả các trang
-            try {
-                const rawCart = localStorage.getItem('skygate_cart');
-                const cart = rawCart ? JSON.parse(rawCart) : [];
-                const badge = document.getElementById('cartBadge');
-                if (badge) badge.textContent = Array.isArray(cart) ? cart.length : 0;
-            } catch(e) {}
+            window.SkygateCart.updateBadge();
 
             // 2. Làm sáng màu mục navbar hiện tại đang truy cập (chỉ đổi màu và độ sáng, không tạo pill)
             try {

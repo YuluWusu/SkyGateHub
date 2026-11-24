@@ -2,19 +2,27 @@ package com.example.skygatehub.controller.order;
 
 import com.example.skygatehub.dto.order.BookingPipelineForm;
 import com.example.skygatehub.entity.dining.CaAn;
+import com.example.skygatehub.entity.dining.DatBan;
 import com.example.skygatehub.entity.dining.DichVuAnUong;
 import com.example.skygatehub.entity.order.ChiTietDon;
 import com.example.skygatehub.entity.order.DonDat;
+import com.example.skygatehub.entity.order.QuyenLoiDon;
 import com.example.skygatehub.entity.order.Ve;
 import com.example.skygatehub.entity.room.KhuLuuTru;
 import com.example.skygatehub.entity.room.LoaiPhong;
+import com.example.skygatehub.entity.roombooking.DatPhong;
+import com.example.skygatehub.entity.ticket.ComboThanhPhan;
 import com.example.skygatehub.entity.ticket.LoaiVe;
 import com.example.skygatehub.repository.dining.CaAnRepository;
+import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.order.ChiTietDonRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
+import com.example.skygatehub.repository.order.QuyenLoiDonRepository;
 import com.example.skygatehub.repository.order.VeRepository;
 import com.example.skygatehub.repository.room.KhuLuuTruRepository;
 import com.example.skygatehub.repository.room.LoaiPhongRepository;
+import com.example.skygatehub.repository.roombooking.DatPhongRepository;
+import com.example.skygatehub.repository.ticket.ComboThanhPhanRepository;
 import com.example.skygatehub.service.dining.DichVuAnService;
 import com.example.skygatehub.service.dining.TableAssignmentService;
 import com.example.skygatehub.service.order.CheckoutService;
@@ -69,12 +77,19 @@ public class BookingPipelineController {
     private final DonDatRepository donDatRepository;
     private final ChiTietDonRepository chiTietDonRepository;
     private final VeRepository veRepository;
+    private final ComboThanhPhanRepository comboThanhPhanRepository;
+    private final QuyenLoiDonRepository quyenLoiDonRepository;
+    private final DatBanRepository datBanRepository;
+    private final DatPhongRepository datPhongRepository;
 
     /**
      * Mở giao diện pipeline đặt dịch vụ
      */
     @GetMapping({"/dat-dich-vu", "/booking/pipeline"})
     public String showPipelinePage(
+            @RequestParam(value = "ticketCode", required = false) String ticketCode,
+            @RequestParam(value = "ticketQty", required = false) Integer ticketQty,
+            @RequestParam(value = "ngayThamQuan", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngayThamQuan,
             @RequestParam(value = "ngayAn", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngayAn,
             @RequestParam(value = "maCaAn", required = false) String maCaAn,
             @RequestParam(value = "soKhachAn", required = false) Integer soKhachAn,
@@ -82,12 +97,20 @@ public class BookingPipelineController {
             @RequestParam(value = "mon", required = false) String mon,
             @RequestParam(value = "suat", required = false) Integer suat,
             Model model) {
-        // 1. Dữ liệu vé
+        // 1. Dữ liệu vé & thành phần combo
         List<LoaiVe> tickets = sanPhamVeService.layDanhSachVeDangBan();
         Map<String, BigDecimal> ticketPrices = new HashMap<>();
+        Map<String, List<String>> comboComponentsMap = new HashMap<>();
         for (LoaiVe lv : tickets) {
             BigDecimal price = ticketPricingService.tinhGiaVe(lv.getMaLoaiVe(), LocalDate.now());
             ticketPrices.put(lv.getMaLoaiVe(), price != null ? price : (lv.getGiaVe() != null ? lv.getGiaVe() : BigDecimal.ZERO));
+            if (lv.isCombo()) {
+                List<String> comps = comboThanhPhanRepository.findByLoaiVe_MaLoaiVe(lv.getMaLoaiVe()).stream()
+                        .filter(c -> c.getThanhPhanDichVu() != null && Boolean.TRUE.equals(c.getThanhPhanDichVu().getTrangThai()))
+                        .map(c -> c.getThanhPhanDichVu().getTenThanhPhan() + " (x" + (c.getSoLuongMoiCombo() != null ? c.getSoLuongMoiCombo() : 1) + ")")
+                        .toList();
+                comboComponentsMap.put(lv.getMaLoaiVe(), comps);
+            }
         }
 
         // 2. Dữ liệu khách sạn & khu lưu trú
@@ -107,6 +130,7 @@ public class BookingPipelineController {
         model.addAttribute("pageTitle", "Quy Trình Đặt Dịch Vụ — Cổng Trời Đông Giang");
         model.addAttribute("tickets", tickets);
         model.addAttribute("ticketPrices", ticketPrices);
+        model.addAttribute("comboComponentsMap", comboComponentsMap);
         model.addAttribute("khuList", khuList);
         model.addAttribute("roomTypes", roomTypes);
         model.addAttribute("diningServices", diningServices);
@@ -146,6 +170,10 @@ public class BookingPipelineController {
         }
         model.addAttribute("prefillDiningQty", prefillDiningQty);
         model.addAttribute("openDiningStep", !prefillDiningQty.isEmpty());
+        model.addAttribute("prefillTicketCode", ticketCode != null ? ticketCode.trim() : "");
+        model.addAttribute("prefillTicketQty", (ticketQty != null && ticketQty > 0) ? ticketQty : 0);
+        model.addAttribute("prefillVisitDate", (ngayThamQuan != null && !ngayThamQuan.isBefore(today))
+                ? ngayThamQuan.format(DateTimeFormatter.ISO_DATE) : "");
 
         return "order/customer/booking-pipeline";
     }
@@ -195,6 +223,9 @@ public class BookingPipelineController {
         DonDat don = donOpt.get();
         List<ChiTietDon> items = chiTietDonRepository.findByDonDat_MaDonDat(don.getMaDonDat());
         List<Ve> tickets = veRepository.findByChiTietDon_DonDat_MaDonDat(don.getMaDonDat());
+        List<QuyenLoiDon> quyenLoiList = quyenLoiDonRepository.findByChiTietDon_DonDat_MaDonDat(don.getMaDonDat());
+        List<DatBan> datBanList = datBanRepository.findByDonDat_MaDonDat(don.getMaDonDat());
+        List<DatPhong> datPhongList = datPhongRepository.findByChiTietDon_DonDat_MaDonDat(don.getMaDonDat());
 
         BigDecimal tongTien = don.getTongTien() != null ? don.getTongTien() : BigDecimal.ZERO;
         BigDecimal tienCoc = don.getTienCocYeuCau() != null ? don.getTienCocYeuCau()
@@ -216,6 +247,9 @@ public class BookingPipelineController {
         model.addAttribute("don", don);
         model.addAttribute("items", items);
         model.addAttribute("tickets", tickets);
+        model.addAttribute("quyenLoiList", quyenLoiList);
+        model.addAttribute("datBanList", datBanList);
+        model.addAttribute("datPhongList", datPhongList);
         model.addAttribute("tongTien", tongTien);
         model.addAttribute("tienCoc", tienCoc);
         model.addAttribute("tienConLai", tienConLai);

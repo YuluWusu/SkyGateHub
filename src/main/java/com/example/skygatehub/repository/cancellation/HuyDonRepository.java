@@ -19,6 +19,16 @@ public interface HuyDonRepository extends JpaRepository<HuyDon, Long> {
 
     List<HuyDon> findByChiTietDon_DonDat_MaDonDat(String maDonDat);
 
+    List<HuyDon> findByChiTietDon_MaChiTietOrderByThoiGianYeuCauDesc(String maChiTiet);
+
+    boolean existsByChiTietDon_MaChiTietAndTrangThaiXuLyIn(String maChiTiet, List<TrangThaiHuyDon> statuses);
+
     Page<HuyDon> findByTrangThaiXuLy(TrangThaiHuyDon trangThaiXuLy, Pageable pageable);
+
+    Page<HuyDon> findAllByOrderByThoiGianYeuCauDesc(Pageable pageable);
+
+    Page<HuyDon> findByTrangThaiXuLyOrderByThoiGianYeuCauDesc(TrangThaiHuyDon trangThaiXuLy, Pageable pageable);
+
+    long countByTrangThaiXuLy(TrangThaiHuyDon trangThaiXuLy);
 }
 

@@ -128,9 +128,16 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <a th:href="@{/dat-dich-vu}" class="btn btn-gold fw-bold py-3 text-center text-decoration-none">
+                            <button type="button" class="btn btn-outline-success fw-bold py-2" onclick="addToCartFromDetail()">
+                                <i class="bi bi-cart-plus me-1"></i>+ Thêm vào giỏ hàng
+                            </button>
+                            <div id="addCartFeedback" class="alert alert-success py-2 px-3 small mb-0 d-none">
+                                <i class="bi bi-check-circle-fill me-1"></i><span id="addCartFeedbackText">Đã thêm vào giỏ hàng!</span>
+                                <a th:href="@{/dat-dich-vu}" class="fw-bold text-success ms-1">Xem giỏ &amp; Đặt ngay →</a>
+                            </div>
+                            <button type="button" class="btn btn-gold fw-bold py-3 text-center" onclick="bookNowFromDetail()">
                                 <i class="bi bi-cart-check-fill me-1"></i>Xác nhận đặt vé ngay
-                            </a>
+                            </button>
                             <a th:href="@{/tickets}" class="btn btn-outline-secondary text-center small py-2">← Chọn loại vé khác</a>
                         </div>
                     </div>
@@ -146,6 +153,39 @@
         document.addEventListener('DOMContentLoaded', function() {
             fetchQuote();
         });
+
+        function addToCartFromDetail() {
+            const maLoaiVe = [[${ticket.maLoaiVe}]];
+            const tenLoaiVe = [[${ticket.tenLoaiVe}]];
+            const isCombo = [[${ticket.isCombo()}]];
+            const date = document.getElementById('quoteDate').value;
+            const qty = Math.max(1, parseInt(document.getElementById('quoteQty').value) || 1);
+
+            if (window.SkygateCart) {
+                window.SkygateCart.addTicket(maLoaiVe, tenLoaiVe, qty, date, isCombo);
+            }
+            const fb = document.getElementById('addCartFeedback');
+            const fbText = document.getElementById('addCartFeedbackText');
+            if (fb && fbText) {
+                fbText.textContent = 'Đã thêm ' + qty + ' x ' + tenLoaiVe + ' vào giỏ hàng!';
+                fb.classList.remove('d-none');
+            }
+        }
+
+        function bookNowFromDetail() {
+            const maLoaiVe = [[${ticket.maLoaiVe}]];
+            const tenLoaiVe = [[${ticket.tenLoaiVe}]];
+            const isCombo = [[${ticket.isCombo()}]];
+            const date = document.getElementById('quoteDate').value;
+            const qty = Math.max(1, parseInt(document.getElementById('quoteQty').value) || 1);
+
+            if (window.SkygateCart) {
+                window.SkygateCart.addTicket(maLoaiVe, tenLoaiVe, qty, date, isCombo);
+            }
+            window.location.href = '/dat-dich-vu?ticketCode=' + encodeURIComponent(maLoaiVe)
+                + '&ticketQty=' + encodeURIComponent(qty)
+                + '&ngayThamQuan=' + encodeURIComponent(date);
+        }
 
         function fetchQuote() {
             const date = document.getElementById('quoteDate').value;

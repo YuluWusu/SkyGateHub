@@ -94,15 +94,20 @@ public class AdminOrderController {
 
         try {
             TrangThaiDon newStatus = TrangThaiDon.valueOf(trangThaiDon.toUpperCase());
-            TrangThaiDon cu = donDat.getTrangThaiDon();
+            if (newStatus == TrangThaiDon.DA_HUY) {
+                redirectAttributes.addFlashAttribute(SessionKeys.FLASH_ERROR,
+                        "Admin không được đơn phương hủy đơn! Vui lòng xử lý qua luồng Yêu cầu hủy vé 2 chiều.");
+                return "redirect:/admin/orders/" + maDonDat;
+            }
+            if (donDat.getTrangThaiDon() == TrangThaiDon.DA_HUY) {
+                redirectAttributes.addFlashAttribute(SessionKeys.FLASH_ERROR,
+                        "Đơn đã hủy qua quy trình duyệt hủy vé, không thể đổi trạng thái.");
+                return "redirect:/admin/orders/" + maDonDat;
+            }
             donDat.setTrangThaiDon(newStatus);
             donDatRepository.save(donDat);
-            String thongBao = "Đã cập nhật trạng thái đơn sang: " + newStatus.name();
-            if (newStatus == TrangThaiDon.DA_HUY && cu != TrangThaiDon.DA_HUY) {
-                int soLuotHuy = tableAssignmentService.huyDatBanTheoDon(maDonDat);
-                thongBao += ". Đã hủy " + soLuotHuy + " lượt đặt bàn.";
-            }
-            redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS, thongBao);
+            redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS,
+                    "Đã cập nhật trạng thái đơn sang: " + newStatus.name());
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute(SessionKeys.FLASH_ERROR, "Trạng thái đơn không hợp lệ: " + trangThaiDon);
         }

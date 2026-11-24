@@ -33,13 +33,17 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <!-- Form đổi trạng thái đơn -->
-                    <form th:action="@{/admin/orders/{id}/status(id=${order.maDonDat})}" method="post" class="d-flex align-items-center gap-2">
+                    <span th:if="${order.trangThaiDon.name() == 'DA_HUY'}"
+                          class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-2 rounded-pill">
+                        <i class="bi bi-x-circle me-1"></i>Đã hủy (qua duyệt hủy 2 chiều)
+                    </span>
+                    <!-- Form đổi trạng thái đơn (không cho Admin đơn phương hủy đơn) -->
+                    <form th:unless="${order.trangThaiDon.name() == 'DA_HUY'}"
+                          th:action="@{/admin/orders/{id}/status(id=${order.maDonDat})}" method="post" class="d-flex align-items-center gap-2">
                         <select name="trangThaiDon" class="form-select form-select-sm" style="min-width: 160px;">
                             <option value="CHO_XAC_NHAN" th:selected="${order.trangThaiDon.name() == 'CHO_XAC_NHAN'}">Chờ xác nhận</option>
                             <option value="DA_XAC_NHAN" th:selected="${order.trangThaiDon.name() == 'DA_XAC_NHAN'}">Đã xác nhận</option>
                             <option value="DA_HOAN_THANH" th:selected="${order.trangThaiDon.name() == 'DA_HOAN_THANH'}">Đã hoàn thành</option>
-                            <option value="DA_HUY" th:selected="${order.trangThaiDon.name() == 'DA_HUY'}">Đã hủy đơn</option>
                         </select>
                         <button type="submit" class="btn btn-sm btn-primary fw-semibold text-nowrap">
                             <i class="bi bi-check-lg me-1"></i>Lưu trạng thái

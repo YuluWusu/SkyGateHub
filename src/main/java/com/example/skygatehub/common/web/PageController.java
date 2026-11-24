@@ -1,9 +1,13 @@
 package com.example.skygatehub.common.web;
 
+import com.example.skygatehub.common.constant.SessionKeys;
+import com.example.skygatehub.dto.cancellation.TicketCancelEligibility;
+import com.example.skygatehub.entity.cancellation.HuyDon;
 import com.example.skygatehub.entity.order.ChiTietDon;
 import com.example.skygatehub.entity.order.DonDat;
 import com.example.skygatehub.repository.order.ChiTietDonRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
+import com.example.skygatehub.service.cancellation.TicketCancellationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -11,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +34,7 @@ public class PageController {
 
     private final DonDatRepository donDatRepository;
     private final ChiTietDonRepository chiTietDonRepository;
+    private final TicketCancellationService ticketCancellationService;
 
     @GetMapping("/gioi-thieu")
     public String showAboutPage(Model model) {
@@ -96,12 +102,39 @@ public class PageController {
         model.addAttribute("orders", results);
 
         Map<String, List<ChiTietDon>> lineItemsMap = new HashMap<>();
+        Map<String, TicketCancelEligibility> cancelEligibilityMap = new HashMap<>();
         for (DonDat don : results) {
             List<ChiTietDon> items = chiTietDonRepository.findByDonDat_MaDonDat(don.getMaDonDat());
             lineItemsMap.put(don.getMaDonDat(), items);
+            for (ChiTietDon item : items) {
+                cancelEligibilityMap.put(item.getMaChiTiet(), ticketCancellationService.evaluateEligibility(item));
+            }
         }
         model.addAttribute("lineItemsMap", lineItemsMap);
+        model.addAttribute("cancelEligibilityMap", cancelEligibilityMap);
 
         return "order/customer/tra-cuu-don";
+    }
+
+    @PostMapping("/tra-cuu-don/huy-ve")
+    public String requestTicketCancellation(@RequestParam("maChiTiet") String maChiTiet,
+                                            @RequestParam(value = "lyDo", required = false) String lyDo,
+                                            @RequestParam(value = "maDonHang", required = false) String maDonHang,
+                                            @RequestParam(value = "sdt", required = false) String sdt,
+                                            RedirectAttributes redirectAttributes) {
+        try {
+            HuyDon req = ticketCancellationService.submitTicketCancelRequest(maChiTiet, lyDo);
+            redirectAttributes.addFlashAttribute(SessionKeys.FLASH_SUCCESS,
+                    "Đã gửi yêu cầu hủy vé [" + req.getMaHuy() + "] thành công! Vui lòng chờ Admin phê duyệt.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute(SessionKeys.FLASH_ERROR, ex.getMessage());
+        }
+        if (maDonHang != null && !maDonHang.isBlank()) {
+            redirectAttributes.addAttribute("maDonHang", maDonHang.trim());
+        }
+        if (sdt != null && !sdt.isBlank()) {
+            redirectAttributes.addAttribute("sdt", sdt.trim());
+        }
+        return "redirect:/tra-cuu-don";
     }
 }

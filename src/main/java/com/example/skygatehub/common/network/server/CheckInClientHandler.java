@@ -17,6 +17,7 @@ import com.example.skygatehub.repository.dining.DatBanRepository;
 import com.example.skygatehub.repository.order.DonDatRepository;
 import com.example.skygatehub.repository.order.VeRepository;
 import com.example.skygatehub.repository.roombooking.DatPhongRepository;
+import com.example.skygatehub.service.dining.TableAssignmentService;
 import com.example.skygatehub.service.room.RoomOperationService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -56,6 +57,7 @@ public class CheckInClientHandler implements Runnable {
     private final CheckInRepository checkInRepository;
     private final NguoiDungRepository nguoiDungRepository;
     private final RoomOperationService roomOperationService;
+    private final TableAssignmentService tableAssignmentService;
     private final PlatformTransactionManager transactionManager;
     private final EntityManager entityManager;
 
@@ -72,6 +74,7 @@ public class CheckInClientHandler implements Runnable {
             CheckInRepository checkInRepository,
             NguoiDungRepository nguoiDungRepository,
             RoomOperationService roomOperationService,
+            TableAssignmentService tableAssignmentService,
             PlatformTransactionManager transactionManager,
             EntityManager entityManager) {
         this.clientSocket = socket;
@@ -82,6 +85,7 @@ public class CheckInClientHandler implements Runnable {
         this.checkInRepository = checkInRepository;
         this.nguoiDungRepository = nguoiDungRepository;
         this.roomOperationService = roomOperationService;
+        this.tableAssignmentService = tableAssignmentService;
         this.transactionManager = transactionManager;
         this.entityManager = entityManager;
         this.clientId = CLIENT_COUNTER.getAndIncrement();
@@ -155,7 +159,8 @@ public class CheckInClientHandler implements Runnable {
             case "CHECKIN_AN":
                 if (!authenticated) return "401 UNAUTHORIZED Vui lòng AUTH trước khi check-in.";
                 if (parts.length < 2) return "400 ERROR Thiếu mã đặt bàn: Cú pháp: CHECKIN_AN <MA_DAT_BAN>";
-                return processCheckinAn(parts[1]);
+                String staffId = (parts.length >= 3) ? parts[2] : null;
+                return processCheckinAn(parts[1], staffId);
 
             case "STATS":
                 long totalCheckins = checkInRepository.count();
@@ -304,61 +309,50 @@ public class CheckInClientHandler implements Runnable {
         }
     }
 
-    private String processCheckinAn(String maDatBan) {
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        // Cùng cách khóa với TableAssignmentServiceImpl.checkInTable: khóa DAT_BAN rồi BAN_AN, chạy ở READ_COMMITTED
-        // để câu kiểm bàn đang có khách thấy lượt mà giao dịch khác vừa commit.
-        tx.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
-        return tx.execute(status -> {
-            Optional<DatBan> dbOpt = datBanRepository.findByMaDatBan(maDatBan);
-            if (dbOpt.isEmpty()) return "404 NOT_FOUND Mã đặt bàn không tồn tại: " + maDatBan;
+    /**
+     * Tích hợp Trạm 3: Nhà Hàng Ẩm Thực qua TableAssignmentService.
+     * Hỗ trợ nhận vào cả MA_DAT_BAN lẫn MA_DON_HANG, gọi chung logic transaction với Web
+     * để đồng bộ khóa bi quan, trừ quyền lợi combo và ghi CHECK_IN.
+     */
+    private String processCheckinAn(String codeOrOrder, String maNhanVien) {
+        try {
+            String targetMaDatBan = codeOrOrder;
+            Optional<DatBan> dbOpt = datBanRepository.findByMaDatBan(targetMaDatBan);
 
-            DatBan db = dbOpt.get();
-            entityManager.refresh(db, LockModeType.PESSIMISTIC_WRITE);
-            if (db.getTrangThai() == TrangThaiDatBan.DA_CHECK_IN) {
-                return "409 CONFLICT_ALREADY_SEATED Bàn [" + maDatBan + "] đang được sử dụng.";
-            }
-            if (db.getTrangThai() == TrangThaiDatBan.DA_HUY) {
-                return "410 GONE Đặt bàn [" + maDatBan + "] đã bị hủy.";
-            }
-            if (db.getTrangThai() == TrangThaiDatBan.DA_HOAN_THANH) {
-                return "409 CONFLICT Đặt bàn [" + maDatBan + "] đã hoàn tất.";
-            }
-            if (db.getBanAn() == null) {
-                return "409 CONFLICT Đặt bàn [" + maDatBan + "] chưa được xếp bàn.";
-            }
-            entityManager.refresh(db.getBanAn(), LockModeType.PESSIMISTIC_WRITE);
-            if (db.getBanAn().getTrangThai() == TrangThaiBanAn.BAO_TRI) {
-                return "409 CONFLICT Bàn [" + db.getBanAn().getSoBan() + "] đang bảo trì.";
-            }
-            if (!LocalDate.now().equals(db.getNgayAn())) {
-                return "409 CONFLICT Đặt bàn [" + maDatBan + "] dành cho ngày " + db.getNgayAn() + ".";
-            }
-            if (!datBanRepository.findByBanAn_MaBanAnAndTrangThaiAndMaDatBanNot(
-                    db.getBanAn().getMaBanAn(), TrangThaiDatBan.DA_CHECK_IN, maDatBan).isEmpty()) {
-                return "409 CONFLICT Bàn [" + db.getBanAn().getSoBan() + "] đang có khách của lượt khác.";
+            if (dbOpt.isEmpty()) {
+                Optional<DonDat> donOpt = donDatRepository.findByMaDonHang(codeOrOrder);
+                if (donOpt.isPresent()) {
+                    List<DatBan> dbs = datBanRepository.findByDonDat_MaDonDat(donOpt.get().getMaDonDat());
+                    if (!dbs.isEmpty()) {
+                        targetMaDatBan = dbs.get(0).getMaDatBan();
+                        dbOpt = Optional.of(dbs.get(0));
+                    }
+                }
             }
 
-            db.setTrangThai(TrangThaiDatBan.DA_CHECK_IN);
-            db.getBanAn().setTrangThai(TrangThaiBanAn.DANG_SU_DUNG);
-            datBanRepository.save(db);
+            if (dbOpt.isEmpty()) {
+                return "404 NOT_FOUND Không tìm thấy đơn đặt bàn hoặc mã đơn: " + codeOrOrder;
+            }
 
-            CheckIn ci = new CheckIn();
-            ci.setMaCheckIn("CI-AN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-            ci.setDonDat(db.getDonDat());
-            ci.setLoaiCheckIn(LoaiCheckIn.AN_UONG);
-            ci.setDatBan(db);
+            String staffCode = (maNhanVien != null && !maNhanVien.isBlank()) ? maNhanVien.trim() : null;
+            if (staffCode == null) {
+                staffCode = nguoiDungRepository.findAll().stream()
+                        .findFirst()
+                        .map(NguoiDung::getMaNguoiDung)
+                        .orElse("ND001");
+            }
 
-            NguoiDung nv = nguoiDungRepository.findAll().stream().findFirst().orElse(null);
-            ci.setNhanVien(nv);
-            ci.setSoLuong(db.getSoKhach());
-            ci.setThoiGianCheckIn(LocalDateTime.now());
-            ci.setTrangThai(TrangThaiCheckIn.DA_CHECK_IN);
-            ci.setGhiChu("Check-in bàn ăn qua Socket tại trạm: " + stationName);
-            checkInRepository.save(ci);
-
-            log.info("[CHECKIN-AN-SUCCESS] Trạm {} check-in bàn thành công: {}", stationName, maDatBan);
-            return "200 CHECKIN_SUCCESS MaCheckIn=" + ci.getMaCheckIn() + " MaDatBan=" + maDatBan + " SoKhach=" + db.getSoKhach();
-        });
+            int soKhach = dbOpt.get().getSoKhach() != null ? dbOpt.get().getSoKhach() : 1;
+            String soBan = tableAssignmentService.checkInTable(targetMaDatBan, staffCode);
+            log.info("[CHECKIN-AN-SUCCESS] Trạm {} check-in bàn thành công: {} (Bàn {})", stationName, targetMaDatBan, soBan);
+            return "200 CHECKIN_AN_OK MaDatBan=" + targetMaDatBan + " SoBan=" + soBan + " SoKhach=" + soKhach;
+        } catch (Exception ex) {
+            log.warn("Lỗi check-in bàn qua socket: {}", ex.getMessage());
+            String msg = ex.getMessage() != null ? ex.getMessage() : "Lỗi check-in bàn";
+            if (msg.contains("đã bị hủy")) {
+                return "410 GONE " + msg;
+            }
+            return "409 CONFLICT " + msg;
+        }
     }
 }

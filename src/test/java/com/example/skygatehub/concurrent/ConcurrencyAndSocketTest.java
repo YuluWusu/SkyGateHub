@@ -250,6 +250,7 @@ class ConcurrencyAndSocketTest {
                 checkInRepository,
                 nguoiDungRepository,
                 roomOperationService,
+                mock(com.example.skygatehub.service.dining.TableAssignmentService.class),
                 txManager,
                 mock(jakarta.persistence.EntityManager.class)
         );

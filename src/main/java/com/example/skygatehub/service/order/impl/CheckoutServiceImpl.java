@@ -193,7 +193,52 @@ public class CheckoutServiceImpl implements CheckoutService {
                         }
 
                         if (loaiVe.isCombo()) {
-                            quyenLoiList.addAll(taoQuyenLoiCombo(loaiVe, ctd, qty));
+                            List<QuyenLoiDon> comboRights = taoQuyenLoiCombo(loaiVe, ctd, qty);
+                            quyenLoiList.addAll(comboRights);
+                            // Binding Combo sang các vé thành phần & phòng khách sạn tương ứng (nếu có)
+                            for (QuyenLoiDon ql : comboRights) {
+                                ThanhPhanDichVu tp = ql.getThanhPhanDichVu();
+                                if (tp == null) {
+                                    continue;
+                                }
+                                int totalCompQty = ql.getSoLuongToiDa() != null ? ql.getSoLuongToiDa() : qty;
+                                if (tp.getLoaiVe() != null
+                                        && !tp.getLoaiVe().getMaLoaiVe().equals(loaiVe.getMaLoaiVe())) {
+                                    for (int c = 1; c <= totalCompQty; c++) {
+                                        Ve compVe = new Ve();
+                                        compVe.setMaVe(OrderCodeGenerator.generateMaVe());
+                                        compVe.setChiTietDon(ctd);
+                                        compVe.setLoaiVe(tp.getLoaiVe());
+                                        compVe.setMaVeChuoi(maDonHang + "-" + tCode + "-" + tp.getLoaiVe().getMaLoaiVe() + "-" + c);
+                                        compVe.setNgayThamQuan(ngayThamQuan);
+                                        compVe.setTrangThai(TrangThaiVe.CHUA_SU_DUNG);
+                                        veList.add(compVe);
+                                    }
+                                }
+                                if (tp.getLoaiPhong() != null) {
+                                    LoaiPhong lpCombo = tp.getLoaiPhong();
+                                    LocalDate checkInCombo = ngayThamQuan;
+                                    LocalDate checkOutCombo = ngayThamQuan.plusDays(1);
+                                    List<Phong> availableComboRooms = phongRepository.findAvailableRooms(
+                                            lpCombo.getMaLoaiPhong(), checkInCombo, checkOutCombo);
+                                    if (availableComboRooms.size() < totalCompQty) {
+                                        throw new BusinessException(ErrorCode.OVERBOOKING,
+                                                "Phòng [" + lpCombo.getTenLoaiPhong() + "] trong combo chỉ còn "
+                                                + availableComboRooms.size() + " phòng trống từ " + checkInCombo
+                                                + " đến " + checkOutCombo + "!");
+                                    }
+                                    DatPhong dpCombo = new DatPhong();
+                                    dpCombo.setMaDatPhong(OrderCodeGenerator.generateMaDatPhong());
+                                    dpCombo.setChiTietDon(ctd);
+                                    dpCombo.setLoaiPhong(lpCombo);
+                                    dpCombo.setNgayNhanPhong(checkInCombo);
+                                    dpCombo.setNgayTraPhong(checkOutCombo);
+                                    dpCombo.setSoLuongPhong(totalCompQty);
+                                    dpCombo.setSoKhach(totalCompQty * 2);
+                                    dpCombo.setTrangThai(TrangThaiDatPhong.CHO_XAC_NHAN);
+                                    datPhongList.add(dpCombo);
+                                }
+                            }
                         }
                     }
                 }

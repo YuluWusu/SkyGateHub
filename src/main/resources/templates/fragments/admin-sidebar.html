@@ -91,6 +91,9 @@
             <a th:if="${currentUser.canAccessOrders()}" th:href="@{/admin/orders}" class="sidebar-link">
                 <span>Quản lý đơn đặt</span>
             </a>
+            <a th:if="${currentUser.canAccessTicketModule()}" th:href="@{/admin/cancellations}" class="sidebar-link">
+                <span>Duyệt yêu cầu hủy vé</span>
+            </a>
             <a th:if="${currentUser.canAccessTicketModule()}" th:href="@{/admin/payments}" class="sidebar-link">
                 <span>Lịch sử thanh toán &amp; cọc</span>
             </a>

@@ -35,6 +35,8 @@ public interface VeRepository extends JpaRepository<Ve, Long> {
 
     List<Ve> findByChiTietDon_DonDat_MaDonDat(String maDonDat);
 
+    List<Ve> findByChiTietDon_MaChiTiet(String maChiTiet);
+
     List<Ve> findByNgayThamQuanAndTrangThai(LocalDate ngayThamQuan, TrangThaiVe trangThai);
 
     Page<Ve> findByTrangThai(TrangThaiVe trangThai, Pageable pageable);

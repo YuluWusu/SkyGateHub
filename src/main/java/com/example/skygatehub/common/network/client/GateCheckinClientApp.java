@@ -8,19 +8,25 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -28,16 +34,16 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Ứng dụng Client Socket đồ họa Java Swing.
- * Dùng tại các quầy / cổng soát vé & lễ tân KDL Cổng Trời Đông Giang.
- * Có nút mở đồng thời 3 trạm Check-in độc lập để kiểm chứng khả năng phục vụ đồng thời của Server.
+ * Ứng dụng Client Socket đồ họa Java Swing (Tiêu chí 5.3, 5.4).
+ * Hỗ trợ 3 trạm soát vé/lễ tân/nhà hàng độc lập và Tab Stress Test đa luồng
+ * để demo trực quan xử lý xung đột (Pessimistic Lock + synchronized) qua TCP Socket.
  */
 public class GateCheckinClientApp extends JFrame {
 
-    private final String stationId;
     private final String defaultStationName;
 
     private JTextField hostField;
@@ -45,58 +51,70 @@ public class GateCheckinClientApp extends JFrame {
     private JComboBox<String> stationCombo;
     private JButton connectBtn;
     private JButton disconnectBtn;
+    private JButton pingBtn;
+    private JButton statsBtn;
     private JLabel connectionStatusLabel;
+    private JTabbedPane tabbedPane;
 
+    // Tab 1: Cổng Vé
     private JTextField ticketCodeField;
-    private JButton checkinTicketBtn;
-    private JButton lookupTicketBtn;
     private DefaultTableModel ticketTableModel;
     private JLabel ticketCountLabel;
     private final AtomicInteger successTicketCount = new AtomicInteger(0);
 
+    // Tab 2: Quầy Lưu Trú
     private JTextField roomCodeField;
-    private JButton checkinRoomBtn;
     private DefaultTableModel roomTableModel;
     private JLabel roomCountLabel;
     private final AtomicInteger successRoomCount = new AtomicInteger(0);
 
+    // Tab 3: Nhà Hàng
     private JTextField diningCodeField;
-    private JButton checkinDiningBtn;
     private DefaultTableModel diningTableModel;
+    private JLabel diningCountLabel;
+    private final AtomicInteger successDiningCount = new AtomicInteger(0);
 
-    private JTextArea logArea;
+    // Tab 4: Demo Đa Luồng & Xung Đột
+    private JComboBox<String> stressCommandCombo;
+    private JTextField stressCodeField;
+    private JSpinner stressThreadSpinner;
+    private JButton runStressBtn;
+    private JLabel stressSummaryLabel;
+    private DefaultTableModel stressTableModel;
+
+    private JTextPane logPane;
 
     private Socket socket;
     private BufferedReader reader;
     private PrintWriter writer;
     private Thread listenerThread;
     private volatile boolean connected = false;
+    private volatile int lastCommandTab = 0;
 
     public GateCheckinClientApp(String stationId, String defaultStationName) {
-        this.stationId = stationId;
         this.defaultStationName = defaultStationName;
         initUI();
     }
 
     private void initUI() {
-        setTitle("SkyGateHub - Hệ Thống Soát Vé & Check-in [" + defaultStationName + "]");
-        setSize(920, 700);
-        setMinimumSize(new Dimension(820, 560));
+        setTitle("SkyGateHub - Hệ Thống Soát Vé & Demo Socket Đa Luồng [" + defaultStationName + "]");
+        setSize(1020, 760);
+        setMinimumSize(new Dimension(900, 620));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(new EmptyBorder(12, 12, 12, 12));
 
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         topPanel.setBorder(BorderFactory.createTitledBorder("Cấu hình kết nối TCP Socket (Cổng 9090)"));
 
         topPanel.add(new JLabel("Máy chủ:"));
-        hostField = new JTextField("localhost", 10);
+        hostField = new JTextField("localhost", 9);
         topPanel.add(hostField);
 
         topPanel.add(new JLabel("Cổng:"));
-        portField = new JTextField("9090", 5);
+        portField = new JTextField("9090", 4);
         topPanel.add(portField);
 
         topPanel.add(new JLabel("Trạm:"));
@@ -122,6 +140,16 @@ public class GateCheckinClientApp extends JFrame {
         disconnectBtn.addActionListener(e -> disconnectFromServer());
         topPanel.add(disconnectBtn);
 
+        pingBtn = new JButton("PING");
+        pingBtn.setEnabled(false);
+        pingBtn.addActionListener(e -> sendCommand("PING"));
+        topPanel.add(pingBtn);
+
+        statsBtn = new JButton("STATS");
+        statsBtn.setEnabled(false);
+        statsBtn.addActionListener(e -> sendCommand("STATS"));
+        topPanel.add(statsBtn);
+
         JButton openAllStationsBtn = new JButton("⚡ Mở 3 Trạm Đồng Thời");
         openAllStationsBtn.setBackground(new Color(13, 110, 253));
         openAllStationsBtn.setForeground(Color.WHITE);
@@ -134,27 +162,22 @@ public class GateCheckinClientApp extends JFrame {
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("🎟️ Trạm 1: Cổng Vé", createTicketStationTab());
+        tabbedPane.addTab("🏨 Trạm 2: Quầy Lưu Trú", createRoomStationTab());
+        tabbedPane.addTab("🍽️ Trạm 3: Nhà Hàng", createDiningStationTab());
+        tabbedPane.addTab("⚡ Demo Xung Đột & Đa Luồng", createConcurrencyDemoTab());
 
-        JPanel ticketTab = createTicketStationTab();
-        tabbedPane.addTab("🎟️ Trạm 1: Cổng Vé", ticketTab);
-
-        JPanel roomTab = createRoomStationTab();
-        tabbedPane.addTab("🏨 Trạm 2: Quầy Lưu Trú", roomTab);
-
-        JPanel diningTab = createDiningStationTab();
-        tabbedPane.addTab("🍽️ Trạm 3: Nhà Hàng", diningTab);
-
-        JPanel centerPanel = new JPanel(new BorderLayout(5, 5));
+        JPanel centerPanel = new JPanel(new BorderLayout(6, 6));
         centerPanel.add(tabbedPane, BorderLayout.CENTER);
 
-        logArea = new JTextArea();
-        logArea.setEditable(false);
-        logArea.setFont(new Font("Consolas", Font.PLAIN, 12));
-        logArea.setBackground(new Color(248, 249, 250));
-        JScrollPane scrollLog = new JScrollPane(logArea);
-        scrollLog.setPreferredSize(new Dimension(880, 180));
-        scrollLog.setBorder(BorderFactory.createTitledBorder("Nhật ký truyền nhận gói tin TCP"));
+        logPane = new JTextPane();
+        logPane.setEditable(false);
+        logPane.setFont(new Font("Consolas", Font.PLAIN, 12));
+        logPane.setBackground(new Color(248, 249, 250));
+        JScrollPane scrollLog = new JScrollPane(logPane);
+        scrollLog.setPreferredSize(new Dimension(960, 185));
+        scrollLog.setBorder(BorderFactory.createTitledBorder("Nhật ký truyền nhận gói tin TCP (Socket Stream)"));
         centerPanel.add(scrollLog, BorderLayout.SOUTH);
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
@@ -164,13 +187,13 @@ public class GateCheckinClientApp extends JFrame {
         bottomPanel.add(footerLabel, BorderLayout.WEST);
 
         JButton clearBtn = new JButton("Xóa Nhật Ký");
-        clearBtn.addActionListener(e -> logArea.setText(""));
+        clearBtn.addActionListener(e -> logPane.setText(""));
         bottomPanel.add(clearBtn, BorderLayout.EAST);
 
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
-        appendLog("Khởi động ứng dụng Client Swing. Sẵn sàng kết nối tới CheckInSocketServer.");
+        appendLog("[SYSTEM] Khởi động Swing Client. Sẵn sàng kết nối tới CheckInSocketServer.");
     }
 
     private JPanel createTicketStationTab() {
@@ -184,15 +207,23 @@ public class GateCheckinClientApp extends JFrame {
         ticketCodeField.addActionListener(e -> processTicketCheckin());
         controlPanel.add(ticketCodeField);
 
-        checkinTicketBtn = new JButton("🎟️ Soát Vé (CHECKIN_VE)");
+        JButton checkinTicketBtn = new JButton("🎟️ Soát Vé (CHECKIN_VE)");
         checkinTicketBtn.setBackground(new Color(13, 110, 253));
         checkinTicketBtn.setForeground(Color.WHITE);
         checkinTicketBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
         checkinTicketBtn.addActionListener(e -> processTicketCheckin());
         controlPanel.add(checkinTicketBtn);
 
-        lookupTicketBtn = new JButton("🔍 Tra Cứu Vé");
-        lookupTicketBtn.addActionListener(e -> sendCommand("LOOKUP " + ticketCodeField.getText().trim()));
+        JButton lookupTicketBtn = new JButton("🔍 Tra Cứu Vé");
+        lookupTicketBtn.addActionListener(e -> {
+            String code = ticketCodeField.getText().trim();
+            if (code.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập mã vé cần tra cứu!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            lastCommandTab = 0;
+            sendCommand("LOOKUP " + code);
+        });
         controlPanel.add(lookupTicketBtn);
 
         ticketCountLabel = new JLabel("Số vé đã soát thành công trong ca: 0");
@@ -203,15 +234,8 @@ public class GateCheckinClientApp extends JFrame {
         panel.add(controlPanel, BorderLayout.NORTH);
 
         String[] columns = {"Thời gian", "Mã Vé / Chuỗi", "Loại Vé", "Mã Check-in", "Kết Quả"};
-        ticketTableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        JTable ticketTable = new JTable(ticketTableModel);
-        ticketTable.setRowHeight(24);
-        ticketTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        ticketTableModel = createReadOnlyModel(columns);
+        JTable ticketTable = createStyledTable(ticketTableModel, 4);
         JScrollPane tableScroll = new JScrollPane(ticketTable);
         tableScroll.setBorder(BorderFactory.createTitledBorder("Danh sách vé vừa soát tại Trạm 1: Cổng Vé"));
         panel.add(tableScroll, BorderLayout.CENTER);
@@ -230,15 +254,23 @@ public class GateCheckinClientApp extends JFrame {
         roomCodeField.addActionListener(e -> processRoomCheckin());
         controlPanel.add(roomCodeField);
 
-        checkinRoomBtn = new JButton("🏨 Check-in Nhận Phòng");
+        JButton checkinRoomBtn = new JButton("🏨 Check-in Nhận Phòng");
         checkinRoomBtn.setBackground(new Color(25, 135, 84));
         checkinRoomBtn.setForeground(Color.WHITE);
         checkinRoomBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
         checkinRoomBtn.addActionListener(e -> processRoomCheckin());
         controlPanel.add(checkinRoomBtn);
 
-        JButton lookupRoomBtn = new JButton("Tra Cứu Phòng");
-        lookupRoomBtn.addActionListener(e -> sendCommand("LOOKUP " + roomCodeField.getText().trim()));
+        JButton lookupRoomBtn = new JButton("🔍 Tra Cứu Phòng");
+        lookupRoomBtn.addActionListener(e -> {
+            String code = roomCodeField.getText().trim();
+            if (code.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập mã đặt phòng cần tra cứu!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            lastCommandTab = 1;
+            sendCommand("LOOKUP " + code);
+        });
         controlPanel.add(lookupRoomBtn);
 
         roomCountLabel = new JLabel("Số lượt nhận phòng thành công: 0");
@@ -249,15 +281,8 @@ public class GateCheckinClientApp extends JFrame {
         panel.add(controlPanel, BorderLayout.NORTH);
 
         String[] columns = {"Thời gian", "Mã Đặt Phòng", "Loại Phòng", "Số Phòng Nhận", "Kết Quả"};
-        roomTableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        JTable roomTable = new JTable(roomTableModel);
-        roomTable.setRowHeight(24);
-        roomTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        roomTableModel = createReadOnlyModel(columns);
+        JTable roomTable = createStyledTable(roomTableModel, 4);
         JScrollPane tableScroll = new JScrollPane(roomTable);
         tableScroll.setBorder(BorderFactory.createTitledBorder("Lịch sử nhận phòng Trạm 2: Quầy Lưu Trú"));
         panel.add(tableScroll, BorderLayout.CENTER);
@@ -270,38 +295,142 @@ public class GateCheckinClientApp extends JFrame {
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        controlPanel.add(new JLabel("Mã đặt bàn:"));
+        controlPanel.add(new JLabel("Mã đặt bàn / Mã đơn hàng:"));
         diningCodeField = new JTextField(20);
         diningCodeField.setFont(new Font("Consolas", Font.BOLD, 14));
+        diningCodeField.addActionListener(e -> processDiningCheckin());
         controlPanel.add(diningCodeField);
 
-        checkinDiningBtn = new JButton("🍽️ Check-in Vào Bàn Ăn");
+        JButton checkinDiningBtn = new JButton("🍽️ Check-in Vào Bàn Ăn");
         checkinDiningBtn.setBackground(new Color(255, 193, 7));
         checkinDiningBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
-        checkinDiningBtn.addActionListener(e -> sendCommand("CHECKIN_AN " + diningCodeField.getText().trim()));
+        checkinDiningBtn.addActionListener(e -> processDiningCheckin());
         controlPanel.add(checkinDiningBtn);
 
-        JButton lookupDiningBtn = new JButton("Tra Cứu Bàn");
-        lookupDiningBtn.addActionListener(e -> sendCommand("LOOKUP " + diningCodeField.getText().trim()));
+        JButton lookupDiningBtn = new JButton("🔍 Tra Cứu Bàn");
+        lookupDiningBtn.addActionListener(e -> {
+            String code = diningCodeField.getText().trim();
+            if (code.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập mã đặt bàn cần tra cứu!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            lastCommandTab = 2;
+            sendCommand("LOOKUP " + code);
+        });
         controlPanel.add(lookupDiningBtn);
+
+        diningCountLabel = new JLabel("Số lượt nhận bàn thành công: 0");
+        diningCountLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        diningCountLabel.setForeground(new Color(25, 135, 84));
+        controlPanel.add(diningCountLabel);
 
         panel.add(controlPanel, BorderLayout.NORTH);
 
-        String[] columns = {"Thời gian", "Mã Đặt Bàn", "Số Khách", "Mã Check-in", "Kết Quả"};
-        diningTableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        JTable diningTable = new JTable(diningTableModel);
-        diningTable.setRowHeight(24);
-        diningTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        String[] columns = {"Thời gian", "Mã Đặt Bàn", "Số Khách", "Số Bàn", "Kết Quả"};
+        diningTableModel = createReadOnlyModel(columns);
+        JTable diningTable = createStyledTable(diningTableModel, 4);
         JScrollPane tableScroll = new JScrollPane(diningTable);
         tableScroll.setBorder(BorderFactory.createTitledBorder("Lịch sử check-in Trạm 3: Nhà Hàng Ẩm Thực"));
         panel.add(tableScroll, BorderLayout.CENTER);
 
         return panel;
+    }
+
+    /**
+     * Tab 4: Demo trực quan khả năng xử lý đồng thời, TCP SocketWorker và chống xung đột (Race Condition).
+     */
+    private JPanel createConcurrencyDemoTab() {
+        JPanel panel = new JPanel(new BorderLayout(8, 8));
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JPanel topBox = new JPanel(new BorderLayout(6, 6));
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+
+        controlPanel.add(new JLabel("Loại lệnh:"));
+        stressCommandCombo = new JComboBox<>(new String[]{"CHECKIN_VE", "CHECKIN_PHONG", "CHECKIN_AN"});
+        controlPanel.add(stressCommandCombo);
+
+        controlPanel.add(new JLabel("Mã mục tiêu:"));
+        stressCodeField = new JTextField("TK-2026-0003", 16);
+        stressCodeField.setFont(new Font("Consolas", Font.BOLD, 14));
+        controlPanel.add(stressCodeField);
+
+        controlPanel.add(new JLabel("Số luồng bắn đồng thời:"));
+        stressThreadSpinner = new JSpinner(new SpinnerNumberModel(10, 2, 50, 1));
+        controlPanel.add(stressThreadSpinner);
+
+        runStressBtn = new JButton("🚀 Bắn Đồng Thời (Demo Xung Đột)");
+        runStressBtn.setBackground(new Color(111, 66, 193));
+        runStressBtn.setForeground(Color.WHITE);
+        runStressBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        runStressBtn.addActionListener(e -> runConcurrencyStressTest());
+        controlPanel.add(runStressBtn);
+
+        topBox.add(controlPanel, BorderLayout.NORTH);
+
+        stressSummaryLabel = new JLabel("Sẵn sàng: Nhập mã hợp lệ và bấm 'Bắn Đồng Thời' để mở N kết nối Socket cùng lúc (chỉ 1 luồng thắng, các luồng còn lại bị 409 CONFLICT chặn).");
+        stressSummaryLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        stressSummaryLabel.setForeground(new Color(73, 80, 87));
+        stressSummaryLabel.setBorder(new EmptyBorder(2, 10, 4, 10));
+        topBox.add(stressSummaryLabel, BorderLayout.SOUTH);
+
+        panel.add(topBox, BorderLayout.NORTH);
+
+        String[] columns = {"Client Thread", "Server Thread (SocketWorker)", "Thời gian (ms)", "Trạng Thái", "Phản hồi từ Server"};
+        stressTableModel = createReadOnlyModel(columns);
+        JTable stressTable = createStyledTable(stressTableModel, 3);
+        stressTable.getColumnModel().getColumn(0).setPreferredWidth(110);
+        stressTable.getColumnModel().getColumn(1).setPreferredWidth(170);
+        stressTable.getColumnModel().getColumn(2).setPreferredWidth(95);
+        stressTable.getColumnModel().getColumn(3).setPreferredWidth(140);
+        stressTable.getColumnModel().getColumn(4).setPreferredWidth(420);
+
+        JScrollPane scroll = new JScrollPane(stressTable);
+        scroll.setBorder(BorderFactory.createTitledBorder("Kết quả đua tranh đa luồng qua TCP Socket"));
+        panel.add(scroll, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private DefaultTableModel createReadOnlyModel(String[] columns) {
+        return new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+    }
+
+    private JTable createStyledTable(DefaultTableModel model, int statusColumnIndex) {
+        JTable table = new JTable(model);
+        table.setRowHeight(25);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable tbl, Object value, boolean isSelected,
+                                                           boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    Object statusVal = tbl.getValueAt(row, statusColumnIndex);
+                    String status = statusVal != null ? statusVal.toString() : "";
+                    if (status.contains("THÀNH CÔNG") || status.startsWith("200")) {
+                        c.setBackground(new Color(232, 248, 238));
+                        c.setForeground(new Color(20, 108, 67));
+                    } else if (status.contains("XUNG ĐỘT") || status.contains("ĐÃ SỬ DỤNG") || status.contains("409") || status.contains("⚠️")) {
+                        c.setBackground(new Color(255, 243, 224));
+                        c.setForeground(new Color(180, 83, 9));
+                    } else if (status.contains("HỦY") || status.contains("KHÔNG TỒN TẠI") || status.contains("❌") || status.contains("❓")) {
+                        c.setBackground(new Color(253, 237, 237));
+                        c.setForeground(new Color(176, 42, 55));
+                    } else {
+                        c.setBackground(Color.WHITE);
+                        c.setForeground(Color.DARK_GRAY);
+                    }
+                }
+                return c;
+            }
+        });
+        return table;
     }
 
     private void processTicketCheckin() {
@@ -310,24 +439,142 @@ public class GateCheckinClientApp extends JFrame {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập hoặc quét mã vé!", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        lastCommandTab = 0;
         sendCommand("CHECKIN_VE " + code);
         ticketCodeField.setText("");
         ticketCodeField.requestFocus();
     }
 
-    /**
-     * Gửi lệnh CHECKIN_PHONG|<MA_DAT_PHONG_HOAC_MA_DON>|<MA_NV> cho Trạm 2: Quầy Lưu Trú.
-     * Phản hồi từ server được listenerThread đọc và đẩy về Event Dispatch Thread qua SwingUtilities.invokeLater.
-     */
     private void processRoomCheckin() {
         String code = roomCodeField.getText().trim();
         if (code.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã đặt phòng (ví dụ DP002) hoặc mã đơn hàng!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã đặt phòng (ví dụ DP003) hoặc mã đơn hàng!", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        lastCommandTab = 1;
         sendCommand("CHECKIN_PHONG|" + code + "|ND004");
         roomCodeField.setText("");
         roomCodeField.requestFocus();
+    }
+
+    private void processDiningCheckin() {
+        String code = diningCodeField.getText().trim();
+        if (code.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã đặt bàn (ví dụ DB001) hoặc mã đơn hàng!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        lastCommandTab = 2;
+        sendCommand("CHECKIN_AN|" + code);
+        diningCodeField.setText("");
+        diningCodeField.requestFocus();
+    }
+
+    private void runConcurrencyStressTest() {
+        String cmdType = (String) stressCommandCombo.getSelectedItem();
+        String targetCode = stressCodeField.getText().trim();
+        if (targetCode.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã mục tiêu để chạy stress test!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String host = hostField.getText().trim();
+        int port;
+        try {
+            port = Integer.parseInt(portField.getText().trim());
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Cổng Port không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int threadCount = (Integer) stressThreadSpinner.getValue();
+        runStressBtn.setEnabled(false);
+        stressTableModel.setRowCount(0);
+        stressSummaryLabel.setText("⏳ Đang khởi tạo " + threadCount + " kết nối TCP Socket song song tới " + host + ":" + port + "...");
+        appendLog("[STRESS] Bắt đầu bắn " + threadCount + " luồng đồng thời: " + cmdType + " -> " + targetCode);
+
+        new Thread(() -> {
+            CountDownLatch readyLatch = new CountDownLatch(threadCount);
+            CountDownLatch startLatch = new CountDownLatch(1);
+            CountDownLatch doneLatch = new CountDownLatch(threadCount);
+
+            AtomicInteger okCount = new AtomicInteger(0);
+            AtomicInteger conflictCount = new AtomicInteger(0);
+            AtomicInteger otherCount = new AtomicInteger(0);
+
+            for (int i = 1; i <= threadCount; i++) {
+                final int idx = i;
+                new Thread(() -> {
+                    String clientName = "ClientThread-" + idx;
+                    String serverWorker = "-";
+                    String statusLabel = "LỖI KẾT NỐI";
+                    String detail = "";
+                    long elapsedMs = 0;
+
+                    try (Socket s = new Socket(host, port);
+                         BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8));
+                         PrintWriter pw = new PrintWriter(s.getOutputStream(), true, StandardCharsets.UTF_8)) {
+
+                        br.readLine(); // Banner 200 WELCOME
+                        pw.println("AUTH|STRESS_TRAM_" + idx);
+                        br.readLine(); // 200 AUTH_OK
+                        pw.println("PING");
+                        String pong = br.readLine();
+                        serverWorker = extractParam(pong != null ? pong : "", "ServerThread=");
+
+                        readyLatch.countDown();
+                        startLatch.await();
+
+                        long t0 = System.nanoTime();
+                        pw.println(cmdType + "|" + targetCode);
+                        String resp = br.readLine();
+                        elapsedMs = (System.nanoTime() - t0) / 1_000_000;
+                        detail = resp != null ? resp : "NULL";
+
+                        if (detail.startsWith("200")) {
+                            okCount.incrementAndGet();
+                            statusLabel = "200 THÀNH CÔNG ✅";
+                        } else if (detail.startsWith("409")) {
+                            conflictCount.incrementAndGet();
+                            statusLabel = "409 XUNG ĐỘT ⚠️";
+                        } else {
+                            otherCount.incrementAndGet();
+                            statusLabel = detail.split("\\s+")[0] + " TỪ CHỐI ❌";
+                        }
+
+                        pw.println("QUIT");
+                    } catch (Exception ex) {
+                        otherCount.incrementAndGet();
+                        detail = ex.getMessage();
+                        readyLatch.countDown();
+                    } finally {
+                        final String rowWorker = serverWorker;
+                        final long rowMs = elapsedMs;
+                        final String rowStatus = statusLabel;
+                        final String rowDetail = detail;
+                        SwingUtilities.invokeLater(() -> stressTableModel.addRow(
+                                new Object[]{clientName, rowWorker, rowMs + " ms", rowStatus, rowDetail}));
+                        doneLatch.countDown();
+                    }
+                }, "StressClient-" + idx).start();
+            }
+
+            try {
+                readyLatch.await();
+                startLatch.countDown();
+                doneLatch.await();
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+
+            SwingUtilities.invokeLater(() -> {
+                runStressBtn.setEnabled(true);
+                String summary = String.format(
+                        "Hoàn tất %d luồng đồng thời — ✅ Thành công: %d | ⚠️ Bị chặn xung đột (409): %d | ❌ Khác: %d",
+                        threadCount, okCount.get(), conflictCount.get(), otherCount.get());
+                stressSummaryLabel.setText(summary);
+                appendLog("[STRESS] " + summary);
+            });
+        }, "StressCoordinator").start();
     }
 
     private void connectToServer() {
@@ -344,7 +591,6 @@ public class GateCheckinClientApp extends JFrame {
         if (stationName == null || stationName.trim().isEmpty()) {
             stationName = "TRAM_01_CONG_VE_VAO";
         }
-
         final String finalStation = stationName;
 
         new Thread(() -> {
@@ -358,13 +604,14 @@ public class GateCheckinClientApp extends JFrame {
                 SwingUtilities.invokeLater(() -> {
                     connectBtn.setEnabled(false);
                     disconnectBtn.setEnabled(true);
+                    pingBtn.setEnabled(true);
+                    statsBtn.setEnabled(true);
                     hostField.setEnabled(false);
                     portField.setEnabled(false);
                     stationCombo.setEnabled(false);
                     connectionStatusLabel.setText("🟢 Đã kết nối (" + finalStation + ")");
                 });
 
-                // Luồng lắng nghe dữ liệu từ Server
                 listenerThread = new Thread(() -> {
                     try {
                         String response;
@@ -382,9 +629,7 @@ public class GateCheckinClientApp extends JFrame {
                 });
                 listenerThread.start();
 
-                // Gửi lệnh AUTH tự động sau khi kết nối
                 sendCommand("AUTH " + finalStation);
-
             } catch (Exception ex) {
                 appendLog("[SOCKET-ERROR] Kết nối thất bại: " + ex.getMessage());
                 SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
@@ -408,6 +653,8 @@ public class GateCheckinClientApp extends JFrame {
         SwingUtilities.invokeLater(() -> {
             connectBtn.setEnabled(true);
             disconnectBtn.setEnabled(false);
+            pingBtn.setEnabled(false);
+            statsBtn.setEnabled(false);
             hostField.setEnabled(true);
             portField.setEnabled(true);
             stationCombo.setEnabled(true);
@@ -433,30 +680,48 @@ public class GateCheckinClientApp extends JFrame {
         if (response.contains("CHECKIN_SUCCESS") && response.contains("MaVe=")) {
             int count = successTicketCount.incrementAndGet();
             ticketCountLabel.setText("Số vé đã soát thành công trong ca: " + count);
-
-            String maCheckIn = extractParam(response, "MaCheckIn=");
-            String maVe = extractParam(response, "MaVe=");
-            String loaiVe = extractParam(response, "LoaiVe=");
-
-            ticketTableModel.insertRow(0, new Object[]{now, maVe, loaiVe, maCheckIn, "✅ THÀNH CÔNG"});
+            ticketTableModel.insertRow(0, new Object[]{
+                    now,
+                    extractParam(response, "MaVe="),
+                    extractParam(response, "LoaiVe="),
+                    extractParam(response, "MaCheckIn="),
+                    "✅ THÀNH CÔNG"
+            });
         } else if (response.contains("CHECKIN_PHONG_OK")) {
             int count = successRoomCount.incrementAndGet();
             roomCountLabel.setText("Số lượt nhận phòng thành công: " + count);
-
-            String maDatPhong = extractParam(response, "MaDatPhong=");
-            String soPhong = extractParam(response, "SoPhong=");
-            String loaiPhong = extractParam(response, "LoaiPhong=");
-
-            roomTableModel.insertRow(0, new Object[]{now, maDatPhong, loaiPhong, soPhong, "✅ CHECK-IN THÀNH CÔNG"});
+            roomTableModel.insertRow(0, new Object[]{
+                    now,
+                    extractParam(response, "MaDatPhong="),
+                    extractParam(response, "LoaiPhong="),
+                    extractParam(response, "SoPhong="),
+                    "✅ CHECK-IN THÀNH CÔNG"
+            });
+        } else if (response.contains("CHECKIN_AN_OK") || (response.contains("CHECKIN_SUCCESS") && response.contains("MaDatBan="))) {
+            int count = successDiningCount.incrementAndGet();
+            diningCountLabel.setText("Số lượt nhận bàn thành công: " + count);
+            diningTableModel.insertRow(0, new Object[]{
+                    now,
+                    extractParam(response, "MaDatBan="),
+                    extractParam(response, "SoKhach="),
+                    extractParam(response, "SoBan="),
+                    "✅ CHECK-IN THÀNH CÔNG"
+            });
         } else if (response.contains("CONFLICT_ALREADY_USED")) {
             ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "⚠️ VÉ ĐÃ SỬ DỤNG"});
-        } else if (response.contains("CONFLICT")) {
-            roomTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "⚠️ " + response});
-        } else if (response.contains("GONE")) {
-            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "❌ ĐÃ BỊ HỦY"});
-        } else if (response.contains("NOT_FOUND")) {
-            ticketTableModel.insertRow(0, new Object[]{now, "-", "-", "-", "❓ KHÔNG TỒN TẠI"});
+        } else if (response.contains("CONFLICT") || response.contains("GONE") || response.contains("NOT_FOUND")) {
+            String statusText = response.contains("GONE")
+                    ? "❌ ĐÃ BỊ HỦY"
+                    : (response.contains("NOT_FOUND") ? "❓ KHÔNG TỒN TẠI" : "⚠️ " + response);
+            DefaultTableModel target = getTargetTableModel();
+            target.insertRow(0, new Object[]{now, "-", "-", "-", statusText});
         }
+    }
+
+    private DefaultTableModel getTargetTableModel() {
+        if (lastCommandTab == 1) return roomTableModel;
+        if (lastCommandTab == 2) return diningTableModel;
+        return ticketTableModel;
     }
 
     private String extractParam(String text, String prefix) {
@@ -470,24 +735,44 @@ public class GateCheckinClientApp extends JFrame {
 
     private void appendLog(String message) {
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String line = "[" + time + "] " + message + "\n";
         SwingUtilities.invokeLater(() -> {
-            logArea.append("[" + time + "] " + message + "\n");
-            logArea.setCaretPosition(logArea.getDocument().getLength());
+            StyledDocument doc = logPane.getStyledDocument();
+            SimpleAttributeSet attrs = new SimpleAttributeSet();
+            if (message.startsWith("[CLIENT -> SERVER]")) {
+                StyleConstants.setForeground(attrs, new Color(13, 110, 253));
+            } else if (message.contains("409 CONFLICT") || message.contains("⚠️")) {
+                StyleConstants.setForeground(attrs, new Color(194, 65, 12));
+                StyleConstants.setBold(attrs, true);
+            } else if (message.contains("404 ") || message.contains("410 ") || message.contains("ERROR")) {
+                StyleConstants.setForeground(attrs, new Color(220, 53, 69));
+            } else if (message.contains("200 ")) {
+                StyleConstants.setForeground(attrs, new Color(25, 135, 84));
+            } else if (message.startsWith("[STRESS]")) {
+                StyleConstants.setForeground(attrs, new Color(111, 66, 193));
+                StyleConstants.setBold(attrs, true);
+            } else {
+                StyleConstants.setForeground(attrs, new Color(52, 58, 64));
+            }
+            try {
+                doc.insertString(doc.getLength(), line, attrs);
+                logPane.setCaretPosition(doc.getLength());
+            } catch (Exception ignored) {}
         });
     }
 
     private void openThreeIndependentStations() {
         SwingUtilities.invokeLater(() -> {
             GateCheckinClientApp app1 = new GateCheckinClientApp("TRAM_01", "TRAM_01_CONG_VE_VAO");
-            app1.setLocation(50, 50);
+            app1.setLocation(40, 40);
             app1.setVisible(true);
 
             GateCheckinClientApp app2 = new GateCheckinClientApp("TRAM_02", "TRAM_02_QUAY_LE_TAN_PHONG");
-            app2.setLocation(250, 100);
+            app2.setLocation(220, 90);
             app2.setVisible(true);
 
             GateCheckinClientApp app3 = new GateCheckinClientApp("TRAM_03", "TRAM_03_NHA_HANG_AM_THUC");
-            app3.setLocation(450, 150);
+            app3.setLocation(400, 140);
             app3.setVisible(true);
         });
     }

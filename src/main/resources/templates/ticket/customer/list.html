@@ -69,7 +69,7 @@
                                 </div>
                                 <div class="d-flex gap-2">
                                     <a th:href="@{'/tickets/' + ${t.id}}" class="btn btn-outline-info flex-grow-1 fw-semibold py-2">Xem chi tiết</a>
-                                    <a th:href="@{'/tickets/' + ${t.id}}" class="btn btn-gold fw-bold px-3 py-2">Chọn mua</a>
+                                    <a th:href="@{/dat-dich-vu(ticketCode=${t.maLoaiVe}, ticketQty=1)}" class="btn btn-gold fw-bold px-3 py-2">Chọn mua</a>
                                 </div>
                             </div>
                         </div>

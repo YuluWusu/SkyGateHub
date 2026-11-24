@@ -376,6 +376,7 @@ CREATE TABLE IF NOT EXISTS `THANH_PHAN_DICH_VU` (
   `LOAI_THANH_PHAN` VARCHAR(30) NOT NULL,
   `MA_LOAI_VE` VARCHAR(20) NULL,
   `MA_DV_AN_UONG` VARCHAR(20) NULL,
+  `MA_LOAI_PHONG` VARCHAR(20) NULL,
   `MO_TA` VARCHAR(500) NULL,
   `TRANG_THAI` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`ID`),
@@ -384,11 +385,14 @@ CREATE TABLE IF NOT EXISTS `THANH_PHAN_DICH_VU` (
     REFERENCES `LOAI_VE` (`MA_LOAI_VE`) ON UPDATE RESTRICT ON DELETE RESTRICT,
   CONSTRAINT `FK_TPDV_DV_AN_UONG` FOREIGN KEY (`MA_DV_AN_UONG`)
     REFERENCES `DICH_VU_AN_UONG` (`MA_DICH_VU`) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  CONSTRAINT `CK_TPDV_LOAI` CHECK (`LOAI_THANH_PHAN` IN ('THAM_QUAN','AN_UONG','CAP_TREO','XE_DIEN','KHAC')),
+  CONSTRAINT `FK_TPDV_LOAI_PHONG` FOREIGN KEY (`MA_LOAI_PHONG`)
+    REFERENCES `LOAI_PHONG` (`MA_LOAI_PHONG`) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT `CK_TPDV_LOAI` CHECK (`LOAI_THANH_PHAN` IN ('THAM_QUAN','AN_UONG','PHONG','CAP_TREO','XE_DIEN','KHAC')),
   CONSTRAINT `CK_TPDV_LIEN_KET` CHECK (
-    (`LOAI_THANH_PHAN` = 'AN_UONG' AND `MA_DV_AN_UONG` IS NOT NULL AND `MA_LOAI_VE` IS NULL)
-    OR (`LOAI_THANH_PHAN` = 'THAM_QUAN' AND `MA_LOAI_VE` IS NOT NULL AND `MA_DV_AN_UONG` IS NULL)
-    OR (`LOAI_THANH_PHAN` IN ('CAP_TREO','XE_DIEN','KHAC') AND `MA_LOAI_VE` IS NULL AND `MA_DV_AN_UONG` IS NULL)
+    (`LOAI_THANH_PHAN` = 'AN_UONG' AND `MA_DV_AN_UONG` IS NOT NULL AND `MA_LOAI_VE` IS NULL AND `MA_LOAI_PHONG` IS NULL)
+    OR (`LOAI_THANH_PHAN` = 'THAM_QUAN' AND `MA_LOAI_VE` IS NOT NULL AND `MA_DV_AN_UONG` IS NULL AND `MA_LOAI_PHONG` IS NULL)
+    OR (`LOAI_THANH_PHAN` = 'PHONG' AND `MA_LOAI_PHONG` IS NOT NULL AND `MA_LOAI_VE` IS NULL AND `MA_DV_AN_UONG` IS NULL)
+    OR (`LOAI_THANH_PHAN` IN ('CAP_TREO','XE_DIEN','KHAC') AND `MA_LOAI_VE` IS NULL AND `MA_DV_AN_UONG` IS NULL AND `MA_LOAI_PHONG` IS NULL)
   ),
   CONSTRAINT `CK_TPDV_TRANG_THAI` CHECK (`TRANG_THAI` IN (0,1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -1076,27 +1080,28 @@ INSERT INTO `DICH_VU_CA_AN` (`MA_DICH_VU`, `MA_CA_AN`, `TRANG_THAI`) VALUES
   ('DV25', 'CA_TRUA', 1);
 
 -- 14. THANH_PHAN_DICH_VU (20 thành phần dịch vụ)
-INSERT INTO `THANH_PHAN_DICH_VU` (`MA_THANH_PHAN`, `TEN_THANH_PHAN`, `LOAI_THANH_PHAN`, `MA_LOAI_VE`, `MA_DV_AN_UONG`, `MO_TA`, `TRANG_THAI`) VALUES
-  ('TP01', 'Vé Vào Cổng Tham Quan', 'THAM_QUAN', 'VE01', NULL, 'Lượt qua cổng chính', 1),
-  ('TP02', 'Cáp Treo Khứ Hồi', 'CAP_TREO', NULL, NULL, 'Tuyến cáp treo dài 2km', 1),
-  ('TP03', 'Suất Buffet Trưa Tây Giang', 'AN_UONG', NULL, 'DV01', '1 suất ăn buffet trưa', 1),
-  ('TP04', 'Xe Điện Nội Khu 1 Ngày', 'XE_DIEN', NULL, NULL, 'Di chuyển nội khu KDL', 1),
-  ('TP05', 'Chèo Thuyền Kayak 60 Phút', 'KHAC', NULL, NULL, 'Chèo thuyền trên suối', 1),
-  ('TP06', 'Vé Cổng Trẻ Em', 'THAM_QUAN', 'VE02', NULL, 'Qua cổng cho trẻ em', 1),
-  ('TP07', 'Buffet Trưa Trẻ Em', 'AN_UONG', NULL, 'DV01', '1 suất buffet trưa trẻ em', 1),
-  ('TP08', 'Hướng Dẫn Viên Riêng', 'KHAC', NULL, NULL, 'HDV thuyết minh toàn tuyến', 1),
-  ('TP09', 'Buffet Tối BBQ Nướng', 'AN_UONG', NULL, 'DV02', 'Tiệc nướng BBQ', 1),
-  ('TP10', 'Tắm Khoáng Nóng Rừng', 'KHAC', NULL, NULL, 'Ngâm khoáng nóng 45 phút', 1),
-  ('TP11', 'Trượt Thác Cảm Giác Mạnh', 'KHAC', NULL, NULL, '1 lượt trượt thác nước', 1),
-  ('TP12', 'Trà Chiều Bánh Ngọt', 'AN_UONG', NULL, 'DV15', 'Set trà thưởng ngoạn', 1),
-  ('TP13', 'Nước Suối Đóng Chai Eco', 'KHAC', NULL, NULL, '2 chai nước suối', 1),
-  ('TP14', 'Mũ Nón Lưu Niệm SkyGate', 'KHAC', NULL, NULL, 'Quà tặng lưu niệm', 1),
-  ('TP15', 'Giao Lưu Lửa Trại Cổ Từ', 'KHAC', NULL, NULL, 'Giao lưu văn nghệ đêm', 1),
-  ('TP16', 'Sân Cỏ Teambuilding', 'KHAC', NULL, NULL, 'Sân bãi tổ chức trò chơi', 1),
-  ('TP17', 'Hồ Bơi Vô Cực Trên Núi', 'KHAC', NULL, NULL, 'Bơi không giới hạn', 1),
-  ('TP18', 'Trekking Rừng Nguyên Sinh', 'THAM_QUAN', 'VE23', NULL, 'Trekking cùng HDV', 1),
-  ('TP19', 'Rượu Cần Giao Lưu', 'AN_UONG', NULL, 'DV11', 'Uống rượu cần truyền thống', 1),
-  ('TP20', 'Tham Quan Làng Nghề Cổ Từ', 'THAM_QUAN', 'VE21', NULL, 'Trải nghiệm dệt thổ cẩm', 1);
+INSERT INTO `THANH_PHAN_DICH_VU` (`MA_THANH_PHAN`, `TEN_THANH_PHAN`, `LOAI_THANH_PHAN`, `MA_LOAI_VE`, `MA_DV_AN_UONG`, `MA_LOAI_PHONG`, `MO_TA`, `TRANG_THAI`) VALUES
+  ('TP01', 'Vé Vào Cổng Tham Quan', 'THAM_QUAN', 'VE01', NULL, NULL, 'Lượt qua cổng chính', 1),
+  ('TP02', 'Cáp Treo Khứ Hồi', 'CAP_TREO', NULL, NULL, NULL, 'Tuyến cáp treo dài 2km', 1),
+  ('TP03', 'Suất Buffet Trưa Tây Giang', 'AN_UONG', NULL, 'DV01', NULL, '1 suất ăn buffet trưa', 1),
+  ('TP04', 'Xe Điện Nội Khu 1 Ngày', 'XE_DIEN', NULL, NULL, NULL, 'Di chuyển nội khu KDL', 1),
+  ('TP05', 'Chèo Thuyền Kayak 60 Phút', 'KHAC', NULL, NULL, NULL, 'Chèo thuyền trên suối', 1),
+  ('TP06', 'Vé Cổng Trẻ Em', 'THAM_QUAN', 'VE02', NULL, NULL, 'Qua cổng cho trẻ em', 1),
+  ('TP07', 'Buffet Trưa Trẻ Em', 'AN_UONG', NULL, 'DV01', NULL, '1 suất buffet trưa trẻ em', 1),
+  ('TP08', 'Hướng Dẫn Viên Riêng', 'KHAC', NULL, NULL, NULL, 'HDV thuyết minh toàn tuyến', 1),
+  ('TP09', 'Buffet Tối BBQ Nướng', 'AN_UONG', NULL, 'DV02', NULL, 'Tiệc nướng BBQ', 1),
+  ('TP10', 'Tắm Khoáng Nóng Rừng', 'KHAC', NULL, NULL, NULL, 'Ngâm khoáng nóng 45 phút', 1),
+  ('TP11', 'Trượt Thác Cảm Giác Mạnh', 'KHAC', NULL, NULL, NULL, '1 lượt trượt thác nước', 1),
+  ('TP12', 'Trà Chiều Bánh Ngọt', 'AN_UONG', NULL, 'DV15', NULL, 'Set trà thưởng ngoạn', 1),
+  ('TP13', 'Nước Suối Đóng Chai Eco', 'KHAC', NULL, NULL, NULL, '2 chai nước suối', 1),
+  ('TP14', 'Mũ Nón Lưu Niệm SkyGate', 'KHAC', NULL, NULL, NULL, 'Quà tặng lưu niệm', 1),
+  ('TP15', 'Giao Lưu Lửa Trại Cổ Từ', 'KHAC', NULL, NULL, NULL, 'Giao lưu văn nghệ đêm', 1),
+  ('TP16', 'Sân Cỏ Teambuilding', 'KHAC', NULL, NULL, NULL, 'Sân bãi tổ chức trò chơi', 1),
+  ('TP17', 'Hồ Bơi Vô Cực Trên Núi', 'KHAC', NULL, NULL, NULL, 'Bơi không giới hạn', 1),
+  ('TP18', 'Trekking Rừng Nguyên Sinh', 'THAM_QUAN', 'VE23', NULL, NULL, 'Trekking cùng HDV', 1),
+  ('TP19', 'Rượu Cần Giao Lưu', 'AN_UONG', NULL, 'DV11', NULL, 'Uống rượu cần truyền thống', 1),
+  ('TP20', 'Tham Quan Làng Nghề Cổ Từ', 'THAM_QUAN', 'VE21', NULL, NULL, 'Trải nghiệm dệt thổ cẩm', 1),
+  ('TP21', 'Phòng Deluxe DBL (1 đêm)', 'PHONG', NULL, NULL, '3', '1 đêm lưu trú phòng Deluxe DBL', 1);
 
 -- 15. COMBO_THANH_PHAN (20 bản ghi thành phần combo)
 INSERT INTO `COMBO_THANH_PHAN` (`MA_LOAI_VE`, `MA_THANH_PHAN`, `SO_LUONG_MOI_COMBO`, `THEO_DOI_SU_DUNG`, `GHI_CHU`) VALUES
@@ -1119,7 +1124,16 @@ INSERT INTO `COMBO_THANH_PHAN` (`MA_LOAI_VE`, `MA_THANH_PHAN`, `SO_LUONG_MOI_COM
   ('VE17', 'TP02', 1, 1, 'Cáp treo'),
   ('VE17', 'TP03', 1, 1, 'Buffet trưa'),
   ('VE22', 'TP01', 1, 1, 'Vé cổng'),
-  ('VE22', 'TP04', 1, 1, 'Xe điện 1 ngày');
+  ('VE22', 'TP04', 1, 1, 'Xe điện 1 ngày'),
+  ('VE20', 'TP01', 1, 1, 'Vé cổng người lớn'),
+  ('VE20', 'TP16', 1, 1, 'Sân cỏ Teambuilding'),
+  ('VE20', 'TP03', 1, 1, 'Buffet trưa người lớn'),
+  ('VE25', 'TP01', 1, 1, 'Vé cổng người lớn'),
+  ('VE25', 'TP02', 1, 1, 'Cáp treo khứ hồi'),
+  ('VE25', 'TP03', 1, 1, 'Buffet trưa VIP'),
+  ('VE25', 'TP09', 1, 1, 'Buffet tối BBQ'),
+  ('VE25', 'TP21', 1, 1, 'Phòng Deluxe DBL 1 đêm'),
+  ('VE25', 'TP08', 1, 1, 'Hướng dẫn viên riêng');
 
 -- 16. CHINH_SACH_COC & CHINH_SACH_HUY
 INSERT INTO `CHINH_SACH_COC` (`MA_CHINH_SACH_COC`, `PHAM_VI_AP_DUNG`, `TY_LE_COC`, `TIEN_COC_CO_DINH`, `HIEU_LUC_TU`, `HIEU_LUC_DEN`, `TRANG_THAI`, `GHI_CHU`) VALUES

@@ -2,6 +2,7 @@ package com.example.skygatehub.entity.ticket;
 
 import com.example.skygatehub.common.enums.LoaiThanhPhan;
 import com.example.skygatehub.entity.dining.DichVuAnUong;
+import com.example.skygatehub.entity.room.LoaiPhong;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -50,6 +51,10 @@ public class ThanhPhanDichVu {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MA_DV_AN_UONG", referencedColumnName = "MA_DICH_VU")
     private DichVuAnUong dichVuAnUong;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MA_LOAI_PHONG", referencedColumnName = "MA_LOAI_PHONG")
+    private LoaiPhong loaiPhong;
 
     @Column(name = "MO_TA", length = 500)
     private String moTa;

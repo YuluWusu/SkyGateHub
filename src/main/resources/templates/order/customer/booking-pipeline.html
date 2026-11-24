@@ -433,7 +433,14 @@
                                             <span class="badge bg-light text-muted border font-monospace small" th:text="${lv.maLoaiVe}">VE01</span>
                                         </div>
                                         <h5 class="fw-bold text-dark mb-1" th:text="${lv.tenLoaiVe}">Vé Tham Quan Người Lớn</h5>
-                                        <p class="text-muted small mb-3" style="min-height: 2.8em;" th:text="${lv.moTa != null ? lv.moTa : 'Vé vào cổng tham quan toàn cảnh KDL Cổng Trời Đông Giang.'}">Mô tả loại vé...</p>
+                                        <p class="text-muted small mb-2" style="min-height: 2.4em;" th:text="${lv.moTa != null ? lv.moTa : 'Vé vào cổng tham quan toàn cảnh KDL Cổng Trời Đông Giang.'}">Mô tả loại vé...</p>
+                                        <div th:if="${lv.isCombo() and comboComponentsMap != null and comboComponentsMap[lv.maLoaiVe] != null and !comboComponentsMap[lv.maLoaiVe].isEmpty()}"
+                                             class="mb-2 p-2 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 small">
+                                            <div class="fw-semibold text-success mb-1"><i class="bi bi-gift me-1"></i>Combo bao gồm:</div>
+                                            <ul class="mb-0 ps-3 text-dark" style="font-size: 0.78rem;">
+                                                <li th:each="compName : ${comboComponentsMap[lv.maLoaiVe]}" th:text="${compName}">Thành phần</li>
+                                            </ul>
+                                        </div>
                                     </div>
                                     <div class="d-flex align-items-center justify-content-between pt-2 border-top">
                                         <div>
@@ -445,7 +452,8 @@
                                             <input type="hidden" name="ticketCode" th:value="${lv.maLoaiVe}">
                                             <input type="text" name="ticketQty" th:id="'qty-ticket-' + ${lv.maLoaiVe}" value="0" readonly class="qty-input"
                                                    th:data-price="${ticketPrices[lv.maLoaiVe]}"
-                                                   th:data-name="${lv.tenLoaiVe}">
+                                                   th:data-name="${lv.tenLoaiVe}"
+                                                   th:data-is-combo="${lv.isCombo()}">
                                             <button type="button" class="qty-btn" onclick="stepQty(this, 1)">+</button>
                                         </div>
                                     </div>
@@ -455,8 +463,8 @@
 
                         <!-- Nút điều hướng bước 1 -->
                         <div class="d-flex justify-content-end pt-3 border-top">
-                            <button type="button" class="funnel-btn-primary" onclick="goToStep(2)">
-                                <span>Tiếp tục: Chọn Khách Sạn</span>
+                            <button type="button" id="step1NextBtn" class="funnel-btn-primary" onclick="proceedFromStep1()">
+                                <span id="step1NextLabel">Tiếp tục: Chọn Khách Sạn</span>
                                 <i class="bi bi-arrow-right"></i>
                             </button>
                         </div>
@@ -903,6 +911,34 @@
             validateStep4();
         }
 
+        function hasComboSelected() {
+            let found = false;
+            document.querySelectorAll('input[name="ticketQty"]').forEach(input => {
+                if (input.dataset.isCombo === 'true' && (parseInt(input.value) || 0) > 0) {
+                    found = true;
+                }
+            });
+            return found;
+        }
+
+        function proceedFromStep1() {
+            if (hasComboSelected()) {
+                // Chọn combo -> tự động bỏ qua bước Khách sạn & Ẩm thực (Buffet), đi thẳng tới Thanh Toán & Cọc
+                document.querySelectorAll('input[name="roomQty"]').forEach(input => { input.value = 0; });
+                document.querySelectorAll('.item-select-card[id^="room-card-"]').forEach(card => { card.classList.remove('selected'); });
+                document.getElementById('bookHotelFlag').value = 'false';
+
+                document.querySelectorAll('input[name="diningQty"]').forEach(input => { input.value = 0; });
+                document.querySelectorAll('.item-select-card[id^="dining-card-"]').forEach(card => { card.classList.remove('selected'); });
+                document.getElementById('bookDiningFlag').value = 'false';
+
+                updateSummary();
+                goToStep(4);
+                return;
+            }
+            goToStep(2);
+        }
+
         function skipHotel() {
             // Reset all room quantities to 0
             document.querySelectorAll('input[name="roomQty"]').forEach(input => {
@@ -1044,6 +1080,44 @@
                 }
             });
             document.getElementById('summaryTicketGroup').style.display = hasTicket ? 'block' : 'none';
+
+            const step1Label = document.getElementById('step1NextLabel');
+            if (step1Label) {
+                step1Label.textContent = hasComboSelected()
+                    ? 'Tiếp tục: Thanh Toán & Cọc (Combo tự động bỏ qua Khách sạn & Buffet)'
+                    : 'Tiếp tục: Chọn Khách Sạn';
+            }
+
+            if (cartRestored) {
+                try {
+                    const selectedTickets = [];
+                    const visitDate = document.getElementById('ngayThamQuanInput')?.value || '';
+                    document.querySelectorAll('input[name="ticketQty"]').forEach(input => {
+                        const qty = parseInt(input.value) || 0;
+                        if (qty > 0) {
+                            const code = input.id ? input.id.replace('qty-ticket-', '') : '';
+                            if (code) {
+                                selectedTickets.push({
+                                    type: 'TICKET',
+                                    code: code,
+                                    name: input.dataset.name || code,
+                                    qty: qty,
+                                    date: visitDate,
+                                    isCombo: input.dataset.isCombo === 'true'
+                                });
+                            }
+                        }
+                    });
+                    if (window.SkygateCart) {
+                        window.SkygateCart.syncTickets(selectedTickets, visitDate);
+                    } else {
+                        const raw = localStorage.getItem('skygate_cart');
+                        const prev = raw ? JSON.parse(raw) : [];
+                        const others = Array.isArray(prev) ? prev.filter(it => it.type !== 'TICKET') : [];
+                        localStorage.setItem('skygate_cart', JSON.stringify(others.concat(selectedTickets)));
+                    }
+                } catch (e) {}
+            }
 
             // 2. Process Hotel Rooms
             const hotelList = document.getElementById('summaryHotelList');
@@ -1196,8 +1270,66 @@
             }
         };
 
+        let cartRestored = false;
+
+        function restoreCartAndPrefill() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const prefillCode = (urlParams.get('ticketCode') || '').trim();
+            const prefillQty = parseInt(urlParams.get('ticketQty')) || 0;
+            const prefillDate = (urlParams.get('ngayThamQuan') || '').trim();
+
+            let visitDateToApply = prefillDate || '';
+            try {
+                const cartItems = window.SkygateCart
+                    ? window.SkygateCart.getItems()
+                    : JSON.parse(localStorage.getItem('skygate_cart') || '[]');
+                if (Array.isArray(cartItems)) {
+                    cartItems.forEach(item => {
+                        if (item.type === 'TICKET' && item.code) {
+                            const input = document.getElementById('qty-ticket-' + item.code);
+                            if (input) {
+                                const q = Math.max(0, parseInt(item.qty) || 0);
+                                input.value = q;
+                                const card = document.getElementById('ticket-card-' + item.code);
+                                if (card) card.classList.toggle('selected', q > 0);
+                            }
+                            if (!visitDateToApply && item.date) {
+                                visitDateToApply = item.date;
+                            }
+                        }
+                    });
+                }
+            } catch (e) {}
+
+            if (prefillCode) {
+                const input = document.getElementById('qty-ticket-' + prefillCode);
+                if (input) {
+                    const current = parseInt(input.value) || 0;
+                    const nextQty = Math.max(current, parseInt(prefillQty) || 1);
+                    input.value = nextQty;
+                    const card = document.getElementById('ticket-card-' + prefillCode);
+                    if (card) card.classList.toggle('selected', nextQty > 0);
+                }
+            }
+
+            if (visitDateToApply) {
+                const dateInput = document.getElementById('ngayThamQuanInput');
+                const dateDisplay = document.getElementById('ngayThamQuanDisplay');
+                if (dateInput) dateInput.value = visitDateToApply;
+                if (dateDisplay) {
+                    const parts = visitDateToApply.split('-');
+                    if (parts.length === 3) {
+                        dateDisplay.innerHTML = '<i class="bi bi-calendar2-week-fill me-1"></i>' + parts[2] + '/' + parts[1] + '/' + parts[0];
+                    }
+                }
+            }
+            cartRestored = true;
+            updateSummary();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             calculateNights();
+            restoreCartAndPrefill();
             filterDiningByShift();
             const pane3 = document.getElementById('step-pane-3');
             if (pane3 && pane3.dataset.openStep === 'true') {
